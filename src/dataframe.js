@@ -58,22 +58,34 @@ export class DataFrame {
     }
 
     crossJoin(df) {
+        if (arguments.length < 1 || arguments.length > 1) {
+            throw Error(`crossJoin takes a single argument. Arguments passed: ${arguments.length}`);
+        }
         return _crossJoin(this, df);
     }
 
     innerJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3) {
+            throw Error(`innerJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+        }
         let on;
         if (arguments.length == 2) on = leftOn;
         return _innerJoin(this, df, on, leftOn, rightOn);
     }
 
     leftJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3) {
+            throw Error(`leftJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+        }
         let on;
         if (arguments.length == 2) on = leftOn;
         return _leftJoin(this, df, on, leftOn, rightOn);
     }
 
     rightJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3) {
+            throw Error(`rightJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+        }
         let on;
         if (arguments.length == 2) on = leftOn;
         return _rightJoin(this, df, on, leftOn, rightOn);

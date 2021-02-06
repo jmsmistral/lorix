@@ -50,15 +50,21 @@ async function test() {
 
     // joins
     console.log('cross join');
-    // (df1.crossJoin(df2, (l, r) => l.id == r.id, false)).head(); // Error
-    // (df1.crossJoin(df2, false)).head();
+    // (df1.crossJoin(df2, (l, r) => l.id == r.id)).head(); // Error - number of arguments
+    // (df1.crossJoin(df2)).head(); // Cross join
 
     console.log('inner join');
-    // (df1.innerJoin(df2, (l, r) => l.id == r.id, false)).head();
+    // (df1.innerJoin(df2, (l, r) => l.id == r.id, false)).head(); // Error - number of arguments
+    // (df1.innerJoin(df2, "id")).head(); // Error - argument types
+    // (df1.innerJoin(df2, (l, r) => l.id == r.id)).head();  // Non-indexed inner join
+    (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed inner join
+    // (df1.innerJoin(df2, ["id"])).head();  // Indexed inner join
+    // (df1.innerJoin(df2, ["id", "age"])).head();  // Indexed inner join
 
     console.log('left join');
-    // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head();
-    // (df1.leftJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head();
+    // (df1.leftJoin(df2, "id")).head(); // Error - argument types
+    // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
+    // (df1.leftJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed left join
     // (df1.leftJoin(df2, (l, r) => (l.id == r.id) | (l.age == r.age))).head();
     // (df1.leftJoin(df2, ["id"])).head();
     // (df1.leftJoin(df2, ["id", "age"], ["id", "age"])).head();

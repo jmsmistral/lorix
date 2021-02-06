@@ -138,14 +138,12 @@ function _nonIndexedInnerJoin(leftDf, rightDf, on) {
     // parameter. This function takes two rows, and
     // returns true if the rows match, and false
     // otherwise.
-    console.log("_nonIndexedLeftJoin()");
+    console.log("_nonIndexedInnerJoin()");
     const joinCols = _getRightJoinColumns(leftDf, rightDf, on);
     const sortedRightDfRowArray = lodash.orderBy(rightDf.rows, joinCols);
-    let nullRow = _getRightNullRow(leftDf, rightDf);
 
     const outputRowArray = leftDf.rows.flatMap((leftRow) => {
         const matchingRows = sortedRightDfRowArray.filter((rightRow) => on(leftRow, rightRow));
-        if (!matchingRows.length) return {...leftRow, ...nullRow};
         return matchingRows.map((rightRow) => ({...leftRow, ...rightRow}));
     });
 
@@ -192,6 +190,33 @@ function _nonIndexedRightJoin(leftDf, rightDf, on) {
         if (!matchingRows.length) return {...nullRow, ...rightRow};
         return matchingRows.map((leftRow) => ({...leftRow, ...rightRow}));
     });
+
+    let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
+    return new DataFrame(outputRowArray, outputColumns);
+}
+
+function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
+    // Joins two dataframes based on the array
+    // of join columns defined either in the "on",
+    // or both "leftOn" and "rightOn" parameters.
+    // The join condition is based on the equality
+    // of the array of columns in the specified order.
+    console.log("_indexedInnerJoin()");
+    // TODO check that columns in join exist on both dataframes
+    // Index right-hand dataframe
+    const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
+    // Perform join using right dataframe index
+    const leftDfJoinCols = leftOn ? leftOn : on;
+    let outputRowArray = [];
+    for (let row of leftDf.rows) {
+        let matchingRows = _lookupIndex(row, leftDfJoinCols, rightDfIndex);
+        if (matchingRows) {
+            for (let matchedRow of matchingRows) {
+                outputRowArray.push({...row, ...matchedRow});
+            }
+            continue;
+        }
+    }
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
     return new DataFrame(outputRowArray, outputColumns);
