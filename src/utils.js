@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 
 export class DummyDataFrame {
     // This is a dummy dataframe for the purpose
@@ -46,4 +47,25 @@ export class DummyDataFrame {
         }
         return accessedCols;
     }
+}
+
+
+export function _isString(val) {
+    return Object.prototype.toString.call(val) === "[object String]";
+}
+
+export function _getUniqueObjectProperties(arr) {
+    if (arr instanceof Array) {
+        let objectProperties = arr.reduce((output, cols) => {
+            if (
+                Object.keys(output).length == 0 ||
+                lodash.isEqual(lodash.sortBy(Object.keys(output)), lodash.sortBy(Object.keys(cols)))
+            ) {
+                return Object.assign(output, cols)
+            }
+            throw Error("_getUniqueObjectProperties() columns not equal across rows.");
+        }, {});
+        return Object.keys(objectProperties);
+    }
+    throw Error("_getUniqueObjectProperties() only accepts an array of objects.");
 }

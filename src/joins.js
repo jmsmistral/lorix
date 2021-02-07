@@ -67,7 +67,7 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
         if (on instanceof Array) {
             return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
         }
-        throw Error("'on' needs to be either a function or an array")
+        throw Error("'on' needs to be either a function or an array");
     }
 
     if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
@@ -94,7 +94,7 @@ export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
         if (on instanceof Array) {
             return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
         }
-        throw Error("'on' needs to be either a function or an array")
+        throw Error("'on' needs to be either a function or an array");
     }
 
     if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
@@ -121,14 +121,14 @@ export function _rightJoin(leftDf, rightDf, on, leftOn, rightOn) {
         if (on instanceof Array) {
             return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
         }
-        throw Error("'on' needs to be either a function or an array")
+        throw Error("'on' needs to be either a function or an array");
     }
 
     if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
         console.log("leftOn and rightOn defined");
         return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
     }
-    throw Error("'leftOn' and 'rightOn' need to be arrays")
+    throw Error("'leftOn' and 'rightOn' need to be arrays");
 };
 
 function _nonIndexedInnerJoin(leftDf, rightDf, on) {

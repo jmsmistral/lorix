@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import d3Dsv from 'd3-dsv';
 
 import { DataFrame } from './dataframe.js';
+import { _isString } from './utils.js';
 
 
 function readFile(filePath) {
@@ -22,7 +23,7 @@ function readFile(filePath) {
 
 function writeFile(filePath, string) {
     return new Promise((resolve, reject) => {
-        console.log(`Writing file ${path.join(process.cwd(), filePath)}`)
+        // console.log(`Writing file ${path.join(process.cwd(), filePath)}`)
         fs.writeFile(path.join(process.cwd(), filePath), string, "utf8", (err) => {
             // TODO provide descriptive error messages
             if (err) {
@@ -54,6 +55,34 @@ export async function readTsv(filePath) {
     });
 };
 
+export async function readDsv(filePath, delimiter) {
+    if (!delimiter || !_isString(delimiter) || delimiter == "") {
+        throw Error("Incorrect delimiter passed to readDsv().");
+    }
+    const fileData = await readFile(filePath);
+    return new Promise((resolve, reject) => {
+        const rowArray = d3Dsv.dsvFormat(delimiter).parse(fileData, d3Dsv.autoType);
+        const columns = Array.from(rowArray.columns);
+        delete rowArray.columns;
+        resolve(new DataFrame(rowArray, columns));
+    });
+};
+
+export async function writeCsv(df, filePath) {
+    await writeFile(filePath, d3Dsv.csvFormat(df.rows));
+};
+
 export async function writeTsv(df, filePath) {
     await writeFile(filePath, d3Dsv.tsvFormat(df.rows));
+};
+
+export async function writeDsv(df, filePath, delimiter) {
+    if (!delimiter || !_isString(delimiter) || delimiter == "") {
+        throw Error("Incorrect delimiter passed to writeDsv().");
+    }
+    await writeFile(filePath, d3Dsv.dsvFormat(delimiter).format(df.rows));
+};
+
+export async function writeJson(df, filePath) {
+    await writeFile(filePath, JSON.stringify(df.rows));
 };

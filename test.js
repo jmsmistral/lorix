@@ -25,14 +25,33 @@ async function test() {
     // dfMalformed.head();
     // console.log(dfMalformed.columns);
 
+    // let dataArr = [
+    //     {"colr1c1": "valr1c1", "colr1c2": "valr1c2"},
+    //     {"colr2c1": "valr2c1", "colr2c2": "valr2c2"},
+    //     {"colr3c1": "valr3c1", "colr3c2": "valr3c2"}
+    // ]; // Error
+    // let dataArr = [
+    //     {},
+    //     {},
+    //     {}
+    // ]; // Error
+    let dataArr = [
+        {"col1": "valr1c1", "col2": "valr1c2"},
+        {"col1": "valr2c1", "col2": "valr2c2"},
+        {"col1": "valr3c1", "col2": "valr3c2"}
+    ];
+
+    let df0 = loris.DataFrame.fromArray(dataArr);
+    console.log("df0");
+    df0.head();
 
     // loading data data
     let df1 = await loris.readCsv('test.csv');
     let df2 = await loris.readCsv('test2.csv');
-
-    for (let row of df1) {
-        console.log(row);
-    }
+    // let df3 = await loris.readDsv('test.psv'); // Error
+    // let df3 = await loris.readDsv('test.psv', ""); // Error
+    // let df3 = await loris.readDsv('test.psv', {}); // Error
+    // let df3 = await loris.readDsv('test.psv', "|");
 
     // selecting columns
     // console.log(df);
@@ -45,8 +64,16 @@ async function test() {
     // dropping columns
     // let df3 = df.drop('name');
 
+    console.log("df1");
     df1.head();
+    console.log("df2");
     df2.head();
+    // df3.head();
+
+    console.log("df1 for...of iteration");
+    for (let row of df1) {
+        console.log(row);
+    }
 
     // joins
     console.log('cross join');
@@ -57,7 +84,7 @@ async function test() {
     // (df1.innerJoin(df2, (l, r) => l.id == r.id, false)).head(); // Error - number of arguments
     // (df1.innerJoin(df2, "id")).head(); // Error - argument types
     // (df1.innerJoin(df2, (l, r) => l.id == r.id)).head();  // Non-indexed inner join
-    (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed inner join
+    // (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed inner join
     // (df1.innerJoin(df2, ["id"])).head();  // Indexed inner join
     // (df1.innerJoin(df2, ["id", "age"])).head();  // Indexed inner join
 
@@ -87,6 +114,14 @@ async function test() {
     // } catch(err) {
     //     console.log(err);
     // }
+
+    await loris.writeTsv(df1, "df1_output.tsv");
+    await loris.writeCsv(df1, "df1_output.csv");
+    // await loris.writeDsv(df1, "df1_output.psv"); // Error
+    // await loris.writeDsv(df1, "df1_output.psv", ""); // Error
+    // await loris.writeDsv(df1, "df1_output.psv", {}); // Error
+    await loris.writeDsv(df1, "df1_output.psv", "|");
+    await loris.writeJson(df1, "df1_output.json");
 }
 
 test();

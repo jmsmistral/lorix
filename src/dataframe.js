@@ -7,6 +7,11 @@ import {
     _rightJoin
 } from './joins.js';
 
+import {
+    _getUniqueObjectProperties,
+} from './utils.js';
+
+
 
 export class DataFrame {
     constructor(rowArray=[], columns=[]) {
@@ -23,6 +28,17 @@ export class DataFrame {
 
     [Symbol.iterator]() {
         return this.iterator();
+    }
+
+    static fromArray(arr) {
+        // Return a Dataframe from an array of objects.
+        if (arr instanceof Array) {
+            let cols = _getUniqueObjectProperties(arr);
+            if (cols.length > 0) {
+                return new DataFrame(arr, cols);
+            }
+        }
+        throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
 
     select(...fields) {
