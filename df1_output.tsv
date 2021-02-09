@@ -1,5 +1,5 @@
-id	name	age
-1	jonathan	34
-2	domna	33
-3	jeremy	29
-1	testicle	69
+id	name	age	newCol
+1	jonathan	34	2021-02-09T21:53:44.040Z
+2	domna	33	2021-02-09T21:53:44.040Z
+3	jeremy	29	2021-02-09T21:53:44.040Z
+1	testicle	69	2021-02-09T21:53:44.040Z

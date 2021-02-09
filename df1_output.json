@@ -1,1 +1,1 @@
-[{"id":1,"name":"jonathan","age":34},{"id":2,"name":"domna","age":33},{"id":3,"name":"jeremy","age":29},{"id":1,"name":"testicle","age":69}]
+[{"id":1,"name":"jonathan","age":34,"newCol":"2021-02-09T21:53:44.040Z"},{"id":2,"name":"domna","age":33,"newCol":"2021-02-09T21:53:44.040Z"},{"id":3,"name":"jeremy","age":29,"newCol":"2021-02-09T21:53:44.040Z"},{"id":1,"name":"testicle","age":69,"newCol":"2021-02-09T21:53:44.040Z"}]

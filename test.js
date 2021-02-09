@@ -66,14 +66,17 @@ async function test() {
 
     console.log("df1");
     df1.head();
-    console.log("df1.withColumn()");
-    // df1.withColumn("newCol", 1 + 2);
-    // df1.withColumn("newCol", df1.col("id") + df1.col("age"));
-    df1.withColumn("newCol", df1.col("id"));
 
     console.log("df2");
     df2.head();
     // df3.head();
+
+    console.log("df1.withColumn()");
+    // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
+    df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
+    // df1 = df1.withColumn("newCol", () => 1 + 2);
+    // df1 = df1.withColumn("newCol", () => new Date());
+    df1.head();
 
     console.log("df1 for...of iteration");
     for (let row of df1) {
@@ -83,7 +86,7 @@ async function test() {
     // joins
     console.log('cross join');
     // (df1.crossJoin(df2, (l, r) => l.id == r.id)).head(); // Error - number of arguments
-    // (df1.crossJoin(df2)).head(); // Cross join
+    // df1.crossJoin(df2).head(); // Cross join
 
     console.log('inner join');
     // (df1.innerJoin(df2, (l, r) => l.id == r.id, false)).head(); // Error - number of arguments

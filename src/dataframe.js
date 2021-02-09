@@ -41,30 +41,11 @@ export class DataFrame {
         throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
 
-    col(column) {
-        console.log(`.col(${column})`);
-        if (this.columns.includes(column)) {
-            console.log(`col ${column} exists`);
-            let fn = function getCol(row) {return row[column]}
-            return fn;
-        }
-        throw Error(`Column '${column}' does not exist in Dataframe`);
-    }
-
-    _evalDataframeExpression(expr) {
-        let evaldExpr = eval(expr);
-        let fn = function evalExpr(row) {evaldExpr};
-        return fn;
-    }
-
     withColumn(col, expr) {
-        // Define a new column to a Dataframe
-        // Check that `col` is a string that does not start with a number
-        let rowFn = this._evalDataframeExpression(expr);
-        for (let row of this) {
-            console.log(row);
-            console.log(rowFn(row));
-        }
+        // Returns a new Dataframe with a new column definition.
+        // Check that `col` is a string that does not start with a number.
+        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
+        return new DataFrame(newRows, this.columns.concat([col]));
     }
 
     select(...fields) {
