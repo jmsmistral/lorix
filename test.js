@@ -35,15 +35,15 @@ async function test() {
     //     {},
     //     {}
     // ]; // Error
-    let dataArr = [
-        {"col1": "valr1c1", "col2": "valr1c2"},
-        {"col1": "valr2c1", "col2": "valr2c2"},
-        {"col1": "valr3c1", "col2": "valr3c2"}
-    ];
+    // let dataArr = [
+    //     {"col1": "valr1c1", "col2": "valr1c2"},
+    //     {"col1": "valr2c1", "col2": "valr2c2"},
+    //     {"col1": "valr3c1", "col2": "valr3c2"}
+    // ];
 
-    let df0 = loris.DataFrame.fromArray(dataArr);
-    console.log("df0");
-    df0.head();
+    // let df0 = loris.DataFrame.fromArray(dataArr);
+    // console.log("df0");
+    // df0.head();
 
     // loading data data
     let df1 = await loris.readCsv('test.csv');
@@ -66,6 +66,11 @@ async function test() {
 
     console.log("df1");
     df1.head();
+    console.log("df1.withColumn()");
+    // df1.withColumn("newCol", 1 + 2);
+    // df1.withColumn("newCol", df1.col("id") + df1.col("age"));
+    df1.withColumn("newCol", df1.col("id"));
+
     console.log("df2");
     df2.head();
     // df3.head();
