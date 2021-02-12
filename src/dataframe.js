@@ -1,15 +1,21 @@
-import lodash from 'lodash';
+import lodash from "lodash";
 
 import {
     _crossJoin,
     _innerJoin,
     _leftJoin,
     _rightJoin
-} from './joins.js';
+} from "./joins.js";
 
 import {
+    GroupBy
+} from "./groups.js"
+
+import {
+    DummyDataFrame,
     _getUniqueObjectProperties,
-} from './utils.js';
+    _isValidColumnName
+} from "./utils.js";
 
 
 
@@ -41,11 +47,8 @@ export class DataFrame {
         throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
 
-    withColumn(col, expr) {
-        // Returns a new Dataframe with a new column definition.
-        // Check that `col` is a string that does not start with a number.
-        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
-        return new DataFrame(newRows, this.columns.concat([col]));
+    head() {
+        console.table(this.rows, this.columns);
     }
 
     select(...fields) {
@@ -114,7 +117,34 @@ export class DataFrame {
         return _rightJoin(this, df, on, leftOn, rightOn);
     }
 
-    head() {
-        console.table(this.rows, this.columns);
+    withColumn(col, expr) {
+        // Returns a new Dataframe with a new column definition.
+        // Note: if a reference is made to a non-existent column
+        // the result will be undefined.
+        // Check that `col` is a string that does not start with a number.
+        if (!_isValidColumnName(col)) {
+            throw Error(`Column name "${col}" is not valid.`);
+        }
+        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
+        return new DataFrame(newRows, this.columns.concat([col]));
     }
+
+    groupBy(cols) {
+        // Returns a nested Map with the
+        let group = new GroupBy(this, cols);
+        return group.groups;
+    }
+
+    orderBy(cols, order) {
+        // Returns a new Dataframe with rows ordered by columns
+        // defined in the `cols` array. These can be "asc" or "desc",
+        // as defined for each corresponding element in the `order`
+        // array.
+        // e.g. df.orderBy(["col1", "col2"], ["asc", "desc"])
+        if (!(cols instanceof Array) || cols.length < 1) {
+            throw Error("orderBy requires an array of at least one column, and an optional array defining the order.");
+        }
+        return new DataFrame(lodash.orderBy(this.rows, cols, order || []), this.columns);
+    }
+
 }

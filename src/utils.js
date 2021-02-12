@@ -49,9 +49,23 @@ export class DummyDataFrame {
     }
 }
 
+export function _isColumnArrayInDataframe(dfCols, groupByCols) {
+    if (groupByCols.length < 1) return false;
+    if (lodash.difference(groupByCols, dfCols).length == 0) {
+        return true
+    }
+    return false;
+}
 
 export function _isString(val) {
     return Object.prototype.toString.call(val) === "[object String]";
+}
+
+export function _isValidColumnName(col) {
+    if (_isString(col) && (/[a-zA-Z_]/).test(col[0])) {
+        return true;
+    }
+    return false;
 }
 
 export function _getUniqueObjectProperties(arr) {

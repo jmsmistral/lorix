@@ -73,10 +73,23 @@ async function test() {
 
     console.log("df1.withColumn()");
     // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
-    df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
+    // df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
     // df1 = df1.withColumn("newCol", () => 1 + 2);
     // df1 = df1.withColumn("newCol", () => new Date());
-    df1.head();
+    // df1 = df1.withColumn("newCol", (row) => row["somerandomprop"]); // Results in column with undefined values
+    // df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column name
+    // df1.head();
+    df1 = df1.withColumn("newCol", () => 1);
+
+    console.log("df1.groupBy()");
+    console.log(df1.groupBy(["id", "age"]));
+
+
+    console.log("df1.orderBy()");
+    // df1.orderBy(["age"]).head();
+    // df1.orderBy(["id", "age"], ["asc", "desc"]).head();
+    // df1.orderBy("id").head(); // Error - need an array of columns
+
 
     console.log("df1 for...of iteration");
     for (let row of df1) {

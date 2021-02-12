@@ -1,16 +1,16 @@
-import fs from 'fs';
+import fs from "fs";
 import path from "path";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
-import d3Dsv from 'd3-dsv';
+import d3Dsv from "d3-dsv";
 
-import { DataFrame } from './dataframe.js';
-import { _isString } from './utils.js';
+import { DataFrame } from "./dataframe.js";
+import { _isString } from "./utils.js";
 
 
 function readFile(filePath) {
     return new Promise((resolve, reject) => {
-        fs.readFile(filePath, 'utf8', (err, data) => {
+        fs.readFile(filePath, "utf8", (err, data) => {
             // TODO provide descriptive error messages
             if (err) {
                 reject(err);
