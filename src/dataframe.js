@@ -8,11 +8,10 @@ import {
 } from "./joins.js";
 
 import {
-    GroupBy
+    groupByAggregation
 } from "./groups.js"
 
 import {
-    DummyDataFrame,
     _getUniqueObjectProperties,
     _isValidColumnName
 } from "./utils.js";
@@ -129,10 +128,10 @@ export class DataFrame {
         return new DataFrame(newRows, this.columns.concat([col]));
     }
 
-    groupBy(cols) {
-        // Returns a nested Map with the
-        let group = new GroupBy(this, cols);
-        return group.groups;
+    groupBy(cols, agg) {
+        // Returns a GroupBy object
+        // return (new GroupBy(this, cols)).groups;
+        return groupByAggregation(this, cols, agg)
     }
 
     orderBy(cols, order) {

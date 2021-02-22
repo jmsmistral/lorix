@@ -82,7 +82,8 @@ async function test() {
     df1 = df1.withColumn("newCol", () => 1);
 
     console.log("df1.groupBy()");
-    console.log(df1.groupBy(["id", "age"]));
+    // console.log(df1.groupBy(["id", "age"]));
+    df1.groupBy(["id", "age"], {"newCol": "sum"});
 
 
     console.log("df1.orderBy()");
