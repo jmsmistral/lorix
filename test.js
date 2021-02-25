@@ -77,13 +77,27 @@ async function test() {
     // df1 = df1.withColumn("newCol", () => 1 + 2);
     // df1 = df1.withColumn("newCol", () => new Date());
     // df1 = df1.withColumn("newCol", (row) => row["somerandomprop"]); // Results in column with undefined values
-    // df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column name
+    // df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column reference
     // df1.head();
-    df1 = df1.withColumn("newCol", () => 1);
+    df1 = (
+        df1
+        .withColumn("newCol", () => 1)
+        .withColumn("newCol2", () => 2)
+    )
 
     console.log("df1.groupBy()");
     // console.log(df1.groupBy(["id", "age"]));
-    df1.groupBy(["id", "age"], {"newCol": "sum"});
+    // df1.groupBy(["id", "age"], {"newCol": "sum"});
+    // df1.groupBy(["id", "age"], {"newCol": "mean"});
+    // df1.groupBy(["id", "age"], {"newCol": "count"});
+    df1.groupBy(
+        ["id", "age"],
+        {
+            "newCol": ["sum", "mean", "count"],
+            "newCol2": "sum"
+        }
+    ).head();
+    // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
 
 
     console.log("df1.orderBy()");

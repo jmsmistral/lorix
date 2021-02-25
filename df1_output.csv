@@ -1,8 +1,8 @@
-id,name,age,newCol
-1,jonathan,34,1
-2,domna,34,1
-2,tony,61,1
-2,margaret,61,1
-3,jeremy,29,1
-1,testicle,2,1
-1,testiculae,2,1
+id,name,age,newCol,newCol2
+1,jonathan,34,1,2
+2,domna,34,1,2
+2,tony,61,1,2
+2,margaret,61,1,2
+3,jeremy,29,1,2
+1,testicle,2,1,2
+1,testiculae,2,1,2

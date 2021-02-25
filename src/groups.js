@@ -12,29 +12,38 @@ function _generateGroupByFunctions(cols) {
     return groupByFunctions;
 }
 
-function _flattenAggMap(tree, level, groupByCols, colName) {
-    // const m = new Map();
-    // let o = {};
-    for (const [key, value] of tree) {
-        if (value instanceof Map) {
-            return _flattenAggMap(value, level + 1, groupByCols, colName);
-            // for (const [key2, value2] of _flattenAggMap(value)) {
-            //     m.set(`${key}${sep}${key2}`, value2);
-            // }
-        } else {
-            // m.set(key, value);
-            o[key] = value;
-        }
+
+function _flattenAggMap(groups, groupByCols, aggColName, p = {}) {
+    return Array.from(groups, ([key, value]) =>
+        value instanceof Map
+        ? _flattenAggMap(value, groupByCols.slice(1), aggColName, Object.assign({}, { ...p, [groupByCols[0]]: key } ))
+        : Object.assign({}, { ...p, [groupByCols[0]]: key, [aggColName] : value })
+    ).flat();
+}
+
+function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
+    let map;
+    let aggColumnName = aggCol + "_" + type;
+    if (type == "sum") {
+        map = d3Array.rollup(df.rows, v => d3Array.sum(v, d => d[aggCol]), ...groupByFunctions);
     }
-    return m;
+    if (type == "mean") {
+        map = d3Array.rollup(df.rows, v => d3Array.mean(v, d => d[aggCol]), ...groupByFunctions);
+    }
+    if (type == "count") {
+        map = d3Array.rollup(df.rows, v => v.length, ...groupByFunctions);
+    }
+
+    return new DataFrame(_flattenAggMap(map, groupByCols, aggColumnName), groupByCols.concat([aggColumnName]));
 }
 
 
 export function groupByAggregation(df, groupByCols, groupByAggs) {
     // Retuns either
     // Check that columns exist in Dataframe
-    if (!(_isColumnArrayInDataframe(df.columns, groupByCols))) {
-        throw Error(`Invalid columns provided to groupBy '${groupByCols}'`);
+    let aggCols = Object.getOwnPropertyNames(groupByAggs);
+    if (!(_isColumnArrayInDataframe(df.columns, groupByCols.concat(aggCols)))) {
+        throw Error(`Invalid columns provided to groupBy '${groupByCols.concat(aggCols)}'`);
     }
 
     // If no aggregation map is passed, return the group Map
@@ -43,61 +52,23 @@ export function groupByAggregation(df, groupByCols, groupByAggs) {
         return d3Array.group(df.rows, ...groupByFunctions);
     }
 
-    console.log(groupByAggs);
     let dfs = [];
     for (let [k, v] of Object.entries(groupByAggs)) {
-        console.log(k, v);
-        if (v == "sum") {
-            console.log(d3Array.rollup(df.rows, v => d3Array.sum(v, d => d[k]), ...groupByFunctions));
+        // Check if value is list of aggregations for the
+        // given column, or a single one.
+        if (v instanceof Array) {
+            for (let agg of v) {
+                dfs.push(_aggregate(agg, df, groupByFunctions, groupByCols, k));
+            }
+        } else {
+            dfs.push(_aggregate(v, df, groupByFunctions, groupByCols, k));
         }
-
     }
+
+    // Join Dataframes in dfs
+    if (dfs.length > 1) {
+        return dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
+    }
+
+    return dfs[0];
 }
-
-
-
-
-// export class GroupBy {
-//     constructor(df, columns) {
-//         this.parentDataframe = df;
-//         this.groupByColumns = this._validateGroupByColumns(df.columns, columns);
-//         this.groupByFunctions = this._generateGroupByFunctions();
-//         this.groups = this._generateGroups();
-//         this.numGroups = this.groupByColumns.length;
-//         // console.log(this.numGroups);
-//         // console.log(this.groups);
-//         // console.log(this.groups.size);
-//         console.log(this.groups.keys());
-//         console.log(this.groups.get(1).keys());
-//     }
-
-//     _validateGroupByColumns(dfCols, groupByCols) {
-//         if (_isColumnArrayInDataframe(dfCols, groupByCols)) {
-//             return groupByCols;
-//         }
-//         throw Error("Invalid columns provided in groupBy");
-//     }
-
-//     _generateGroupByFunctions() {
-//         let groupByFunctions = [];
-//         for (let col of this.groupByColumns)
-//             groupByFunctions.push((g) => g[col]);
-//         return groupByFunctions;
-//     }
-
-//     _generateGroups() {
-//         return d3Array.group(this.parentDataframe.rows, ...this.groupByFunctions);
-//     }
-
-//     agg(aggregations) {
-//         // Returns a Dataframe with the aggregations performed
-//         // on `this.groups` based on the definition defined
-//         // in the `aggregations` map. The available aggregations
-//         // are "sum", "count", "mean", "median"
-//         // e.g. aggregations = {
-//         //     "colA": "sum",
-//         //     "colB": "count"
-//         // }
-//     }
-
-// }
