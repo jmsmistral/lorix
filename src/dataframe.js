@@ -8,7 +8,8 @@ import {
 } from "./joins.js";
 
 import {
-    groupByAggregation
+    groupAggregation,
+    groupSortAggregation
 } from "./groups.js"
 
 import {
@@ -131,7 +132,7 @@ export class DataFrame {
     groupBy(cols, agg) {
         // Returns a GroupBy object
         // return (new GroupBy(this, cols)).groups;
-        return groupByAggregation(this, cols, agg)
+        return groupAggregation(this, cols, agg);
     }
 
     orderBy(cols, order) {
@@ -144,6 +145,22 @@ export class DataFrame {
             throw Error("orderBy requires an array of at least one column, and an optional array defining the order.");
         }
         return new DataFrame(lodash.orderBy(this.rows, cols, order || []), this.columns);
+    }
+
+    window(groupByCols, orderByCols, agg) {
+        /**
+         * @output
+         * Dataframe with new columns defined as the result
+         * of the aggregations from the agg object applied to each
+         * group of rows defined by `groupByCols` and optionally
+         * sorted as defined by `orderByCols`.
+         * Note: the window function needs to return a single value when
+         * called for each group.
+         *
+         * @inputs
+         *
+         */
+        return groupSortAggregation(this, groupByCols, orderByCols || [], agg);
     }
 
 }

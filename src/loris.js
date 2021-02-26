@@ -7,6 +7,9 @@ import {
     writeDsv,
     writeJson
 } from "./io.js";
+import {
+    median
+} from "./groups.js";
 import { DataFrame } from "./dataframe.js";
 
 
@@ -20,5 +23,6 @@ export default {
     writeDsv: writeDsv,
     writeDsv: writeDsv,
     writeJson: writeJson,
+    median: median,
     DataFrame: DataFrame
 };

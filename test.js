@@ -99,6 +99,14 @@ async function test() {
     ).head();
     // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
 
+    console.log("df1.window()");
+    console.log(df1.window(
+        ["id"],
+        [["age"]],
+        {
+            "median_test": loris.median("age")
+        }
+    ));
 
     console.log("df1.orderBy()");
     // df1.orderBy(["age"]).head();
