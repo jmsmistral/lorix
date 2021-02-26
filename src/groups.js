@@ -39,7 +39,26 @@ function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
 
 
 export function groupByAggregation(df, groupByCols, groupByAggs) {
-    // Retuns either
+    /**
+     * @output:
+     * Retuns either:
+     * - A new Dataframe object with the results of the aggregations
+     *   defined in `groupByAggs` for each distinct group of the list
+     *   of columns in `groupByCols`.
+     * - A nested Map object, if no aggregation is provided through
+     *   `groupByAggs`, with the values of each `groupByCols` column
+     *   as the keys at each level of the Map.
+     *
+     * @input:
+     * - df: Dataframe on which the groupBy will be executed.
+     * - groupByCols: Array of strings representing columns to group by.
+     * - groupByAggs: Object of column-to-aggregation(s) mappings that define
+     * the aggregation(s) to perform for each column, across each group.
+     * A column can have one or more aggregations defined, and this is
+     * passed as either a string or an array of strings specifying the
+     * aggregations. e.g. {"colA": "sum", "colB": ["sum", "count"]}.
+     */
+
     // Check that columns exist in Dataframe
     let aggCols = Object.getOwnPropertyNames(groupByAggs);
     if (!(_isColumnArrayInDataframe(df.columns, groupByCols.concat(aggCols)))) {
@@ -65,7 +84,7 @@ export function groupByAggregation(df, groupByCols, groupByAggs) {
         }
     }
 
-    // Join Dataframes in dfs
+    // Join resultant Dataframes in dfs
     if (dfs.length > 1) {
         return dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
     }
