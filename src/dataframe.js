@@ -47,6 +47,10 @@ export class DataFrame {
         throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
 
+    toArray() {
+        return this.rows;
+    }
+
     head(n=10) {
         if (n > 0) {
             console.table(this.rows.slice(0, n), this.columns);

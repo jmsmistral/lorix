@@ -71,6 +71,10 @@ async function test() {
     df2.head();
     // df3.head();
 
+    console.log(df1.columns);
+    console.log([...df1]);
+    console.log(df1.toArray());
+
     console.log("df1.withColumn()");
     // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
     // df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
