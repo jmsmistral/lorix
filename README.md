@@ -121,4 +121,5 @@ df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 # License
 
 GNU AFFERO GENERAL PUBLIC LICENSE
+
 See LICENSE file for details.
