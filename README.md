@@ -113,9 +113,9 @@ let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);  // Equivalent 
 let df = df1.innerJoin(df2, (l, r) => l.colA == r.colB);
 let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
 
-df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
+let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
 
-df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
+let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 ```
 
 # License
