@@ -31,6 +31,12 @@ function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
     if (type == "mean") {
         map = d3Array.rollup(df.rows, v => d3Array.mean(v, d => d[aggCol]), ...groupByFunctions);
     }
+    if (type == "min") {
+        map = d3Array.rollup(df.rows, v => d3Array.min(v, d => d[aggCol]), ...groupByFunctions);
+    }
+    if (type == "max") {
+        map = d3Array.rollup(df.rows, v => d3Array.max(v, d => d[aggCol]), ...groupByFunctions);
+    }
     if (type == "count") {
         map = d3Array.rollup(df.rows, v => v.length, ...groupByFunctions);
     }
@@ -104,8 +110,28 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
 
 
 // WINDOW FUNCTIONS
+export function min(col) {
+    return (v => d3Array.min(v, d => d[col]));
+}
+
+export function max(col) {
+    return (v => d3Array.max(v, d => d[col]));
+}
+
 export function median(col) {
     return (v => d3Array.median(v, d => d[col]));
+}
+
+export function quantile(col, p = 0.5) {
+    return (v => d3Array.quantile(v, p, d => d[col]));
+}
+
+export function variance(col) {
+    return (v => d3Array.variance(v, d => d[col]));
+}
+
+export function stdev(col) {
+    return (v => d3Array.deviation(v, d => d[col]));
 }
 
 function _windowFlattenAggMap(groups, groupByCols, aggColName, p = {}) {
@@ -135,6 +161,7 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
      * @input
      * - df: Dataframe on which the groupBy will be executed.
      * - groupByCols: Array of strings representing columns to group by.
+     * - orderByCols: Array specifying the order columns and optionally another array specifying the order.
      * - groupByAggs: Object of column-to-aggregation(s) mappings that define
      * the aggregation(s) to perform for each column, across each group.
      * A column can have one or more aggregations defined, and this is

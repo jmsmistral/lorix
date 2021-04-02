@@ -8,7 +8,12 @@ import {
     writeJson
 } from "./io.js";
 import {
-    median
+    median,
+    quantile,
+    variance,
+    stdev,
+    min,
+    max
 } from "./groups.js";
 import { DataFrame } from "./dataframe.js";
 
@@ -29,6 +34,11 @@ export default {
 
     // Window function aggregate types
     median: median,
+    quantile: quantile,
+    variance: variance,
+    stdev: stdev,
+    min: min,
+    max: max,
 
     // DataFrame class
     DataFrame: DataFrame

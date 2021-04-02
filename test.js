@@ -71,9 +71,10 @@ async function test() {
     df2.head();
     // df3.head();
 
-    console.log(df1.columns);
-    console.log([...df1]);
-    console.log(df1.toArray());
+    // array iteration
+    // console.log(df1.columns);
+    // console.log([...df1]);
+    // console.log(df1.toArray());
 
     console.log("df1.withColumn()");
     // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
@@ -94,23 +95,30 @@ async function test() {
     // df1.groupBy(["id", "age"], {"newCol": "sum"});
     // df1.groupBy(["id", "age"], {"newCol": "mean"});
     // df1.groupBy(["id", "age"], {"newCol": "count"});
-    df1.groupBy(
-        ["id", "age"],
-        {
-            "newCol": ["sum", "mean", "count"],
-            "newCol2": "sum"
-        }
-    ).head();
+    // df1.groupBy(
+    //     ["id", "age"],
+    //     {
+    //         "newCol": ["sum", "mean", "count"],
+    //         "newCol2": "sum"
+    //     }
+    // ).head();
     // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
 
     console.log("df1.window()");
-    console.log(df1.window(
+    df1.window(
         ["id"],
-        [["age"]],
+        [["age"], ["desc"]],
         {
-            "median_test": loris.median("age")
+            "min": loris.min("age"),
+            "max": loris.max("age"),
+            "median": loris.median("age"),
+            "quantile": loris.quantile("age"), // Default is 0.5 (median)
+            "first_qrtl": loris.quantile("age", 0.25),  // First quartile
+            "third_qrtl": loris.quantile("age", 0.75),  // Third quartile
+            "variance": loris.variance("age"),
+            "stdev": loris.stdev("age")
         }
-    ));
+    ).head();
 
     console.log("df1.orderBy()");
     // df1.orderBy(["age"]).head();
@@ -119,9 +127,9 @@ async function test() {
 
 
     console.log("df1 for...of iteration");
-    for (let row of df1) {
-        console.log(row);
-    }
+    // for (let row of df1) {
+    //     console.log(row);
+    // }
 
     // joins
     console.log('cross join');
