@@ -31,7 +31,7 @@ const dataArray = [
 let df4 = loris.DataFrame.fromArray(dataArray);
 ```
 
-### Print top **`n`** rows
+### Print top _`n`_ rows
 
 ```javascript
 df1.head(); // Print the top 10 rows by default
@@ -44,6 +44,14 @@ df1.head(15); // Define the number of rows to display
 for (let row of df1) {
     console.log(row);
 }
+
+let df = [...df1];
+```
+
+## Export DataFrame rows as object array
+
+```javascript
+df1.toArray();
 ```
 
 ### Select columns
@@ -86,7 +94,7 @@ The `.orderBy()` function of a DataFrame sorts rows according to the array of co
 ```javascript
 let df = df1.orderBy(["colA"]);
 let df = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
-let df = df1.orderBy("id").head(); // Error - requires an array of columns
+let df = df1.orderBy("id"); // Error - requires an array of columns
 ```
 
 ### Aggregating with groupBy
@@ -108,8 +116,29 @@ let df = df1.groupBy(
 
 ### Aggregating with window functions
 
-```
-<in development>
+Use the `.window()` function of a DataFrame to aggregate using window functions.
+- The first parameter is an array of columns that will be grouped.
+- The second parameter is an array of arrays specifying the order of rows within each group:
+  - The first array specifies the columns to sort (by default in ascending order)
+  - The second is optional, and specifies the order for each sort column
+- The final parameter is a mapping of new column name to the window function. All window functions
+take the name of the column they operate over, and any other optional parameters.
+
+```javascript
+let df = df1.window(
+    ["colA"],
+    [["colB"], ["desc"]],
+    {
+        "min": loris.min("colC"),
+        "max": loris.max("colC"),
+        "median": loris.median("colC"),
+        "quantile": loris.quantile("colC"),  // Default is 0.5 (median)
+        "first_qrtl": loris.quantile("colC", 0.25),  // First quartile
+        "third_qrtl": loris.quantile("colC", 0.75),  // Third quartile
+        "variance": loris.variance("colC"),
+        "stdev": loris.stdev("colC")
+    }
+);
 ```
 
 
@@ -142,12 +171,6 @@ let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
 let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
 
 let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-```
-
-### Get DataFrame rows as object array
-
-```javascript
-df1.toArray();
 ```
 
 
