@@ -9,7 +9,7 @@ Loris is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 - Enables rapid data wrangling and exploration on Javascript
 - Load and export data to/from text files
 - Exposes a functional data-oriented API that operates over an array of objects
-- Function chaining to create encapsulated data transformations
+- Function chaining to encapsulate multiple data transformations in single blocks
 
 # Get Started
 
