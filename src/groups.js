@@ -192,10 +192,12 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
 
     // Sort rows
     if (orderByCols.length == 1) {
-        df = df.orderBy(orderByCols[0]);
+        df = df.orderBy([...groupByCols , ...orderByCols[0]]);
     }
     if (orderByCols.length == 2) {
-        df = df.orderBy(orderByCols[0], orderByCols[1]);
+        // Ensure that the groupBy columns are sorted in ascending order
+        const groupByOrder = groupByCols.map((col) => "asc");
+        df = df.orderBy([...groupByCols , ...orderByCols[0]], [...groupByOrder, ...orderByCols[1]]);
     }
 
     // If no aggregation map is passed, return the group Map
