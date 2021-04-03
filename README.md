@@ -40,6 +40,8 @@ df1.head(15); // Define the number of rows to display
 
 ### Iterate DataFrame rows like an object array
 
+The DataFrame class implements the iterator pattern to allow users to iterate through rows like an array. This also enables the use of the spread operator for example.
+
 ```javascript
 for (let row of df1) {
     console.log(row);
@@ -48,19 +50,25 @@ for (let row of df1) {
 let df = [...df1];
 ```
 
-## Export DataFrame rows as object array
+### Export DataFrame rows as object array
+
+Returns an array of object, where each object is a row mapping columns to values.
 
 ```javascript
-df1.toArray();
+let rowArray = df1.toArray();
 ```
 
 ### Select columns
+
+Returns a DataFrame with the specified columns.
 
 ```javascript
 let df = df1.select("colA", "colB");
 ```
 
 ### Drop columns
+
+Returns a DataFrame without the specified columns.
 
 ```javascript
 let df = df1.drop("colA");
@@ -69,17 +77,20 @@ let df = df1.drop("colA");
 ### Define new column
 
 Pass a function that returns an expression row represents a row object from the DataFrame, where column values can be accessed as below.
+
 ```javascript
 let df = df1.withColumn("newCol", (row) => row["colA"] + row["colB"]);
 ```
 
 Passing the row argument is not necessary if the expression doesn't use column values.
+
 ```javascript
 let df = df1.withColumn("newCol", () => 1 + 2);
 let df = df1.withColumn("newCol", () => new Date());
 ```
 
 Calls return a new DataFrame, so can be chained to define multiple columns in one block
+
 ```javascript
 let df = (
     df1
@@ -91,6 +102,7 @@ let df = (
 ### Sorting
 
 The `.orderBy()` function of a DataFrame sorts rows according to the array of columns specified, and optionally the order to sort these by (defaults to ascending order).
+
 ```javascript
 let df = df1.orderBy(["colA"]);
 let df = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
@@ -104,6 +116,7 @@ Use the `.groupBy()` function of a DataFrame as an analogue of SQL's GROUP BY to
 - The second parameter is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
 
 Output columns are named using the current name suffixed by the aggregation applied, e.g. **colC_sum**, **colC_mean**.
+
 ```javascript
 let df = df1.groupBy(
     ["colA", "colB"],
