@@ -1,4 +1,4 @@
-import lorix from '../lorix.js';
+import lorix from './lorix.js';
 
 
 // loading data data
