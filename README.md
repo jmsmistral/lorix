@@ -1,5 +1,7 @@
 # Lorix
 
+[![Actions Status](https://github.com/jmsmistral/lorix/workflows/Lorix%20Publish%20Workflow/badge.svg)](https://github.com/jmsmistral/lorix/actions)
+
 <img align="right" src=docs/images/lorix.png height="110px">
 
 Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and transforming data.
