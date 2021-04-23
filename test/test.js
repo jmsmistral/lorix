@@ -1,9 +1,9 @@
-import lorix from './lorix.js';
+import lorix from '../lorix.js';
 
 
 // loading data data
-let df1 = await lorix.readCsv('test.csv');
-let df2 = await lorix.readCsv('test2.csv');
+let df1 = await lorix.readCsv("./data/test.csv");
+let df2 = await lorix.readCsv('./data/test2.csv');
 // let df3 = await lorix.readDsv('test.psv'); // Error
 // let df3 = await lorix.readDsv('test.psv', ""); // Error
 // let df3 = await lorix.readDsv('test.psv', {}); // Error

@@ -1,1 +1,8 @@
 /node_modules
+
+# Ignore output files
+# generated through testing.
+*_output.csv
+*_output.tsv
+*_output.psv
+*_output.json
