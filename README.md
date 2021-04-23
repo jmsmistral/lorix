@@ -11,11 +11,21 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 - Exposes a functional data-oriented API that operates over an array of objects
 - Function chaining to encapsulate multiple data transformations in single blocks
 
+# Install
+
+npm
+
+```
+npm install lorix
+```
+
 # Get Started
 
 ### Create a DataFrame
 
 ```javascript
+import lorix from "lorix";
+
 let df1 = await lorix.readCsv("test.csv"); // Comma-separated file
 let df2 = await lorix.readTsv("test.tsv"); // Tab-separated file
 let df3 = await lorix.readDsv("test.psv", "|"); // User-specified delimiter
