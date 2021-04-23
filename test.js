@@ -105,6 +105,7 @@ async function test() {
     // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
 
     console.log("df1.window()");
+    df1.head();
     df1.window(
         ["id"],
         [["age"], ["desc"]],

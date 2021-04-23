@@ -207,8 +207,8 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
     }
 
     // Check that columns exist in Dataframe
-    if (!(_isColumnArrayInDataframe(df.columns, groupByCols))) {
-        throw Error(`Invalid columns provided to groupBy '${groupByCols}'`);
+    if (!(_isColumnArrayInDataframe(df.columns, [...groupByCols, ...orderByCols[0]]))) {
+        throw Error(`Invalid columns provided in group or order array '${[...groupByCols, ...orderByCols[0]]}'`);
     }
 
     let dfs = [];
@@ -230,7 +230,8 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
 
     // Join resultant Dataframes in dfs
     if (dfs.length > 1) {
-        return dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
+        const windowAggResults = dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
+        return df.leftJoin(windowAggResults, groupByCols);
     }
 
     return dfs[0];
