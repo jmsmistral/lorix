@@ -18,7 +18,7 @@ import {
 import { DataFrame } from "./dataframe.js";
 
 
-// loris library definition
+// lorix library definition
 export default {
     // Import data
     readCsv: readCsv,

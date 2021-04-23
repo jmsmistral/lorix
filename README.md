@@ -1,8 +1,8 @@
-# Loris
+# Lorix
 
-<img align="right" src=docs/images/loris.png height="110px">
+<img align="right" src=docs/images/lorix.png height="110px">
 
-Loris is a _simple_, _user-friendly_ Javascript DataFrame API for loading and transforming data.
+Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and transforming data.
 
 ### Features
 
@@ -16,9 +16,9 @@ Loris is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 ### Create a DataFrame
 
 ```javascript
-let df1 = await loris.readCsv("test.csv"); // Comma-separated file
-let df2 = await loris.readTsv("test.tsv"); // Tab-separated file
-let df3 = await loris.readDsv("test.psv", "|"); // User-specified delimiter
+let df1 = await lorix.readCsv("test.csv"); // Comma-separated file
+let df2 = await lorix.readTsv("test.tsv"); // Tab-separated file
+let df3 = await lorix.readDsv("test.psv", "|"); // User-specified delimiter
 
 // Array of objects
 // Note: All objects in the array need
@@ -28,7 +28,7 @@ const dataArray = [
     {"colA": 2, "colB": 3}
     {"colA": 3, "colB": 4}
 ];
-let df4 = loris.DataFrame.fromArray(dataArray);
+let df4 = lorix.DataFrame.fromArray(dataArray);
 ```
 
 ### Print top _`n`_ rows
@@ -142,14 +142,14 @@ let df = df1.window(
     ["colA"],
     [["colB"], ["desc"]],
     {
-        "min": loris.min("colC"),
-        "max": loris.max("colC"),
-        "median": loris.median("colC"),
-        "quantile": loris.quantile("colC"),  // Default is 0.5 (median)
-        "first_qrtl": loris.quantile("colC", 0.25),  // First quartile
-        "third_qrtl": loris.quantile("colC", 0.75),  // Third quartile
-        "variance": loris.variance("colC"),
-        "stdev": loris.stdev("colC")
+        "min": lorix.min("colC"),
+        "max": lorix.max("colC"),
+        "median": lorix.median("colC"),
+        "quantile": lorix.quantile("colC"),  // Default is 0.5 (median)
+        "first_qrtl": lorix.quantile("colC", 0.25),  // First quartile
+        "third_qrtl": lorix.quantile("colC", 0.75),  // Third quartile
+        "variance": lorix.variance("colC"),
+        "stdev": lorix.stdev("colC")
     }
 );
 ```
@@ -157,7 +157,7 @@ let df = df1.window(
 
 ### Joining DataFrames
 
-Two DataFrames can be joined in a number of ways. Loris provides functions that mirror SQL join types, and adds other types that appear in Spark:
+Two DataFrames can be joined in a number of ways. Lorix provides functions that mirror SQL join types, and adds other types that appear in Spark:
 - Cross Join
 - Inner Join
 - Left Join

@@ -4,15 +4,21 @@
   "description": "Javascript dataframe API",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jmsmistral/loris"
+    "url": "git+https://github.com/jmsmistral/lorix"
   },
-  "homepage": "https://github.com/jmsmistral/loris",
-  "main": "loris.js",
+  "homepage": "https://github.com/jmsmistral/lorix",
+  "main": "lorix.js",
   "type": "module",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha ./test/**/*.js"
   },
-  "keywords": ["dataframe", "dataset", "data", "analysis", "datascience"],
+  "keywords": [
+    "dataframe",
+    "dataset",
+    "data",
+    "analysis",
+    "datascience"
+  ],
   "author": "Jonathan Sacramento",
   "license": "AGPLv3",
   "dependencies": {

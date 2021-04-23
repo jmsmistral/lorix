@@ -1,13 +1,13 @@
-import loris from './src/loris.js';
+import lorix from './src/lorix.js';
 
 
 // loading data data
-let df1 = await loris.readCsv('test.csv');
-let df2 = await loris.readCsv('test2.csv');
-// let df3 = await loris.readDsv('test.psv'); // Error
-// let df3 = await loris.readDsv('test.psv', ""); // Error
-// let df3 = await loris.readDsv('test.psv', {}); // Error
-// let df3 = await loris.readDsv('test.psv', "|");
+let df1 = await lorix.readCsv('test.csv');
+let df2 = await lorix.readCsv('test2.csv');
+// let df3 = await lorix.readDsv('test.psv'); // Error
+// let df3 = await lorix.readDsv('test.psv', ""); // Error
+// let df3 = await lorix.readDsv('test.psv', {}); // Error
+// let df3 = await lorix.readDsv('test.psv', "|");
 
 // selecting columns
 // console.log(df);
@@ -66,14 +66,14 @@ df1.window(
     ["id"],
     [["age"], ["desc"]],
     {
-        "min": loris.min("age"),
-        "max": loris.max("age"),
-        "median": loris.median("age"),
-        "quantile": loris.quantile("age"), // Default is 0.5 (median)
-        "first_qrtl": loris.quantile("age", 0.25),  // First quartile
-        "third_qrtl": loris.quantile("age", 0.75),  // Third quartile
-        "variance": loris.variance("age"),
-        "stdev": loris.stdev("age")
+        "min": lorix.min("age"),
+        "max": lorix.max("age"),
+        "median": lorix.median("age"),
+        "quantile": lorix.quantile("age"), // Default is 0.5 (median)
+        "first_qrtl": lorix.quantile("age", 0.25),  // First quartile
+        "third_qrtl": lorix.quantile("age", 0.75),  // Third quartile
+        "variance": lorix.variance("age"),
+        "stdev": lorix.stdev("age")
     }
 ).head();
 
@@ -128,10 +128,10 @@ console.log('right join');
 //     console.log(err);
 // }
 
-await loris.writeTsv(df1, "df1_output.tsv");
-await loris.writeCsv(df1, "df1_output.csv");
-// await loris.writeDsv(df1, "df1_output.psv"); // Error
-// await loris.writeDsv(df1, "df1_output.psv", ""); // Error
-// await loris.writeDsv(df1, "df1_output.psv", {}); // Error
-await loris.writeDsv(df1, "df1_output.psv", "|");
-await loris.writeJson(df1, "df1_output.json");
+await lorix.writeTsv(df1, "df1_output.tsv");
+await lorix.writeCsv(df1, "df1_output.csv");
+// await lorix.writeDsv(df1, "df1_output.psv"); // Error
+// await lorix.writeDsv(df1, "df1_output.psv", ""); // Error
+// await lorix.writeDsv(df1, "df1_output.psv", {}); // Error
+await lorix.writeDsv(df1, "df1_output.psv", "|");
+await lorix.writeJson(df1, "df1_output.json");
