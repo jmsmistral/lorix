@@ -6,7 +6,7 @@ import {
     writeTsv,
     writeDsv,
     writeJson
-} from "./io.js";
+} from "./src/io.js";
 import {
     median,
     quantile,
@@ -14,8 +14,8 @@ import {
     stdev,
     min,
     max
-} from "./groups.js";
-import { DataFrame } from "./dataframe.js";
+} from "./src/groups.js";
+import { DataFrame } from "./src/dataframe.js";
 
 
 // lorix library definition
