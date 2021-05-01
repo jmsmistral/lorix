@@ -8,14 +8,18 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 
 ### Features
 
-- Enables rapid data wrangling and exploration on Javascript
+- Enables rapid data wrangling on Javascript
 - Load and export data to/from text files and object arrays
-- Exposes a functional data-oriented API that operates over an array of objects
+- Exposes a simple, functional data-oriented API that operates over an array of objects
 - Function chaining to encapsulate multiple data transformations in single blocks
 
-# Install
+# Why Lorix?
 
-npm
+I wanted a _simple_ way to wrangle data with Javascript for my own projects, instead of resorting to using pandas in Python.
+Rather than building something low-level from scratch, and optimizing for performance, I opted to design a DataFrame abstraction
+over existing libraries like _lodash_ and _d3_.
+
+# How to install
 
 ```
 npm install lorix
