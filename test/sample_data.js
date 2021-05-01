@@ -1,6 +1,6 @@
 import { DataFrame } from '../src/dataframe.js';
 
-export let very_small_dataframe = (
+export let verySmallDataFrame = (
     new DataFrame(
         [
             {'id': 1, 'name': 'billy'},

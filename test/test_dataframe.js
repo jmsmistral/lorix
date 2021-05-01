@@ -2,7 +2,7 @@ import chai from "chai";
 const { expect } = chai;
 
 import {
-    very_small_dataframe
+    verySmallDataFrame
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -25,7 +25,7 @@ describe("DataFrame class", () => {
         });
 
         it("Should create DataFrame with populated rows and columns properties when parameters are passed.", () => {
-            const df = very_small_dataframe;
+            const df = verySmallDataFrame;
             expect(df.rows.length).to.equal(3);
             expect(df.columns.length).to.equal(2);
         });
@@ -35,7 +35,7 @@ describe("DataFrame class", () => {
     describe("DataFrame iteration.", () => {
 
         it("Should allow iteration over DataFrame rows in a for...of loop", () => {
-            const df = very_small_dataframe;
+            const df = verySmallDataFrame;
             let rowChecker;
             for (const row of df) {
                 rowChecker = row;
@@ -49,7 +49,7 @@ describe("DataFrame class", () => {
     describe("DataFrame select()", function() {
 
         beforeEach(function() {
-            this.currentTest.df = very_small_dataframe;
+            this.currentTest.df = verySmallDataFrame;
         });
 
         it("Should throw an error if no columns are selected", function() {
@@ -75,7 +75,7 @@ describe("DataFrame class", () => {
     describe("DataFrame drop()", function() {
 
         beforeEach(function() {
-            this.currentTest.df = very_small_dataframe;
+            this.currentTest.df = verySmallDataFrame;
         });
 
         it("Should throw an error if no columns are dropped", function() {
@@ -94,6 +94,68 @@ describe("DataFrame class", () => {
                 expect(row).to.haveOwnProperty("id");
                 expect(row).not.to.haveOwnProperty("name");
             }
+        });
+
+    });
+
+    describe("DataFrame withColumn()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = verySmallDataFrame;
+        });
+
+        it("Should throw an error if column name is invalid", function() {
+            // Is not a string
+            expect(() => {this.test.df.withColumn(1, () => 1)}).to.throw();
+            expect(() => {this.test.df.withColumn(undefined, () => 1)}).to.throw();
+            expect(() => {this.test.df.withColumn(null, () => 1)}).to.throw();
+            // Starts with a number
+            expect(() => {this.test.df.withColumn("1newCol", () => 1)}).to.throw();
+            // Starts with punctuation other than underscore
+            ["-", "~", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")",
+             "[", "]", "+", "=", "{", "}", ":", ";", "'", "|", "\\", "/",
+             "<", ">", ",", ".", "?"].forEach((invalidChar) => {
+                expect(() => {this.test.df.withColumn(invalidChar + "newCol", () => 1)}).to.throw();
+            });
+        });
+
+        it("Should add a new column when a non-existing valid column name is specified", function() {
+            const df = this.test.df.withColumn("newCol", () => 1);
+            expect(df.columns.includes("newCol")).to.be.true;
+            for (let row of df) {
+                expect(row).to.haveOwnProperty("newCol");
+                expect(row["newCol"]).to.equal(1);
+            }
+        });
+
+        it("Should overwrite the values of a column when an existing column name is specified", function() {
+            const df = (
+                this.test.df
+                .withColumn("newCol", () => 1)
+                .withColumn("newCol", () => 2)
+            );
+            expect(df.columns.includes("newCol")).to.be.true;
+            for (let row of df) {
+                expect(row).to.haveOwnProperty("newCol");
+                expect(row["newCol"]).to.equal(2);
+            }
+        });
+
+        it("Should throw an error when a function is not passed as the column definition", function() {
+            expect(() => {this.test.df.withColumn("newCol", 1)}).to.throw();
+        });
+
+        it("Should allow for existing columns to be referenced in the column defintion", function() {
+            const existingCol = this.test.df.columns[0];  // Get the first column in test DataFrame
+            const df = this.test.df.withColumn("newCol", (row) => row[existingCol]);
+            expect(df.columns.includes("newCol")).to.be.true;
+            for (let row of df) {
+                expect(row).to.haveOwnProperty("newCol");
+                expect(row["newCol"]).to.equal(row[existingCol]);
+            }
+        });
+
+        it.skip("Should throw an error when referencing a non-existent column", function() {
         });
 
     });
