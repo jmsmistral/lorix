@@ -1,7 +1,11 @@
-import chai from 'chai';
+import chai from "chai";
 const { expect } = chai;
 
-import { DataFrame } from '../src/dataframe.js';
+import {
+    very_small_dataframe
+} from "./sample_data.js"
+
+import { DataFrame } from "../src/dataframe.js";
 
 
 describe("DataFrame class", () => {
@@ -21,13 +25,7 @@ describe("DataFrame class", () => {
         });
 
         it("Should create DataFrame with populated rows and columns properties when parameters are passed.", () => {
-            const rows = [
-                {'id': 1, 'name': 'billy'},
-                {'id': 2, 'name': 'jane'},
-                {'id': 3, 'name': 'roger'}
-            ];
-            const cols = ['id', 'name'];
-            const df = new DataFrame(rows, cols);
+            const df = very_small_dataframe;
             expect(df.rows.length).to.equal(3);
             expect(df.columns.length).to.equal(2);
         });
@@ -37,13 +35,7 @@ describe("DataFrame class", () => {
     describe("DataFrame iteration.", () => {
 
         it("Should allow iteration over DataFrame rows in a for...of loop", () => {
-            const rows = [
-                {'id': 1, 'name': 'billy'},
-                {'id': 2, 'name': 'jane'},
-                {'id': 3, 'name': 'roger'}
-            ];
-            const cols = ['id', 'name'];
-            const df = new  DataFrame(rows, cols);
+            const df = very_small_dataframe;
             let rowChecker;
             for (const row of df) {
                 rowChecker = row;
@@ -57,13 +49,7 @@ describe("DataFrame class", () => {
     describe("DataFrame select()", function() {
 
         beforeEach(function() {
-            const rows = [
-                {'id': 1, 'name': 'billy'},
-                {'id': 2, 'name': 'jane'},
-                {'id': 3, 'name': 'roger'}
-            ];
-            const cols = ['id', 'name'];
-            this.currentTest.df = new  DataFrame(rows, cols);
+            this.currentTest.df = very_small_dataframe;
         });
 
         it("Should throw an error if no columns are selected", function() {
@@ -89,13 +75,7 @@ describe("DataFrame class", () => {
     describe("DataFrame drop()", function() {
 
         beforeEach(function() {
-            const rows = [
-                {'id': 1, 'name': 'billy'},
-                {'id': 2, 'name': 'jane'},
-                {'id': 3, 'name': 'roger'}
-            ];
-            const cols = ['id', 'name'];
-            this.currentTest.df = new  DataFrame(rows, cols);
+            this.currentTest.df = very_small_dataframe;
         });
 
         it("Should throw an error if no columns are dropped", function() {
