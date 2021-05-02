@@ -155,7 +155,8 @@ describe("DataFrame class", () => {
             }
         });
 
-        it.skip("Should throw an error when referencing a non-existent column", function() {
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.withColumn("newCol", (row) => row["nonExistingColumn"])}).to.throw();
         });
 
     });

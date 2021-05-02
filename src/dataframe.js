@@ -106,8 +106,8 @@ export class DataFrame {
 
         // TODO: Check what existing columns are being referenced,
         // if any, and throw an error if at least one does not exist.
-        // let dummyDf = new DummyDataFrame(this.columns);
-        // expr(dummyDf.rows[0]);
+        let dummyDf = new DummyDataFrame(this.columns);
+        expr(dummyDf.rows[0]);
         // dummyDf.getAccessedColumns();
 
         let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));

@@ -74,7 +74,7 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
         console.log("leftOn and rightOn defined");
         return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
     }
-    throw Error("'leftOn' and 'rightOn' need to be arrays")
+    throw Error("'leftOn' and 'rightOn' need to be arrays");
 };
 
 export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {

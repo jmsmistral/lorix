@@ -1,13 +1,18 @@
 import lorix from './lorix.js';
 
+import { verySmallDataFrame } from './test/sample_data.js'
+
 
 // loading data data
-let df1 = await lorix.readCsv("./data/test.csv");
-let df2 = await lorix.readCsv('./data/test2.csv');
+// let df1 = await lorix.readCsv("./test/data/iris.csv");
+// let df2 = await lorix.readCsv('./data/test2.csv');
 // let df3 = await lorix.readDsv('test.psv'); // Error
 // let df3 = await lorix.readDsv('test.psv', ""); // Error
 // let df3 = await lorix.readDsv('test.psv', {}); // Error
 // let df3 = await lorix.readDsv('test.psv', "|");
+
+let df1 = verySmallDataFrame;
+let df2 = verySmallDataFrame;
 
 // selecting columns
 // console.log(df);
@@ -37,14 +42,18 @@ console.log("df1.withColumn()");
 // df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
 // df1 = df1.withColumn("newCol", () => 1 + 2);
 // df1 = df1.withColumn("newCol", () => new Date());
-// df1 = df1.withColumn("newCol", (row) => row["somerandomprop"]); // Results in column with undefined values
-// df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column reference
+// df1 = df1.withColumn("newCol", (row) => row["somerandomprop"]); // Error - reference to non-ex
+// df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column name
 // df1.head();
 df1 = (
     df1
+    // .withColumn("newCol", (row) => row["sepal_length"])
+    // .withColumn("newCol2", (row) => row["non_existing_col"])
     .withColumn("newCol", () => 1)
-    .withColumn("newCol2", () => 2)
+    .withColumn("newCol1", () => 2)
 )
+
+df1.head();
 
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));
@@ -61,21 +70,21 @@ console.log("df1.groupBy()");
 // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
 
 console.log("df1.window()");
-df1.head();
-df1.window(
-    ["id"],
-    [["age"], ["desc"]],
-    {
-        "min": lorix.min("age"),
-        "max": lorix.max("age"),
-        "median": lorix.median("age"),
-        "quantile": lorix.quantile("age"), // Default is 0.5 (median)
-        "first_qrtl": lorix.quantile("age", 0.25),  // First quartile
-        "third_qrtl": lorix.quantile("age", 0.75),  // Third quartile
-        "variance": lorix.variance("age"),
-        "stdev": lorix.stdev("age")
-    }
-).head();
+// df1.head();
+// df1.window(
+//     ["id"],
+//     [["age"], ["desc"]],
+//     {
+//         "min": lorix.min("age"),
+//         "max": lorix.max("age"),
+//         "median": lorix.median("age"),
+//         "quantile": lorix.quantile("age"), // Default is 0.5 (median)
+//         "first_qrtl": lorix.quantile("age", 0.25),  // First quartile
+//         "third_qrtl": lorix.quantile("age", 0.75),  // Third quartile
+//         "variance": lorix.variance("age"),
+//         "stdev": lorix.stdev("age")
+//     }
+// ).head();
 
 console.log("df1.orderBy()");
 // df1.orderBy(["age"]).head();
@@ -94,6 +103,11 @@ console.log('cross join');
 // df1.crossJoin(df2).head(); // Cross join
 
 console.log('inner join');
+// (df1.innerJoin(df2, (l, r) => l.id == r.id)).head();
+// (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.name == r.name))).head();
+// (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Error - reference to non-existent column
+
+
 // (df1.innerJoin(df2, (l, r) => l.id == r.id, false)).head(); // Error - number of arguments
 // (df1.innerJoin(df2, "id")).head(); // Error - argument types
 // (df1.innerJoin(df2, (l, r) => l.id == r.id)).head();  // Non-indexed inner join
@@ -128,10 +142,10 @@ console.log('right join');
 //     console.log(err);
 // }
 
-await lorix.writeTsv(df1, "df1_output.tsv");
-await lorix.writeCsv(df1, "df1_output.csv");
+// await lorix.writeTsv(df1, "df1_output.tsv");
+// await lorix.writeCsv(df1, "df1_output.csv");
 // await lorix.writeDsv(df1, "df1_output.psv"); // Error
 // await lorix.writeDsv(df1, "df1_output.psv", ""); // Error
 // await lorix.writeDsv(df1, "df1_output.psv", {}); // Error
-await lorix.writeDsv(df1, "df1_output.psv", "|");
-await lorix.writeJson(df1, "df1_output.json");
+// await lorix.writeDsv(df1, "df1_output.psv", "|");
+// await lorix.writeJson(df1, "df1_output.json");
