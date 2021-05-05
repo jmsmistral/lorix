@@ -12,8 +12,8 @@ function _cleanCommonCols(leftRow, rightRow, commonCols) {
         cleanLeft[col + "_x"] = cleanLeft[col];
         cleanRight[col + "_y"] = cleanRight[col];
         delete cleanLeft[col], delete cleanRight[col];
-        return {...cleanLeft, ...cleanRight};
     }
+    return {...cleanLeft, ...cleanRight};
 }
 
 function _getRightJoinColumns(leftDf, rightDf, on) {
@@ -41,17 +41,23 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
 }
 
 export function _crossJoin(df1, df2) {
-    let commonCols = df1.columns.filter(col => df2.columns.includes(col));
-    let rowArray = d3Array.cross(df1, df2, (left, right) => {
-        if (commonCols.length) return _cleanCommonCols(left, right, commonCols);
-        return {...left, ...right};
-    }).filter(Boolean);
-    let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
-    return new DataFrame(rowArray, outputColumns);
+    if (df2 instanceof DataFrame) {
+        let commonCols = df1.columns.filter(col => df2.columns.includes(col));
+        let rowArray = d3Array.cross(df1, df2, (left, right) => {
+            if (commonCols.length) return _cleanCommonCols(left, right, commonCols);
+            return {...left, ...right};
+        }).filter(Boolean); // Used to filter-out any undefined
+        let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
+        return new DataFrame(rowArray, outputColumns);
+    }
+    throw Error("Cross join expects another DataFrame");
 }
 
 export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     console.log("_innerJoin()");
+    if (!(rightDf instanceof DataFrame)) {
+        throw Error("Inner join expects another DataFrame");
+    }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
@@ -79,6 +85,10 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
 
 export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     console.log("_leftJoin()");
+    if (!(rightDf instanceof DataFrame)) {
+        throw Error("Left join expects another DataFrame");
+    }
+
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
@@ -106,6 +116,10 @@ export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
 
 export function _rightJoin(leftDf, rightDf, on, leftOn, rightOn) {
     console.log("_rightJoin()");
+    if (!(rightDf instanceof DataFrame)) {
+        throw Error("Right join expects another DataFrame");
+    }
+
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
