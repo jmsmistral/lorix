@@ -41,12 +41,12 @@ let df2 = verySmallDataFrame;
 
 console.log("df1");
 df1.head();
-df1.slice(1).head();
-df1.slice(0, 0).head();
-console.log(df1.slice(-1).toArray()[0]["id"]);
 
 console.log("df2");
 df2.head();
+
+console.log(df1.crossJoin(df2).toArray());
+df1.crossJoin(() => "test").head();
 // df3.head();
 
 // array iteration
@@ -70,7 +70,6 @@ df1 = (
     .withColumn("newCol1", () => 2)
 )
 
-df1.head();
 
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));

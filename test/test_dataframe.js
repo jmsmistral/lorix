@@ -4,7 +4,8 @@ const { expect } = chai;
 import {
     verySmallDataFrame,
     verySmallValidObjArray,
-    verySmallInvalidObjArray
+    verySmallInvalidObjArray,
+    verySmallDataFrameCrossJoinResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -192,6 +193,26 @@ describe("DataFrame class", () => {
 
         it("Should throw an error if an array is not passed", function() {
             expect(() => DataFrame.fromArray(() => "error")).to.throw();
+        });
+
+    });
+
+    describe("crossJoin()", function() {
+        beforeEach(function() {
+            this.currentTest.df1 = verySmallDataFrame;
+            this.currentTest.df2 = verySmallDataFrame;
+            this.currentTest.crossJoinDf = verySmallDataFrameCrossJoinResult;
+        });
+
+        it("Should return the cross join between two DataFrames", function() {
+            let result = this.test.df1.crossJoin(this.test.df2);
+            expect(result.toArray()).to.deep.equal(this.test.crossJoinDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.crossJoinDf.columns);
+        });
+
+        it("Should throw an error if a DataFrame is not passed", function() {
+            expect(() => this.test.df1.crossJoin(()=> "should error")).to.throw();
+            expect(() => this.test.df1.crossJoin([{"id": 1, "name": "test"}])).to.throw();
         });
 
     });
