@@ -1,6 +1,10 @@
 import lorix from './lorix.js';
 
-import { verySmallDataFrame } from './test/sample_data.js'
+import {
+    verySmallDataFrame,
+    verySmallValidObjArray,
+    verySmallInvalidObjArray
+} from './test/sample_data.js'
 
 
 // loading data data
@@ -13,6 +17,16 @@ import { verySmallDataFrame } from './test/sample_data.js'
 
 let df1 = verySmallDataFrame;
 let df2 = verySmallDataFrame;
+
+// let arr1 = verySmallValidObjArray;
+// let arr2 = verySmallInvalidObjArray;
+
+// console.log("valid data");
+// let df3 = lorix.DataFrame.fromArray(arr1);
+// df3.head();
+// console.log("invalid data");
+// let df4 = lorix.DataFrame.fromArray(arr2);
+// df4.head();
 
 // selecting columns
 // console.log(df);
@@ -27,6 +41,9 @@ let df2 = verySmallDataFrame;
 
 console.log("df1");
 df1.head();
+df1.slice(1).head();
+df1.slice(0, 0).head();
+console.log(df1.slice(-1).toArray()[0]["id"]);
 
 console.log("df2");
 df2.head();

@@ -1,53 +1,5 @@
 import lodash from 'lodash';
 
-// export class DummyDataFrame {
-//     // This is a dummy dataframe for the purpose
-//     // of figuring-out the columns being accessed in
-//     // the join condition function for any join.
-//     // This enables indexing for faster joins.
-//     // The constructor only takes an array of columns
-//     // as input.
-//     constructor(cols) {
-//         this.rows = [this.generateDummyRows(cols)];
-//         this.columns = cols;
-//     }
-
-//     generateDummyRows(cols) {
-//         // Generates a single row with
-//         // all the properties (columns)
-//         // in the dataframe set to false:
-//         // this.rows = [{col1: false, col2: false, ...}]
-//         // Then define accessor methods for
-//         // each property that toggles the flag
-//         // when accessed.
-//         let dummyRow = {};
-//         for (let col of cols) {
-//             // Set flag to false as default
-//             dummyRow["col_" + col] = false;
-//             // Define getter method for each property (column)
-//             // that toggles the column flag to true if accessed
-//             // by the join function.
-//             Object.defineProperty(dummyRow, col, {
-//                 get() {
-//                     this["col_" + col] = true;
-//                     return this["col_" + col];
-//                 }
-//             });
-//         }
-//         return dummyRow;
-//     }
-
-//     getAccessedColumns() {
-//         // Returns an array of columns accessed
-//         let accessedCols = [];
-//         for (let col in this.rows[0]) {
-//             if (this.rows[0][col]) {
-//                 accessedCols.push(col.replace("col_", ""));
-//             }
-//         }
-//         return accessedCols;
-//     }
-// }
 
 export class DummyDataFrame {
     // This is a dummy dataframe for the purpose
@@ -117,11 +69,20 @@ export function _isValidColumnName(col) {
 }
 
 export function _getUniqueObjectProperties(arr) {
+    // Takes an array of objects, and returns
+    // an array of distinct properties across all
+    // objects in the array.
+    // Throws an error if rows do not all have the
+    // same columns.
     if (arr instanceof Array) {
+        // First row used to compare other row properties against
+        let firstRowProps = lodash.sortBy(Object.keys(arr[0]));
+
         let objectProperties = arr.reduce((output, cols) => {
             if (
-                Object.keys(output).length == 0 ||
-                lodash.isEqual(lodash.sortBy(Object.keys(output)), lodash.sortBy(Object.keys(cols)))
+                (Object.keys(output).length == 0) ||
+                // lodash.isEqual(lodash.sortBy(Object.keys(output)), lodash.sortBy(Object.keys(cols)))
+                (lodash.isEqual(firstRowProps, lodash.sortBy(Object.keys(cols))))
             ) {
                 return Object.assign(output, cols)
             }

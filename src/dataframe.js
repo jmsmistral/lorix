@@ -58,6 +58,14 @@ export class DataFrame {
         }
     }
 
+    slice(i=0, j=-1) {
+        // Returns a DataFrame with the subset of rows
+        // specified by the i, j indexes.
+        if (j !== -1)
+            return new DataFrame(this.rows.slice(i, j + 1), this.columns);
+        return new DataFrame(this.rows.slice(i), this.columns);
+    }
+
     select(...fields) {
         if (!fields.length) {
             throw Error("No columns provided to select().");
@@ -104,11 +112,10 @@ export class DataFrame {
             throw Error("expr provided to withColumn needs to be a function.")
         }
 
-        // TODO: Check what existing columns are being referenced,
+        // Check what existing columns are being referenced,
         // if any, and throw an error if at least one does not exist.
         let dummyDf = new DummyDataFrame(this.columns);
         expr(dummyDf.rows[0]);
-        // dummyDf.getAccessedColumns();
 
         let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
         return new DataFrame(newRows, this.columns.concat([col]));

@@ -2,7 +2,9 @@ import chai from "chai";
 const { expect } = chai;
 
 import {
-    verySmallDataFrame
+    verySmallDataFrame,
+    verySmallValidObjArray,
+    verySmallInvalidObjArray
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -10,7 +12,7 @@ import { DataFrame } from "../src/dataframe.js";
 
 describe("DataFrame class", () => {
 
-    describe("DataFrame constructor", () => {
+    describe("Constructor", () => {
 
         it("Should have rows and columns properties.", () => {
             const df = new DataFrame();
@@ -32,7 +34,7 @@ describe("DataFrame class", () => {
 
     });
 
-    describe("DataFrame iteration.", () => {
+    describe("Row iteration", () => {
 
         it("Should allow iteration over DataFrame rows in a for...of loop", () => {
             const df = verySmallDataFrame;
@@ -41,12 +43,18 @@ describe("DataFrame class", () => {
                 rowChecker = row;
             }
             // rowChecker should be set to the last row
-            expect(rowChecker["id"]).to.equal(3);
+            expect(rowChecker["id"]).to.equal(verySmallDataFrame.slice(-1).toArray()[0]["id"]);
+        });
+
+        it("Should allow destructuring DataFrame rows", () => {
+            const df = [...verySmallDataFrame];
+            // Compare the
+            expect(df.slice(-1)[0]["id"]).to.equal(verySmallDataFrame.slice(-1).toArray()[0]["id"]);
         });
 
     });
 
-    describe("DataFrame select()", function() {
+    describe("select()", function() {
 
         beforeEach(function() {
             this.currentTest.df = verySmallDataFrame;
@@ -72,7 +80,7 @@ describe("DataFrame class", () => {
 
     });
 
-    describe("DataFrame drop()", function() {
+    describe("drop()", function() {
 
         beforeEach(function() {
             this.currentTest.df = verySmallDataFrame;
@@ -98,7 +106,7 @@ describe("DataFrame class", () => {
 
     });
 
-    describe("DataFrame withColumn()", function() {
+    describe("withColumn()", function() {
 
         beforeEach(function() {
             this.currentTest.df = verySmallDataFrame;
@@ -161,5 +169,31 @@ describe("DataFrame class", () => {
 
     });
 
+    describe("fromArray()", function() {
+
+        beforeEach(function() {
+            this.currentTest.validArray = verySmallValidObjArray;
+            this.currentTest.invalidArray = verySmallInvalidObjArray;
+        });
+
+        it("Should return a DataFrame if a valid array of objects is passed", function() {
+            expect(() => DataFrame.fromArray(this.test.validArray)).to.not.throw();
+            const df = DataFrame.fromArray(this.test.validArray);
+            expect(df.rows.length).to.equal(this.test.validArray.length);
+        });
+
+        it("Should throw an error if array is empty", function() {
+            expect(() => DataFrame.fromArray([])).to.throw();
+        });
+
+        it("Should throw an error if properties are not the same for all objects", function() {
+            expect(() => DataFrame.fromArray(this.test.invalidArray)).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed", function() {
+            expect(() => DataFrame.fromArray(() => "error")).to.throw();
+        });
+
+    });
 
 });
