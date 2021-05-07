@@ -1,9 +1,11 @@
 import lorix from './lorix.js';
 
 import {
-    verySmallDataFrame,
+    verySmallDataFrame1,
+    verySmallDataFrame2,
     verySmallValidObjArray,
-    verySmallInvalidObjArray
+    verySmallInvalidObjArray,
+    verySmallDataFrameInnerJoinResult
 } from './test/sample_data.js'
 
 
@@ -15,8 +17,8 @@ import {
 // let df3 = await lorix.readDsv('test.psv', {}); // Error
 // let df3 = await lorix.readDsv('test.psv', "|");
 
-let df1 = verySmallDataFrame;
-let df2 = verySmallDataFrame;
+let df1 = verySmallDataFrame1;
+let df2 = verySmallDataFrame2;
 
 // let arr1 = verySmallValidObjArray;
 // let arr2 = verySmallInvalidObjArray;
@@ -45,8 +47,6 @@ df1.head();
 console.log("df2");
 df2.head();
 
-console.log(df1.crossJoin(df2).toArray());
-df1.crossJoin(() => "test").head();
 // df3.head();
 
 // array iteration
@@ -62,13 +62,11 @@ console.log("df1.withColumn()");
 // df1 = df1.withColumn("newCol", (row) => row["somerandomprop"]); // Error - reference to non-ex
 // df1 = df1.withColumn("1newCol", (row) => row["id"] + row["age"]); // Error - invalid column name
 // df1.head();
-df1 = (
-    df1
-    // .withColumn("newCol", (row) => row["sepal_length"])
-    // .withColumn("newCol2", (row) => row["non_existing_col"])
-    .withColumn("newCol", () => 1)
-    .withColumn("newCol1", () => 2)
-)
+// df2 = (
+//     df2
+//     .withColumn("newCol", () => 1)
+//     .withColumn("newCol1", () => 2)
+// )
 
 
 console.log("df1.groupBy()");
@@ -119,6 +117,14 @@ console.log('cross join');
 // df1.crossJoin(df2).head(); // Cross join
 
 console.log('inner join');
+// (df1.innerJoin(df2, ["id", "testicle", "testiculae"])).head();
+// (df1.innerJoin(df2, ["id"])).head();
+(df1.innerJoin(df2, (l, r) => l.id == r.id)).head(); // Error - number of arguments
+
+// console.log((df1.innerJoin(df2, ["id"], ["id"])).toArray());
+// console.log(verySmallDataFrameInnerJoinResult.toArray());
+
+// console.log((df1.innerJoin(df2, ["id"])).toArray());
 // (df1.innerJoin(df2, (l, r) => l.id == r.id)).head();
 // (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.name == r.name))).head();
 // (df1.innerJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Error - reference to non-existent column

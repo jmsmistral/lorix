@@ -1,6 +1,6 @@
 import { DataFrame } from '../src/dataframe.js';
 
-export let verySmallDataFrame = (
+export let verySmallDataFrame1 = (
     new DataFrame(
         [
             {'id': 1, 'name': 'billy'},
@@ -8,6 +8,17 @@ export let verySmallDataFrame = (
             {'id': 3, 'name': 'roger'}
         ],
         ['id', 'name']
+    )
+);
+
+export let verySmallDataFrame2 = (
+    new DataFrame(
+        [
+            {'id': 1, 'name': 'billy', 'age': 10},
+            {'id': 2, 'name': 'jane', 'age': 20},
+            {'id': 4, 'name': 'gary', 'age': 40}
+        ],
+        ['id', 'name', 'age']
     )
 );
 
@@ -24,6 +35,9 @@ export let verySmallInvalidObjArray = [
 ];
 
 
+// Test result validation datasets
+
+// Cross join of verySmallDataFrame1 with itself
 export let verySmallDataFrameCrossJoinResult = (
     new DataFrame(
         [
@@ -39,4 +53,15 @@ export let verySmallDataFrameCrossJoinResult = (
         ],
         ['id_x', 'name_x', 'id_y', 'name_y']
     )
-)
+);
+
+// Inner join of verySmallDataFrame1 and verySmallDataFrame2
+export let verySmallDataFrameInnerJoinResult = (
+    new DataFrame(
+        [
+            { 'id': 1, 'name': 'billy', 'age': 10 },
+            { 'id': 2, 'name': 'jane', 'age': 20 }
+        ],
+        ['id', 'name', 'age']
+    )
+);

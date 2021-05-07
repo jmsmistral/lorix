@@ -2,10 +2,12 @@ import chai from "chai";
 const { expect } = chai;
 
 import {
-    verySmallDataFrame,
+    verySmallDataFrame1,
+    verySmallDataFrame2,
     verySmallValidObjArray,
     verySmallInvalidObjArray,
-    verySmallDataFrameCrossJoinResult
+    verySmallDataFrameCrossJoinResult,
+    verySmallDataFrameInnerJoinResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -28,7 +30,7 @@ describe("DataFrame class", () => {
         });
 
         it("Should create DataFrame with populated rows and columns properties when parameters are passed.", () => {
-            const df = verySmallDataFrame;
+            const df = verySmallDataFrame1;
             expect(df.rows.length).to.equal(3);
             expect(df.columns.length).to.equal(2);
         });
@@ -38,19 +40,19 @@ describe("DataFrame class", () => {
     describe("Row iteration", () => {
 
         it("Should allow iteration over DataFrame rows in a for...of loop", () => {
-            const df = verySmallDataFrame;
+            const df = verySmallDataFrame1;
             let rowChecker;
             for (const row of df) {
                 rowChecker = row;
             }
             // rowChecker should be set to the last row
-            expect(rowChecker["id"]).to.equal(verySmallDataFrame.slice(-1).toArray()[0]["id"]);
+            expect(rowChecker["id"]).to.equal(verySmallDataFrame1.slice(-1).toArray()[0]["id"]);
         });
 
         it("Should allow destructuring DataFrame rows", () => {
-            const df = [...verySmallDataFrame];
+            const df = [...verySmallDataFrame1];
             // Compare the
-            expect(df.slice(-1)[0]["id"]).to.equal(verySmallDataFrame.slice(-1).toArray()[0]["id"]);
+            expect(df.slice(-1)[0]["id"]).to.equal(verySmallDataFrame1.slice(-1).toArray()[0]["id"]);
         });
 
     });
@@ -58,7 +60,7 @@ describe("DataFrame class", () => {
     describe("select()", function() {
 
         beforeEach(function() {
-            this.currentTest.df = verySmallDataFrame;
+            this.currentTest.df = verySmallDataFrame1;
         });
 
         it("Should throw an error if no columns are selected", function() {
@@ -84,7 +86,7 @@ describe("DataFrame class", () => {
     describe("drop()", function() {
 
         beforeEach(function() {
-            this.currentTest.df = verySmallDataFrame;
+            this.currentTest.df = verySmallDataFrame1;
         });
 
         it("Should throw an error if no columns are dropped", function() {
@@ -110,7 +112,7 @@ describe("DataFrame class", () => {
     describe("withColumn()", function() {
 
         beforeEach(function() {
-            this.currentTest.df = verySmallDataFrame;
+            this.currentTest.df = verySmallDataFrame1;
         });
 
         it("Should throw an error if column name is invalid", function() {
@@ -199,20 +201,90 @@ describe("DataFrame class", () => {
 
     describe("crossJoin()", function() {
         beforeEach(function() {
-            this.currentTest.df1 = verySmallDataFrame;
-            this.currentTest.df2 = verySmallDataFrame;
-            this.currentTest.crossJoinDf = verySmallDataFrameCrossJoinResult;
+            this.currentTest.df1 = verySmallDataFrame1;
+            this.currentTest.df2 = verySmallDataFrame1;
+            this.currentTest.crossJoinResultDf = verySmallDataFrameCrossJoinResult;
         });
 
         it("Should return the cross join between two DataFrames", function() {
             let result = this.test.df1.crossJoin(this.test.df2);
-            expect(result.toArray()).to.deep.equal(this.test.crossJoinDf.toArray());
-            expect(result.columns).to.deep.equal(this.test.crossJoinDf.columns);
+            expect(result.toArray()).to.deep.equal(this.test.crossJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.crossJoinResultDf.columns);
         });
 
         it("Should throw an error if a DataFrame is not passed", function() {
             expect(() => this.test.df1.crossJoin(()=> "should error")).to.throw();
             expect(() => this.test.df1.crossJoin([{"id": 1, "name": "test"}])).to.throw();
+        });
+
+        it("Should throw an error if no argument is passed", function() {
+            expect(() => this.test.df1.crossJoin()).to.throw();
+        });
+
+        it("Should throw an error if more than one argument is passed", function() {
+            expect(() => this.test.df1.crossJoin(this.test.df2, (l, r) => l.id == r.id)).to.throw();
+        });
+    });
+
+    describe("innerJoin()", function() {
+        beforeEach(function() {
+            this.currentTest.df1 = verySmallDataFrame1;
+            this.currentTest.df2 = verySmallDataFrame2;
+            this.currentTest.innerJoinResultDf = verySmallDataFrameInnerJoinResult;
+        });
+
+        it("Should return the inner join between two DataFrames when using a single array join condition", function() {
+            let result = this.test.df1.innerJoin(this.test.df2, ["id"]);
+            expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
+        });
+
+        it("Should return the inner join between two DataFrames when using left and right array join conditions", function() {
+            let result = this.test.df1.innerJoin(this.test.df2, ["id"], ["id"]);
+            expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
+        });
+
+        it("Should return the inner join between two DataFrames when using a function join condition", function() {
+            let result = this.test.df1.innerJoin(this.test.df2, (l, r) => l["id"] == r["id"]);
+            expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
+        });
+
+        it( "Should throw an error if a DataFrame is not passed", function() {
+            expect(() => this.test.df1.innerJoin(()=> "should error"), ["id"]).to.throw();
+        });
+
+        it("Should throw an error if no argument is passed", function() {
+            expect(() => this.test.df1.innerJoin()).to.throw();
+        });
+
+        it("Should throw an error if more than three arguments are passed", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], 1, 1)).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using a single array join condition", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id", "invalidCol"])).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using left and right array join conditions", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["invalidCol"], ["id"])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id", "invalidCol"], ["id"])).to.throw();
+        });
+
+        it.skip("Should throw an error if a non-existent column is passed using a function join condition", function() {
+        });
+
+        it("Should throw an error if an empty array is passed using a single array join condition", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, [])).to.throw();
+        });
+
+        it("Should throw an error if an empty array is passed using left and right array join conditions", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, [], [])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], [])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, [], ["id"])).to.throw();
         });
 
     });

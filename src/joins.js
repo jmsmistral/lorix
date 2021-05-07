@@ -85,6 +85,11 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
         // and run either a non-indexed or indexed join
         if (on instanceof Function) {
             // Functional join condition
+            // Check that the function references valid columns
+            let leftDummyDf = new DummyDataFrame(leftDf.columns);
+            on(leftDummyDf.rows[0]);
+            let rightDummyDf = new DummyDataFrame(rightDf.columns);
+            on(rightDummyDf.rows[0]);
             return _nonIndexedInnerJoin(leftDf, rightDf, on);
         }
 
