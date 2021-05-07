@@ -9,8 +9,8 @@ export class DummyDataFrame {
     // The constructor only takes an array of columns
     // as input.
     constructor(cols) {
-        this.rows = [this.generateDummyRows(cols)];
         this.columns = cols;
+        this.rows = [this.generateDummyRows(cols)];
     }
 
     generateDummyRows(cols) {
@@ -21,33 +21,36 @@ export class DummyDataFrame {
         // Then define accessor methods for
         // each property that toggles the flag
         // when accessed.
-        let dummyRow = new  Proxy({}, {
+        let dummyRow = new Proxy({}, {
             // Define getter method for each property (column)
             // that toggles the column flag to true if accessed
             // by the join function.
-            get: function(obj, prop) {
+            get: function(obj, col) {
                 // Throw error if referencing a column that
                 // does not exist in the DataFrame.
-                if (!(cols.includes(prop))) {
-                    throw Error(`Column ${prop} does not exist in DataFrame.`)
+                if (!(cols.includes(col))) {
+                    throw Error(`Column ${col} does not exist in DataFrame.`)
                 }
 
-                obj[prop] = true;
-                return obj[prop];
+                obj[col] = true;
+                return obj[col];
             }
         });
 
-        // Initialise property flags to false
-        for (let col of cols)
-            dummyRow[col] = false;
         return dummyRow;
     }
 
     getAccessedColumns() {
-        // Returns an array of columns accessed
+        // Overwrite Proxy for dummy row to avoid
+        // setting all columns to true when trying
+        // to extract accessed columns.
+        let dummyRow = new Proxy (this.rows[0], {
+            get: function(obj, prop) { return obj[prop]; }
+        });
+
         let accessedCols = [];
-        for (let col in this.rows[0]) {
-            if (this.rows[0][col]) {
+        for (let col in dummyRow) {
+            if (dummyRow[col]) {
                 accessedCols.push(col);
             }
         }

@@ -39,6 +39,7 @@ function _getRightJoinColumns(leftDf, rightDf, on) {
     let leftDummyDf = new DummyDataFrame(leftDf.columns);
     let rightDummyDf = new DummyDataFrame(rightDf.columns);
     on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
+    console.log(`_getRightJoinColumns(): ${rightDummyDf.getAccessedColumns()}`);
     return rightDummyDf.getAccessedColumns();
 }
 
@@ -52,7 +53,8 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
     let leftDummyDf = new DummyDataFrame(leftDf.columns);
     let rightDummyDf = new DummyDataFrame(rightDf.columns);
     on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
-    return rightDummyDf.getAccessedColumns();
+    console.log(`_getLeftJoinColumns(): ${leftDummyDf.getAccessedColumns()}`);
+    return leftDummyDf.getAccessedColumns();
 }
 
 
@@ -86,11 +88,17 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
         if (on instanceof Function) {
             // Functional join condition
             // Check that the function references valid columns
+            // and error if at least one is invalid
             let leftDummyDf = new DummyDataFrame(leftDf.columns);
-            on(leftDummyDf.rows[0]);
             let rightDummyDf = new DummyDataFrame(rightDf.columns);
-            on(rightDummyDf.rows[0]);
+            on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
             return _nonIndexedInnerJoin(leftDf, rightDf, on);
+
+            // if (_allCommonCols(leftAccessedCols, leftDf.columns) && _allCommonCols(rightAccessedCols, rightDf.columns)) {
+                // return _nonIndexedInnerJoin(leftDf, rightDf, on);
+            // }
+            // let invalidCols = lodash.union(_diffCols(leftAccessedCols, leftDf.columns), _diffCols(rightAccessedCols, rightDf.columns));
+            // throw Error(`Invalid columns found in inner join condition: ${invalidCols}`);
         }
 
         if (on instanceof Array && on.length) {

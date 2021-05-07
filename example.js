@@ -119,7 +119,13 @@ console.log('cross join');
 console.log('inner join');
 // (df1.innerJoin(df2, ["id", "testicle", "testiculae"])).head();
 // (df1.innerJoin(df2, ["id"])).head();
-(df1.innerJoin(df2, (l, r) => l.id == r.id)).head(); // Error - number of arguments
+// df1 = (
+//     df1
+//     .withColumn("name", (row) => {if (row.id == 3) { return "gary" } else return row.name })
+// )
+// df1.head();
+(df1.innerJoin(df2, (l, r) => (l.id == r.id) || (r.name == "gary") )).head();
+// (df1.innerJoin(df2, (l, r) => (l.id == r.id) )).head();
 
 // console.log((df1.innerJoin(df2, ["id"], ["id"])).toArray());
 // console.log(verySmallDataFrameInnerJoinResult.toArray());
