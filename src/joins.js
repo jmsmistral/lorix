@@ -150,7 +150,7 @@ export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
         return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
     }
-    throw Error("'leftOn' and 'rightOn' need to be arrays")
+    throw Error("'leftOn' and 'rightOn' need to be arrays");
 };
 
 
