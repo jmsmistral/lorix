@@ -1,6 +1,14 @@
 import lodash from 'lodash';
 
 
+function _getRandomString() {
+    return Math.random().toString(36).substring(2, 15);
+}
+
+export function generateRandomValue() {
+    return (_getRandomString() + _getRandomString());
+}
+
 export class DummyDataFrame {
     // This is a dummy dataframe for the purpose
     // of figuring-out the columns being accessed in
@@ -33,7 +41,12 @@ export class DummyDataFrame {
                 }
 
                 obj[col] = true;
-                return obj[col];
+                // Return a random string, to attempt to get all
+                // columns being accessed in a function join condition.
+                // e.g. If we always return the same value, conditions after
+                // an OR comparison in a function would not register as
+                // a column being accessed in the join condition.
+                return generateRandomValue();
             }
         });
 
