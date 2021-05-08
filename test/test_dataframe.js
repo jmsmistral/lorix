@@ -274,7 +274,9 @@ describe("DataFrame class", () => {
             expect(() => this.test.df1.innerJoin(this.test.df2, ["id", "invalidCol"], ["id"])).to.throw();
         });
 
-        it.skip("Should throw an error if a non-existent column is passed using a function join condition", function() {
+        it("Should throw an error if a non-existent column is passed using a function join condition", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.invalidCol == "test") )).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df2, (l, r) => (l.id == r.id) || (r.invalidCol == "test") )).to.throw();
         });
 
         it("Should throw an error if an empty array is passed using a single array join condition", function() {

@@ -1,3 +1,5 @@
+import { DummyEqualDataFrame, DummyNonEqualDataFrame } from './proxy.js';
+
 import lodash from 'lodash';
 
 
@@ -9,66 +11,42 @@ export function generateRandomValue() {
     return (_getRandomString() + _getRandomString());
 }
 
-export class DummyDataFrame {
-    // This is a dummy dataframe for the purpose
-    // of figuring-out the columns being accessed in
-    // the join condition function for any join.
-    // This enables indexing for faster joins.
-    // The constructor only takes an array of columns
-    // as input.
-    constructor(cols) {
-        this.columns = cols;
-        this.rows = [this.generateDummyRows(cols)];
+export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfCols, dfColsToReturn = "left") {
+    // Runs join condition function on dummy DFs to
+    // check which columns are being referenced.
+    let leftNonEqualDummyDf = new DummyNonEqualDataFrame(leftDfCols);
+    let rightNonEqualDummyDf = new DummyNonEqualDataFrame(rightDfCols);
+    fn(leftNonEqualDummyDf.rows[0], rightNonEqualDummyDf.rows[0]);
+
+    let leftEqualDummyDf = new DummyEqualDataFrame(leftDfCols);
+    let rightEqualDummyDf = new DummyEqualDataFrame(rightDfCols);
+    fn(leftEqualDummyDf.rows[0], rightEqualDummyDf.rows[0]);
+
+    if (dfColsToReturn == "right") {
+        return lodash.union([
+            rightNonEqualDummyDf,
+            rightEqualDummyDf
+        ]);
     }
+    return lodash.union([
+        leftNonEqualDummyDf,
+        leftEqualDummyDf
+    ]);
+}
 
-    generateDummyRows(cols) {
-        // Generates a single row with
-        // all the properties (columns)
-        // in the dataframe set to false:
-        // this.rows = [{col1: false, col2: false, ...}]
-        // Then define accessor methods for
-        // each property that toggles the flag
-        // when accessed.
-        let dummyRow = new Proxy({}, {
-            // Define getter method for each property (column)
-            // that toggles the column flag to true if accessed
-            // by the join function.
-            get: function(obj, col) {
-                // Throw error if referencing a column that
-                // does not exist in the DataFrame.
-                if (!(cols.includes(col))) {
-                    throw Error(`Column ${col} does not exist in DataFrame.`)
-                }
+export function validateFunctionReferencesWithProxy(fn, cols) {
+    // Runs join condition function on dummy DFs to
+    // check which columns are being referenced.
+    let nonEqualDummyDf = new DummyNonEqualDataFrame(cols);
+    fn(nonEqualDummyDf.rows[0]);
 
-                obj[col] = true;
-                // Return a random string, to attempt to get all
-                // columns being accessed in a function join condition.
-                // e.g. If we always return the same value, conditions after
-                // an OR comparison in a function would not register as
-                // a column being accessed in the join condition.
-                return generateRandomValue();
-            }
-        });
+    let equalDummyDf = new DummyEqualDataFrame(cols);
+    fn(equalDummyDf.rows[0]);
 
-        return dummyRow;
-    }
-
-    getAccessedColumns() {
-        // Overwrite Proxy for dummy row to avoid
-        // setting all columns to true when trying
-        // to extract accessed columns.
-        let dummyRow = new Proxy (this.rows[0], {
-            get: function(obj, prop) { return obj[prop]; }
-        });
-
-        let accessedCols = [];
-        for (let col in dummyRow) {
-            if (dummyRow[col]) {
-                accessedCols.push(col);
-            }
-        }
-        return accessedCols;
-    }
+    return lodash.union([
+        nonEqualDummyDf,
+        equalDummyDf
+    ]);
 }
 
 export function _isColumnArrayInDataframe(dfCols, groupByCols) {
@@ -97,7 +75,6 @@ export function _getUniqueObjectProperties(arr) {
         let objectProperties = arr.reduce((output, cols) => {
             if (
                 (Object.keys(output).length == 0) ||
-                // lodash.isEqual(lodash.sortBy(Object.keys(output)), lodash.sortBy(Object.keys(cols)))
                 (lodash.isEqual(firstRowProps, lodash.sortBy(Object.keys(cols))))
             ) {
                 return Object.assign(output, cols)

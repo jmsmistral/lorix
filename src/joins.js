@@ -2,7 +2,7 @@ import d3Array from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from './dataframe.js';
-import { DummyDataFrame } from './utils.js';
+import { validateJoinFunctionReferencesWithProxy } from './utils.js';
 
 
 function _diffCols(cols, expectedCols) {
@@ -36,10 +36,7 @@ function _getRightJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    let leftDummyDf = new DummyDataFrame(leftDf.columns);
-    let rightDummyDf = new DummyDataFrame(rightDf.columns);
-    on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
-    return rightDummyDf.getAccessedColumns();
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns, "right");
 }
 
 
@@ -49,10 +46,7 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    let leftDummyDf = new DummyDataFrame(leftDf.columns);
-    let rightDummyDf = new DummyDataFrame(rightDf.columns);
-    on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
-    return leftDummyDf.getAccessedColumns();
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns, "left");
 }
 
 
@@ -86,16 +80,8 @@ export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
             // Functional join condition
             // Check that the function references valid columns
             // and error if at least one is invalid
-            let leftDummyDf = new DummyDataFrame(leftDf.columns);
-            let rightDummyDf = new DummyDataFrame(rightDf.columns);
-            on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
+            validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns);
             return _nonIndexedInnerJoin(leftDf, rightDf, on);
-
-            // if (_allCommonCols(leftAccessedCols, leftDf.columns) && _allCommonCols(rightAccessedCols, rightDf.columns)) {
-                // return _nonIndexedInnerJoin(leftDf, rightDf, on);
-            // }
-            // let invalidCols = lodash.union(_diffCols(leftAccessedCols, leftDf.columns), _diffCols(rightAccessedCols, rightDf.columns));
-            // throw Error(`Invalid columns found in inner join condition: ${invalidCols}`);
         }
 
         if (on instanceof Array && on.length) {
