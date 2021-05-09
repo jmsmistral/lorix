@@ -50,6 +50,30 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
 }
 
 
+function _dispatchNonIndexedJoin(type, leftDf, rightDf, on) {
+    switch (type) {
+        case "inner":
+            return _nonIndexedInnerJoin(leftDf, rightDf, on);
+        case "left":
+            return _nonIndexedLeftJoin(leftDf, rightDf, on);
+        case "right":
+            return _nonIndexedRightJoin(leftDf, rightDf, on);
+    }
+}
+
+
+function _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn) {
+    switch (type) {
+        case "inner":
+            return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+        case "left":
+            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
+        case "right":
+            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
+    }
+}
+
+
 export function _crossJoin(df1, df2) {
     if (df2 instanceof DataFrame) {
         let commonCols = df1.columns.filter(col => df2.columns.includes(col));
@@ -64,109 +88,47 @@ export function _crossJoin(df1, df2) {
 }
 
 
-export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
+export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     if (!(rightDf instanceof DataFrame)) {
-        throw Error("innerJoin expects another DataFrame");
+        throw Error("Join expects another DataFrame");
     }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
     }
 
+    // Determine if on is a function or array or undefined
+    // and run either a non-indexed or indexed join
     if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
         if (on instanceof Function) {
-            // Functional join condition
             // Check that the function references valid columns
             // and error if at least one is invalid
             validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns);
-            return _nonIndexedInnerJoin(leftDf, rightDf, on);
+            return _dispatchNonIndexedJoin(type, leftDf, rightDf, on);
         }
 
         if (on instanceof Array && on.length) {
             // Single array of columns provided (no rightOn)
             // Check that all specified columns are in both DataFrames.
             if (_allCommonCols(on, leftDf.columns) && _allCommonCols(on, rightDf.columns)) {
-                return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+                    return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
             }
             let invalidCols = lodash.union(_diffCols(on, leftDf.columns), _diffCols(on, rightDf.columns));
-            throw Error(`Invalid columns found in inner join condition: ${invalidCols}`);
+            throw Error(`Invalid columns found in join condition: ${invalidCols}`);
         }
         throw Error("'on' needs to be either a function or a non-empty array");
     }
 
+    // Two arrays of columns provided (leftOn and rightOn)
     if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length)) {
-        // Two arrays of columns provided (leftOn and rightOn)
-        // Check that leftOn columns are in left DataFrame and
-        // rightOn columns are in right DataFrame.
+        // Check that all specified columns are in both DataFrames.
         if (_allCommonCols(leftOn, leftDf.columns) && _allCommonCols(rightOn, rightDf.columns)) {
-            return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+            return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
         }
         let invalidCols = lodash.union(_diffCols(leftOn, leftDf.columns), _diffCols(rightOn, rightDf.columns));
-        throw Error(`Invalid columns found in inner join condition: ${invalidCols}`);
+        throw Error(`Invalid columns found in join condition: ${invalidCols}`);
     }
     throw Error("'leftOn' and 'rightOn' need to be non-empty arrays");
-};
-
-
-export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
-    if (!(rightDf instanceof DataFrame)) {
-        throw Error("leftJoin expects another DataFrame");
-    }
-
-    // Check that a join condition exists
-    if (!on && !(leftOn || rightOn)) {
-        throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
-    }
-
-    if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
-        if (on instanceof Function) {
-            return _nonIndexedLeftJoin(leftDf, rightDf, on);
-        }
-
-        if (on instanceof Array) {
-            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
-        }
-        throw Error("'on' needs to be either a function or an array");
-    }
-
-    if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
-        return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
-    }
-    throw Error("'leftOn' and 'rightOn' need to be arrays");
-};
-
-
-export function _rightJoin(leftDf, rightDf, on, leftOn, rightOn) {
-    if (!(rightDf instanceof DataFrame)) {
-        throw Error("rightJoin expects another DataFrame");
-    }
-
-    // Check that a join condition exists
-    if (!on && !(leftOn || rightOn)) {
-        throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
-    }
-
-    if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
-        if (on instanceof Function) {
-            return _nonIndexedRightJoin(leftDf, rightDf, on);
-        }
-
-        if (on instanceof Array) {
-            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
-        }
-        throw Error("'on' needs to be either a function or an array");
-    }
-
-    if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
-        return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
-    }
-    throw Error("'leftOn' and 'rightOn' need to be arrays");
 };
 
 

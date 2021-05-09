@@ -2,9 +2,7 @@ import lodash from "lodash";
 
 import {
     _crossJoin,
-    _innerJoin,
-    _leftJoin,
-    _rightJoin
+    _join
 } from "./joins.js";
 
 import {
@@ -133,7 +131,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _innerJoin(this, df, on, leftOn, rightOn);
+        // return _innerJoin(this, df, on, leftOn, rightOn);
+        return _join("inner", this, df, on, leftOn, rightOn);
     }
 
     leftJoin(df, leftOn, rightOn) {
@@ -142,7 +141,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _leftJoin(this, df, on, leftOn, rightOn);
+        // return _leftJoin(this, df, on, leftOn, rightOn);
+        return _join("left", this, df, on, leftOn, rightOn);
     }
 
     rightJoin(df, leftOn, rightOn) {
@@ -151,7 +151,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _rightJoin(this, df, on, leftOn, rightOn);
+        // return _rightJoin(this, df, on, leftOn, rightOn);
+        return _join("right", this, df, on, leftOn, rightOn);
     }
 
     groupBy(cols, agg) {

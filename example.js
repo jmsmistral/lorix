@@ -124,8 +124,8 @@ console.log('inner join');
 //     .withColumn("name", (row) => {if (row.id == 3) { return "gary" } else return row.name })
 // )
 // df1.head();
-(df1.innerJoin(df2, (l, r) => (l.id == r.id) || (r.name == "gary") )).head();
-// (df1.innerJoin(df2, (l, r) => (l.id == r.id) )).head();
+// (df1.innerJoin(df2, (l, r) => (l.id == r.id) || (r.name == "gary") )).head();
+(df1.innerJoin(df2, (l, r) => (l.id == r.id) )).head();
 
 // console.log((df1.innerJoin(df2, ["id"], ["id"])).toArray());
 // console.log(verySmallDataFrameInnerJoinResult.toArray());
@@ -144,6 +144,8 @@ console.log('inner join');
 // (df1.innerJoin(df2, ["id", "age"])).head();  // Indexed inner join
 
 console.log('left join');
+(df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
+
 // (df1.leftJoin(df2, "id")).head(); // Error - argument types
 // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
 // (df1.leftJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed left join
@@ -153,6 +155,8 @@ console.log('left join');
 // df1.leftJoin(df2); // Error
 
 console.log('right join');
+(df1.rightJoin(df2, (l, r) => l.id == r.id)).head();
+
 // (df1.rightJoin(df2, (l, r) => l.id == r.id)).head();
 // (df1.rightJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head();
 // (df1.rightJoin(df2, (l, r) => (l.id == r.id) | (l.age == r.age))).head();
