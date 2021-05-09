@@ -11,7 +11,7 @@ export function generateRandomValue() {
     return (_getRandomString() + _getRandomString());
 }
 
-export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfCols, dfColsToReturn = "left") {
+export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfCols) {
     // Runs join condition function on dummy DFs to
     // check which columns are being referenced.
     let leftNonEqualDummyDf = new DummyNonEqualDataFrame(leftDfCols);
@@ -22,16 +22,16 @@ export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfC
     let rightEqualDummyDf = new DummyEqualDataFrame(rightDfCols);
     fn(leftEqualDummyDf.rows[0], rightEqualDummyDf.rows[0]);
 
-    if (dfColsToReturn == "right") {
-        return lodash.union([
+    return {
+        "left": lodash.union([
+            leftNonEqualDummyDf,
+            leftEqualDummyDf
+        ]),
+        "right": lodash.union([
             rightNonEqualDummyDf,
             rightEqualDummyDf
-        ]);
-    }
-    return lodash.union([
-        leftNonEqualDummyDf,
-        leftEqualDummyDf
-    ]);
+        ])
+    };
 }
 
 export function validateFunctionReferencesWithProxy(fn, cols) {
@@ -47,6 +47,32 @@ export function validateFunctionReferencesWithProxy(fn, cols) {
         nonEqualDummyDf,
         equalDummyDf
     ]);
+}
+
+export function validateJoinArrayReferences(joinCols, dfCols) {
+    // Returns true if all columns in `cols` are in `expectedCols`.
+    return joinCols.filter(col => !(dfCols.includes(col))).length == 0;
+}
+
+export function getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, rightCompareCols) {
+    // Returns the unique array of columns that
+    // are referenced but do not exist in the DataFrame.
+    if (arguments.length == 3) {
+        cols = leftCompareCols;
+        return (
+            lodash.union(
+                lodash.difference(cols, leftDfCols),
+                lodash.difference(cols, rightDfCols)
+            )
+        );
+    }
+    return (
+        lodash.union(
+            lodash.difference(leftCompareCols, leftDfCols),
+            lodash.difference(rightCompareCols, rightDfCols)
+        )
+    );
+
 }
 
 export function _isColumnArrayInDataframe(dfCols, groupByCols) {

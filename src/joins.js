@@ -2,20 +2,11 @@ import d3Array from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from './dataframe.js';
-import { validateJoinFunctionReferencesWithProxy } from './utils.js';
-
-
-function _diffCols(cols, expectedCols) {
-    // Returns an array of column names in `cols`
-    // that are not in `expectedCols`.
-    return lodash.difference(cols, expectedCols);
-}
-
-
-function _allCommonCols(cols, expectedCols) {
-    // Returns true if all columns in `cols` are in `expectedCols`.
-    return cols.filter(col => !(expectedCols.includes(col))).length == 0;
-}
+import {
+    validateJoinFunctionReferencesWithProxy,
+    validateJoinArrayReferences,
+    getInvalidJoinColumns
+} from './utils.js';
 
 
 function _cleanCommonCols(leftRow, rightRow, commonCols) {
@@ -36,7 +27,7 @@ function _getRightJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns, "right");
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns)["right"];
 }
 
 
@@ -46,7 +37,7 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns, "left");
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns)["left"];
 }
 
 
@@ -110,10 +101,10 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
         if (on instanceof Array && on.length) {
             // Single array of columns provided (no rightOn)
             // Check that all specified columns are in both DataFrames.
-            if (_allCommonCols(on, leftDf.columns) && _allCommonCols(on, rightDf.columns)) {
+            if (validateJoinArrayReferences(on, leftDf.columns) && validateJoinArrayReferences(on, rightDf.columns)) {
                     return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
             }
-            let invalidCols = lodash.union(_diffCols(on, leftDf.columns), _diffCols(on, rightDf.columns));
+            let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, on);
             throw Error(`Invalid columns found in join condition: ${invalidCols}`);
         }
         throw Error("'on' needs to be either a function or a non-empty array");
@@ -122,10 +113,10 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     // Two arrays of columns provided (leftOn and rightOn)
     if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length)) {
         // Check that all specified columns are in both DataFrames.
-        if (_allCommonCols(leftOn, leftDf.columns) && _allCommonCols(rightOn, rightDf.columns)) {
+        if (validateJoinArrayReferences(leftOn, leftDf.columns) && validateJoinArrayReferences(rightOn, rightDf.columns)) {
             return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
         }
-        let invalidCols = lodash.union(_diffCols(leftOn, leftDf.columns), _diffCols(rightOn, rightDf.columns));
+        let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
         throw Error(`Invalid columns found in join condition: ${invalidCols}`);
     }
     throw Error("'leftOn' and 'rightOn' need to be non-empty arrays");
