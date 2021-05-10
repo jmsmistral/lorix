@@ -2,7 +2,13 @@ import d3Array from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from './dataframe.js';
-import { DummyDataFrame } from './utils.js';
+import {
+    validateJoinFunctionReferencesWithProxy,
+    validateJoinArrayReferences,
+    getInvalidJoinColumns,
+    validateOverlappingColumns,
+    validateOverlappingColumnsInFunction
+} from './utils.js';
 
 
 function _cleanCommonCols(leftRow, rightRow, commonCols) {
@@ -12,9 +18,10 @@ function _cleanCommonCols(leftRow, rightRow, commonCols) {
         cleanLeft[col + "_x"] = cleanLeft[col];
         cleanRight[col + "_y"] = cleanRight[col];
         delete cleanLeft[col], delete cleanRight[col];
-        return {...cleanLeft, ...cleanRight};
     }
+    return {...cleanLeft, ...cleanRight};
 }
+
 
 function _getRightJoinColumns(leftDf, rightDf, on) {
     // Returns an array with the columns referenced
@@ -22,11 +29,9 @@ function _getRightJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    let leftDummyDf = new DummyDataFrame(leftDf.columns);
-    let rightDummyDf = new DummyDataFrame(rightDf.columns);
-    on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
-    return rightDummyDf.getAccessedColumns();
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns)["right"];
 }
+
 
 function _getLeftJoinColumns(leftDf, rightDf, on) {
     // Returns an array with the columns referenced
@@ -34,102 +39,96 @@ function _getLeftJoinColumns(leftDf, rightDf, on) {
     // This is done by running the join function with
     // dummy objects. These have special accessor methods
     // that log the properties being accessed.
-    let leftDummyDf = new DummyDataFrame(leftDf.columns);
-    let rightDummyDf = new DummyDataFrame(rightDf.columns);
-    on(leftDummyDf.rows[0], rightDummyDf.rows[0]);
-    return rightDummyDf.getAccessedColumns();
+    return validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns)["left"];
 }
+
+
+function _dispatchNonIndexedJoin(type, leftDf, rightDf, on) {
+    switch (type) {
+        case "inner":
+            return _nonIndexedInnerJoin(leftDf, rightDf, on);
+        case "left":
+            return _nonIndexedLeftJoin(leftDf, rightDf, on);
+        case "right":
+            return _nonIndexedRightJoin(leftDf, rightDf, on);
+    }
+}
+
+
+function _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn) {
+    switch (type) {
+        case "inner":
+            return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+        case "left":
+            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
+        case "right":
+            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
+    }
+}
+
 
 export function _crossJoin(df1, df2) {
-    let commonCols = df1.columns.filter(col => df2.columns.includes(col));
-    let rowArray = d3Array.cross(df1, df2, (left, right) => {
-        if (commonCols.length) return _cleanCommonCols(left, right, commonCols);
-        return {...left, ...right};
-    }).filter(Boolean);
-    let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
-    return new DataFrame(rowArray, outputColumns);
+    if (df2 instanceof DataFrame) {
+        let commonCols = df1.columns.filter(col => df2.columns.includes(col));
+        let rowArray = d3Array.cross(df1, df2, (left, right) => {
+            if (commonCols.length) return _cleanCommonCols(left, right, commonCols);
+            return {...left, ...right};
+        }).filter(Boolean); // Used to filter-out any undefined
+        let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
+        return new DataFrame(rowArray, outputColumns);
+    }
+    throw Error("crossJoin expects another DataFrame");
 }
 
-export function _innerJoin(leftDf, rightDf, on, leftOn, rightOn) {
-    console.log("_innerJoin()");
+
+export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
+    if (!(rightDf instanceof DataFrame)) {
+        throw Error("Join expects another DataFrame");
+    }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
     }
 
+    // Determine if condition is a
+    // - function (non-indexed join)
+    // - single array (indexed join)
     if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
         if (on instanceof Function) {
-            return _nonIndexedInnerJoin(leftDf, rightDf, on);
+            // Check that the function references valid columns
+            // and error if at least one is invalid
+            let left, right, both;
+            ({left, right, both} = validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns));
+            validateOverlappingColumnsInFunction(leftDf.columns, rightDf.columns, left, right);
+            return _dispatchNonIndexedJoin(type, leftDf, rightDf, on);
         }
 
-        if (on instanceof Array) {
-            return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+        if (on instanceof Array && on.length) {
+            // Single array of columns provided (no rightOn)
+            // Check that all specified columns exit in both DataFrames.
+            if (validateJoinArrayReferences(on, leftDf.columns) && validateJoinArrayReferences(on, rightDf.columns)) {
+                validateOverlappingColumns(leftDf.columns, rightDf.columns, on);
+                return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
+            }
+            let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, on);
+            throw Error(`Invalid columns found in join condition: ${invalidCols}`);
         }
-        throw Error("'on' needs to be either a function or an array");
+        throw Error("'on' needs to be either a function or a non-empty array");
     }
 
-    if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
-        console.log("leftOn and rightOn defined");
-        return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
+    // Condition made-up of two arrays (leftOn and rightOn)
+    if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length) && (leftOn.length == rightOn.length)) {
+        // Check that all specified columns exit in both DataFrames.
+        if (validateJoinArrayReferences(leftOn, leftDf.columns) && validateJoinArrayReferences(rightOn, rightDf.columns)) {
+            validateOverlappingColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
+            return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
+        }
+        let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
+        throw Error(`Invalid columns found in join condition: ${invalidCols}`);
     }
-    throw Error("'leftOn' and 'rightOn' need to be arrays")
+    throw Error("'leftOn' and 'rightOn' need to be non-empty arrays of equal length");
 };
 
-export function _leftJoin(leftDf, rightDf, on, leftOn, rightOn) {
-    console.log("_leftJoin()");
-    // Check that a join condition exists
-    if (!on && !(leftOn || rightOn)) {
-        throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
-    }
-
-    if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
-        if (on instanceof Function) {
-            return _nonIndexedLeftJoin(leftDf, rightDf, on);
-        }
-
-        if (on instanceof Array) {
-            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
-        }
-        throw Error("'on' needs to be either a function or an array");
-    }
-
-    if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
-        console.log("leftOn and rightOn defined");
-        return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
-    }
-    throw Error("'leftOn' and 'rightOn' need to be arrays")
-};
-
-export function _rightJoin(leftDf, rightDf, on, leftOn, rightOn) {
-    console.log("_rightJoin()");
-    // Check that a join condition exists
-    if (!on && !(leftOn || rightOn)) {
-        throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
-    }
-
-    if (on) {
-        // Determine if on is a function or array or undefined
-        // and run either a non-indexed or indexed join
-        if (on instanceof Function) {
-            return _nonIndexedRightJoin(leftDf, rightDf, on);
-        }
-
-        if (on instanceof Array) {
-            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
-        }
-        throw Error("'on' needs to be either a function or an array");
-    }
-
-    if ((leftOn instanceof Array) && (rightOn instanceof Array)) {
-        console.log("leftOn and rightOn defined");
-        return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
-    }
-    throw Error("'leftOn' and 'rightOn' need to be arrays");
-};
 
 function _nonIndexedInnerJoin(leftDf, rightDf, on) {
     // Returns a DataFrame representing the join
@@ -138,7 +137,6 @@ function _nonIndexedInnerJoin(leftDf, rightDf, on) {
     // parameter. This function takes two rows, and
     // returns true if the rows match, and false
     // otherwise.
-    console.log("_nonIndexedInnerJoin()");
     const joinCols = _getRightJoinColumns(leftDf, rightDf, on);
     const sortedRightDfRowArray = lodash.orderBy(rightDf.rows, joinCols);
 
@@ -151,6 +149,7 @@ function _nonIndexedInnerJoin(leftDf, rightDf, on) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _nonIndexedLeftJoin(leftDf, rightDf, on) {
     // Returns a DataFrame representing the join
     // of leftDf and rightDf DataFrames, based on the
@@ -158,7 +157,6 @@ function _nonIndexedLeftJoin(leftDf, rightDf, on) {
     // parameter. This function takes two rows, and
     // returns true if the rows match, and false
     // otherwise.
-    console.log("_nonIndexedLeftJoin()");
     const joinCols = _getRightJoinColumns(leftDf, rightDf, on);
     const sortedRightDfRowArray = lodash.orderBy(rightDf.rows, joinCols);
     let nullRow = _getRightNullRow(leftDf, rightDf);
@@ -173,6 +171,7 @@ function _nonIndexedLeftJoin(leftDf, rightDf, on) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _nonIndexedRightJoin(leftDf, rightDf, on) {
     // Returns a DataFrame representing the join
     // of leftDf and rightDf DataFrames, based on the
@@ -180,7 +179,6 @@ function _nonIndexedRightJoin(leftDf, rightDf, on) {
     // parameter. This function takes two rows, and
     // returns true if the rows match, and false
     // otherwise.
-    console.log("_nonIndexedRightJoin()");
     const joinCols = _getLeftJoinColumns(leftDf, rightDf, on);
     const sortedLeftDfRowArray = lodash.orderBy(leftDf.rows, joinCols);
     let nullRow = _getLeftNullRow(leftDf, rightDf);
@@ -195,13 +193,13 @@ function _nonIndexedRightJoin(leftDf, rightDf, on) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
-    console.log("_indexedInnerJoin()");
     // TODO check that columns in join exist on both dataframes
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
@@ -222,14 +220,13 @@ function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
-    console.log("_indexedLeftJoin()");
-    // TODO check that columns in join exist on both dataframes
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
     // Perform join using right dataframe index
@@ -254,14 +251,13 @@ function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
-    console.log("_indexedRightJoin()");
-    // TODO check that columns in join exist on both dataframes
     // Index left-hand dataframe
     const leftDfIndex = _getIndex(leftDf, (leftOn ? leftOn : on));
     // Perform join using right dataframe index
@@ -286,6 +282,7 @@ function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn) {
     return new DataFrame(outputRowArray, outputColumns);
 }
 
+
 function _getIndex(df, cols) {
     // Generates an index for a dataframe
     // on a specified array of columns.
@@ -308,6 +305,7 @@ function _getIndex(df, cols) {
     return d3Array.group(df, ...groupFuncs);
 }
 
+
 function _lookupIndex(row, cols, index) {
     // Recursive function that takes a given row,
     // the columns to join on, and the index to look-up
@@ -322,6 +320,7 @@ function _lookupIndex(row, cols, index) {
         return indexValue;
     }
 }
+
 
 function _getLeftNullRow(leftDf, rightDf) {
     // Returns an object representing an empty
@@ -338,6 +337,7 @@ function _getLeftNullRow(leftDf, rightDf) {
     }
     return nullRow;
 }
+
 
 function _getRightNullRow(leftDf, rightDf) {
     // Returns an object representing an empty

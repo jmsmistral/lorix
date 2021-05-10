@@ -2,9 +2,7 @@ import lodash from "lodash";
 
 import {
     _crossJoin,
-    _innerJoin,
-    _leftJoin,
-    _rightJoin
+    _join
 } from "./joins.js";
 
 import {
@@ -13,6 +11,7 @@ import {
 } from "./groups.js"
 
 import {
+    validateFunctionReferencesWithProxy,
     _getUniqueObjectProperties,
     _isValidColumnName
 } from "./utils.js";
@@ -57,6 +56,14 @@ export class DataFrame {
         }
     }
 
+    slice(i=0, j=-1) {
+        // Returns a DataFrame with the subset of rows
+        // specified by the i, j indexes.
+        if (j !== -1)
+            return new DataFrame(this.rows.slice(i, j + 1), this.columns);
+        return new DataFrame(this.rows.slice(i), this.columns);
+    }
+
     select(...fields) {
         if (!fields.length) {
             throw Error("No columns provided to select().");
@@ -89,6 +96,28 @@ export class DataFrame {
         return new DataFrame(outputArray, lodash.difference(this.columns, fields));
     }
 
+    withColumn(col, expr) {
+        // Returns a new Dataframe with a new column definition.
+        // Note: if a reference is made to a non-existent column
+        // the result will be undefined.
+        // Check that `col` is a string that does not start with a number.
+        if (!_isValidColumnName(col)) {
+            throw Error(`Column name "${col}" is not valid.`);
+        }
+
+        // Check that `expr` is a function.
+        if(expr & !(expr instanceof Function)) {
+            throw Error("expr provided to withColumn needs to be a function.")
+        }
+
+        // Check what existing columns are being referenced,
+        // if any, and throw an error if at least one does not exist.
+        validateFunctionReferencesWithProxy(expr, this.columns);
+
+        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
+        return new DataFrame(newRows, this.columns.concat([col]));
+    }
+
     crossJoin(df) {
         if (arguments.length < 1 || arguments.length > 1) {
             throw Error(`crossJoin takes a single argument. Arguments passed: ${arguments.length}`);
@@ -102,7 +131,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _innerJoin(this, df, on, leftOn, rightOn);
+        // return _innerJoin(this, df, on, leftOn, rightOn);
+        return _join("inner", this, df, on, leftOn, rightOn);
     }
 
     leftJoin(df, leftOn, rightOn) {
@@ -111,7 +141,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _leftJoin(this, df, on, leftOn, rightOn);
+        // return _leftJoin(this, df, on, leftOn, rightOn);
+        return _join("left", this, df, on, leftOn, rightOn);
     }
 
     rightJoin(df, leftOn, rightOn) {
@@ -120,19 +151,8 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        return _rightJoin(this, df, on, leftOn, rightOn);
-    }
-
-    withColumn(col, expr) {
-        // Returns a new Dataframe with a new column definition.
-        // Note: if a reference is made to a non-existent column
-        // the result will be undefined.
-        // Check that `col` is a string that does not start with a number.
-        if (!_isValidColumnName(col)) {
-            throw Error(`Column name "${col}" is not valid.`);
-        }
-        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
-        return new DataFrame(newRows, this.columns.concat([col]));
+        // return _rightJoin(this, df, on, leftOn, rightOn);
+        return _join("right", this, df, on, leftOn, rightOn);
     }
 
     groupBy(cols, agg) {

@@ -1,6 +1,6 @@
 {
   "name": "lorix",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Javascript dataframe API",
   "repository": {
     "type": "git",
