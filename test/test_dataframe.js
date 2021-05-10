@@ -7,7 +7,9 @@ import {
     verySmallValidObjArray,
     verySmallInvalidObjArray,
     verySmallDataFrameCrossJoinResult,
-    verySmallDataFrameInnerJoinResult
+    verySmallDataFrameInnerJoinResult,
+    verySmallDataFrameLeftJoinResult,
+    verySmallDataFrameRightJoinResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -304,6 +306,170 @@ describe("DataFrame class", () => {
         it("Should throw an error if there are overlapping columns using left and right array join conditions", function() {
             expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], ["id"])).to.throw();
             expect(() => this.test.df1.innerJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
+        });
+
+    });
+
+    describe("leftJoin()", function() {
+        beforeEach(function() {
+            this.currentTest.df1 = verySmallDataFrame1;
+            this.currentTest.df2 = verySmallDataFrame2;
+            this.currentTest.leftJoinResultDf = verySmallDataFrameLeftJoinResult;
+        });
+
+        it("Should return the left join between two DataFrames when using a single array join condition", function() {
+            let result = this.test.df1.leftJoin(this.test.df2, ["id", "name"]);
+            expect(result.toArray()).to.deep.equal(this.test.leftJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.leftJoinResultDf.columns);
+        });
+
+        it("Should return the left join between two DataFrames when using left and right array join conditions", function() {
+            let result = this.test.df1.leftJoin(this.test.df2, ["id", "name"], ["id", "name"]);
+            expect(result.toArray()).to.deep.equal(this.test.leftJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.leftJoinResultDf.columns);
+        });
+
+        it("Should return the left join between two DataFrames when using a function join condition", function() {
+            let result = this.test.df1.leftJoin(this.test.df2, (l, r) => (l["id"] == r["id"]) && (l["name"] == r["name"]));
+            expect(result.toArray()).to.deep.equal(this.test.leftJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.leftJoinResultDf.columns);
+        });
+
+        it( "Should throw an error if a DataFrame is not passed", function() {
+            expect(() => this.test.df1.leftJoin(()=> "should error"), ["id"]).to.throw();
+        });
+
+        it("Should throw an error if no argument is passed", function() {
+            expect(() => this.test.df1.leftJoin()).to.throw();
+        });
+
+        it("Should throw an error if more than three arguments are passed", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"], 1, 1)).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using a single array join condition", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id", "invalidCol"])).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using left and right array join conditions", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"], ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["invalidCol"], ["id"])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id", "invalidCol"], ["id"])).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using a function join condition", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.invalidCol == "test") )).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, (l, r) => (l.id == r.id) || (r.invalidCol == "test") )).to.throw();
+        });
+
+        it("Should throw an error if an empty array is passed using a single array join condition", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, [])).to.throw();
+        });
+
+        it("Should throw an error if an empty array is passed using left and right array join conditions", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, [], [])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"], [])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df2, [], ["id"])).to.throw();
+        });
+
+        it("Should throw an error if an left and right array join conditions are of different lengths", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"], ["id", "name"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a function join condition", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.name == "error") )).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a single array join condition", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using left and right array join conditions", function() {
+            expect(() => this.test.df1.leftJoin(this.test.df2, ["id"], ["id"])).to.throw();
+            expect(() => this.test.df1.leftJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
+        });
+
+    });
+
+    describe("rightJoin()", function() {
+        beforeEach(function() {
+            this.currentTest.df1 = verySmallDataFrame1;
+            this.currentTest.df2 = verySmallDataFrame2;
+            this.currentTest.rightJoinResultDf = verySmallDataFrameRightJoinResult;
+        });
+
+        it("Should return the right join between two DataFrames when using a single array join condition", function() {
+            let result = this.test.df1.rightJoin(this.test.df2, ["id", "name"]);
+            expect(result.toArray()).to.deep.equal(this.test.rightJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.rightJoinResultDf.columns);
+        });
+
+        it("Should return the right join between two DataFrames when using right and right array join conditions", function() {
+            let result = this.test.df1.rightJoin(this.test.df2, ["id", "name"], ["id", "name"]);
+            expect(result.toArray()).to.deep.equal(this.test.rightJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.rightJoinResultDf.columns);
+        });
+
+        it("Should return the right join between two DataFrames when using a function join condition", function() {
+            let result = this.test.df1.rightJoin(this.test.df2, (l, r) => (l["id"] == r["id"]) && (l["name"] == r["name"]));
+            expect(result.toArray()).to.deep.equal(this.test.rightJoinResultDf.toArray());
+            expect(result.columns).to.deep.equal(this.test.rightJoinResultDf.columns);
+        });
+
+        it( "Should throw an error if a DataFrame is not passed", function() {
+            expect(() => this.test.df1.rightJoin(()=> "should error"), ["id"]).to.throw();
+        });
+
+        it("Should throw an error if no argument is passed", function() {
+            expect(() => this.test.df1.rightJoin()).to.throw();
+        });
+
+        it("Should throw an error if more than three arguments are passed", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], 1, 1)).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using a single array join condition", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id", "invalidCol"])).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using right and right array join conditions", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], ["invalidCol"])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["invalidCol"], ["id"])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id", "invalidCol"], ["id"])).to.throw();
+        });
+
+        it("Should throw an error if a non-existent column is passed using a function join condition", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.invalidCol == "test") )).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, (l, r) => (l.id == r.id) || (r.invalidCol == "test") )).to.throw();
+        });
+
+        it("Should throw an error if an empty array is passed using a single array join condition", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, [])).to.throw();
+        });
+
+        it("Should throw an error if an empty array is passed using right and right array join conditions", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, [], [])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], [])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df2, [], ["id"])).to.throw();
+        });
+
+        it("Should throw an error if an right and right array join conditions are of different lengths", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], ["id", "name"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a function join condition", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.name == "error") )).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a single array join condition", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using right and right array join conditions", function() {
+            expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], ["id"])).to.throw();
+            expect(() => this.test.df1.rightJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
         });
 
     });

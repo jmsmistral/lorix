@@ -76,3 +76,27 @@ export let verySmallDataFrameInnerJoinResult = (
         ['id', 'name', 'age']
     )
 );
+
+// Left join of verySmallDataFrame1 and verySmallDataFrame2
+export let verySmallDataFrameLeftJoinResult = (
+    new DataFrame(
+        [
+            { 'id': 1, 'name': 'billy', 'age': 10 },
+            { 'id': 2, 'name': 'jane', 'age': 20 },
+            { 'id': 3, 'name': 'roger', 'age': null }
+        ],
+        ['id', 'name', 'age']
+    )
+);
+
+// Right join of verySmallDataFrame1 and verySmallDataFrame2
+export let verySmallDataFrameRightJoinResult = (
+    new DataFrame(
+        [
+            { 'id': 1, 'name': 'billy', 'age': 10 },
+            { 'id': 2, 'name': 'jane', 'age': 20 },
+            { 'id': 4, 'name': 'gary', 'age': 40 }
+        ],
+        ['id', 'name', 'age']
+    )
+);
