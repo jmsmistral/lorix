@@ -5,7 +5,9 @@ import { DataFrame } from './dataframe.js';
 import {
     validateJoinFunctionReferencesWithProxy,
     validateJoinArrayReferences,
-    getInvalidJoinColumns
+    getInvalidJoinColumns,
+    validateOverlappingColumns,
+    validateOverlappingColumnsInFunction
 } from './utils.js';
 
 
@@ -88,21 +90,25 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
         throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
     }
 
-    // Determine if on is a function or array or undefined
-    // and run either a non-indexed or indexed join
+    // Determine if condition is a
+    // - function (non-indexed join)
+    // - single array (indexed join)
     if (on) {
         if (on instanceof Function) {
             // Check that the function references valid columns
             // and error if at least one is invalid
-            validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns);
+            let left, right, both;
+            ({left, right, both} = validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns));
+            validateOverlappingColumnsInFunction(leftDf.columns, rightDf.columns, left, right);
             return _dispatchNonIndexedJoin(type, leftDf, rightDf, on);
         }
 
         if (on instanceof Array && on.length) {
             // Single array of columns provided (no rightOn)
-            // Check that all specified columns are in both DataFrames.
+            // Check that all specified columns exit in both DataFrames.
             if (validateJoinArrayReferences(on, leftDf.columns) && validateJoinArrayReferences(on, rightDf.columns)) {
-                    return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
+                validateOverlappingColumns(leftDf.columns, rightDf.columns, on);
+                return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
             }
             let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, on);
             throw Error(`Invalid columns found in join condition: ${invalidCols}`);
@@ -110,16 +116,17 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
         throw Error("'on' needs to be either a function or a non-empty array");
     }
 
-    // Two arrays of columns provided (leftOn and rightOn)
-    if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length)) {
-        // Check that all specified columns are in both DataFrames.
+    // Condition made-up of two arrays (leftOn and rightOn)
+    if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length) && (leftOn.length == rightOn.length)) {
+        // Check that all specified columns exit in both DataFrames.
         if (validateJoinArrayReferences(leftOn, leftDf.columns) && validateJoinArrayReferences(rightOn, rightDf.columns)) {
+            validateOverlappingColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
             return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
         }
         let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
         throw Error(`Invalid columns found in join condition: ${invalidCols}`);
     }
-    throw Error("'leftOn' and 'rightOn' need to be non-empty arrays");
+    throw Error("'leftOn' and 'rightOn' need to be non-empty arrays of equal length");
 };
 
 

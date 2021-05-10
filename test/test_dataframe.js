@@ -234,19 +234,19 @@ describe("DataFrame class", () => {
         });
 
         it("Should return the inner join between two DataFrames when using a single array join condition", function() {
-            let result = this.test.df1.innerJoin(this.test.df2, ["id"]);
+            let result = this.test.df1.innerJoin(this.test.df2, ["id", "name"]);
             expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
             expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
         });
 
         it("Should return the inner join between two DataFrames when using left and right array join conditions", function() {
-            let result = this.test.df1.innerJoin(this.test.df2, ["id"], ["id"]);
+            let result = this.test.df1.innerJoin(this.test.df2, ["id", "name"], ["id", "name"]);
             expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
             expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
         });
 
         it("Should return the inner join between two DataFrames when using a function join condition", function() {
-            let result = this.test.df1.innerJoin(this.test.df2, (l, r) => l["id"] == r["id"]);
+            let result = this.test.df1.innerJoin(this.test.df2, (l, r) => (l["id"] == r["id"]) && (l["name"] == r["name"]));
             expect(result.toArray()).to.deep.equal(this.test.innerJoinResultDf.toArray());
             expect(result.columns).to.deep.equal(this.test.innerJoinResultDf.columns);
         });
@@ -287,6 +287,23 @@ describe("DataFrame class", () => {
             expect(() => this.test.df1.innerJoin(this.test.df2, [], [])).to.throw();
             expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], [])).to.throw();
             expect(() => this.test.df1.innerJoin(this.test.df2, [], ["id"])).to.throw();
+        });
+
+        it("Should throw an error if an left and right array join conditions are of different lengths", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], ["id", "name"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a function join condition", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, (l, r) => (l.id == r.id) && (r.name == "error") )).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using a single array join condition", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"])).to.throw();
+        });
+
+        it("Should throw an error if there are overlapping columns using left and right array join conditions", function() {
+            expect(() => this.test.df1.innerJoin(this.test.df2, ["id"], ["id"])).to.throw();
+            expect(() => this.test.df1.innerJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
         });
 
     });

@@ -24,13 +24,19 @@ export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfC
 
     return {
         "left": lodash.union([
-            leftNonEqualDummyDf,
-            leftEqualDummyDf
+            ...leftNonEqualDummyDf.getAccessedColumns(),
+            ...leftEqualDummyDf.getAccessedColumns()
         ]),
         "right": lodash.union([
-            rightNonEqualDummyDf,
-            rightEqualDummyDf
-        ])
+            ...rightNonEqualDummyDf.getAccessedColumns(),
+            ...rightEqualDummyDf.getAccessedColumns()
+        ]),
+        "both": lodash.union([
+            ...leftNonEqualDummyDf.getAccessedColumns(),
+            ...leftEqualDummyDf.getAccessedColumns(),
+            ...rightNonEqualDummyDf.getAccessedColumns(),
+            ...rightEqualDummyDf.getAccessedColumns()
+        ]),
     };
 }
 
@@ -58,13 +64,14 @@ export function getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, 
     // Returns the unique array of columns that
     // are referenced but do not exist in the DataFrame.
     if (arguments.length == 3) {
-        cols = leftCompareCols;
-        return (
-            lodash.union(
-                lodash.difference(cols, leftDfCols),
-                lodash.difference(cols, rightDfCols)
-            )
-        );
+        // let cols = leftCompareCols;
+        // return (
+        //     lodash.union(
+        //         lodash.difference(cols, leftDfCols),
+        //         lodash.difference(cols, rightDfCols)
+        //     )
+        // );
+        rightCompareCols = leftCompareCols;
     }
     return (
         lodash.union(
@@ -73,6 +80,40 @@ export function getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, 
         )
     );
 
+}
+
+export function validateOverlappingColumns(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
+    // Check if any of the columns that are not
+    // part of the join condition, have the same
+    // name between both datasets. Throw an error
+    // if there is any overlap.
+    // The point is to avoid overwriting data when
+    // joining, for columns with the same name.
+    if (arguments.length == 3) {
+        rightJoinCols = leftJoinCols;
+    }
+    let leftDfFilteredCols = lodash.difference(leftDfCols, leftJoinCols);
+    let rightDfFilteredCols = lodash.difference(rightDfCols, rightJoinCols);
+    let overlappingCols = lodash.intersection(leftDfFilteredCols, rightDfFilteredCols);
+    if (overlappingCols.length) {
+        throw Error(`Overlapping columns with the same name: ${overlappingCols}`);
+    }
+}
+
+export function validateOverlappingColumnsInFunction(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
+    // Check if any of the columns that are not
+    // part of the functional join condition, have
+    // the same name between both datasets. Throw
+    // an error if there is any overlap.
+    // The point is to avoid overwriting data when
+    // joining, for columns with the same name.
+    let commonJoinCols = lodash.intersection(leftJoinCols, rightJoinCols);
+    let leftDfFilteredCols = lodash.difference(leftDfCols, commonJoinCols);
+    let rightDfFilteredCols = lodash.difference(rightDfCols, commonJoinCols);
+    let overlappingCols = lodash.intersection(leftDfFilteredCols, rightDfFilteredCols);
+    if (overlappingCols.length) {
+        throw Error(`Overlapping columns with the same name: ${overlappingCols}`);
+    }
 }
 
 export function _isColumnArrayInDataframe(dfCols, groupByCols) {

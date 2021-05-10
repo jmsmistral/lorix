@@ -22,6 +22,17 @@ export let verySmallDataFrame2 = (
     )
 );
 
+export let verySmallDataFrame3 = (
+    new DataFrame(
+        [
+            {'idCol': 1, 'name': 'billy', 'age': 10},
+            {'idCol': 2, 'name': 'jane', 'age': 20},
+            {'idCol': 4, 'name': 'gary', 'age': 40}
+        ],
+        ['idCol', 'name', 'age']
+    )
+);
+
 export let verySmallValidObjArray = [
     {'id': 1, 'name': 'billy'},
     {'id': 2, 'name': 'jane'},
