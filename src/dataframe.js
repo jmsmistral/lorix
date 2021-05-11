@@ -131,7 +131,6 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _innerJoin(this, df, on, leftOn, rightOn);
         return _join("inner", this, df, on, leftOn, rightOn);
     }
 
@@ -141,7 +140,6 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _leftJoin(this, df, on, leftOn, rightOn);
         return _join("left", this, df, on, leftOn, rightOn);
     }
 
@@ -151,14 +149,7 @@ export class DataFrame {
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _rightJoin(this, df, on, leftOn, rightOn);
         return _join("right", this, df, on, leftOn, rightOn);
-    }
-
-    groupBy(cols, agg) {
-        // Returns a GroupBy object
-        // return (new GroupBy(this, cols)).groups;
-        return groupAggregation(this, cols, agg);
     }
 
     orderBy(cols, order) {
@@ -171,6 +162,11 @@ export class DataFrame {
             throw Error("orderBy requires an array of at least one column, and an optional array defining the order.");
         }
         return new DataFrame(lodash.orderBy(this.rows, cols, order || []), this.columns);
+    }
+
+    groupBy(cols, agg) {
+        // Returns a GroupBy object
+        return groupAggregation(this, cols, agg);
     }
 
     window(groupByCols, orderByCols, agg) {

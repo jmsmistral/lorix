@@ -1,5 +1,6 @@
 import { DataFrame } from '../src/dataframe.js';
 
+// Very Small DataFrames
 export let verySmallDataFrame1 = (
     new DataFrame(
         [
@@ -44,6 +45,31 @@ export let verySmallInvalidObjArray = [
     {'name': 'jane'},
     {'id': 3, 'name': 'roger'}
 ];
+
+
+// Small DataFrames
+export let smallDataFrame1 = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 54, 'name': 'wayne', 'weight': 87 },
+            { 'id': 78, 'name': 'carl', 'weight': 86 },
+            { 'id': 23, 'name': 'fred', 'weight': 62 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 201, 'name': 'alex', 'weight': 95 },
+            { 'id': 169, 'name': 'dwayne', 'weight': 99 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 }
+          ],
+        ['id', 'name', 'weight']
+    )
+);
 
 
 // Test result validation datasets

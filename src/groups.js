@@ -2,7 +2,7 @@ import d3Array from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from "./dataframe.js";
-import { _isColumnArrayInDataframe } from './utils.js';
+import { _isSubsetArray } from './utils.js';
 
 
 // GROUPBY FUNCTIONS
@@ -82,7 +82,7 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
 
     // Check that columns exist in Dataframe
     let aggCols = Object.getOwnPropertyNames(groupByAggs);
-    if (!(_isColumnArrayInDataframe(df.columns, groupByCols.concat(aggCols)))) {
+    if (!(_isSubsetArray(groupByCols.concat(aggCols), df.columns))) {
         throw Error(`Invalid columns provided to groupBy '${groupByCols.concat(aggCols)}'`);
     }
 
@@ -207,7 +207,7 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
     }
 
     // Check that columns exist in Dataframe
-    if (!(_isColumnArrayInDataframe(df.columns, [...groupByCols, ...orderByCols[0]]))) {
+    if (!(_isSubsetArray([...groupByCols, ...orderByCols[0]], df.columns))) {
         throw Error(`Invalid columns provided in group or order array '${[...groupByCols, ...orderByCols[0]]}'`);
     }
 
