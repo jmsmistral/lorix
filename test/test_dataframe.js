@@ -160,6 +160,10 @@ describe("DataFrame class", () => {
             }
         });
 
+        it("Should throw an error if no definition is provided for the new column", function() {
+            expect(() => {this.test.df.withColumn("newCol")}).to.throw();
+        });
+
         it("Should throw an error when a function is not passed as the column definition", function() {
             expect(() => {this.test.df.withColumn("newCol", 1)}).to.throw();
         });
