@@ -33,8 +33,9 @@ export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfC
 }
 
 export function validateFunctionReferencesWithProxy(fn, cols) {
-    // Runs join condition function on dummy DFs to
+    // Runs function on dummy DFs to
     // check which columns are being referenced.
+    // Not specific to join functions.
     let nonEqualDummyDf = new DummyNonEqualDataFrame(cols);
     fn(nonEqualDummyDf.rows[0]);
 
@@ -45,21 +46,6 @@ export function validateFunctionReferencesWithProxy(fn, cols) {
         nonEqualDummyDf,
         equalDummyDf
     ]);
-}
-
-export function _getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, rightCompareCols) {
-    // Returns the unique array of columns that
-    // are referenced but do not exist in the DataFrame.
-    if (arguments.length == 3) {
-        rightCompareCols = leftCompareCols;
-    }
-    return (
-        lodash.union(
-            lodash.difference(leftCompareCols, leftDfCols),
-            lodash.difference(rightCompareCols, rightDfCols)
-        )
-    );
-
 }
 
 export function validateOverlappingColumnsArrayJoin(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
@@ -96,10 +82,25 @@ export function validateOverlappingColumnsFunctionJoin(leftDfCols, rightDfCols, 
     }
 }
 
+export function _getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, rightCompareCols) {
+    // Returns the unique array of columns that
+    // are referenced but do not exist in the DataFrame.
+    if (arguments.length == 3) {
+        rightCompareCols = leftCompareCols;
+    }
+    return (
+        lodash.union(
+            lodash.difference(leftCompareCols, leftDfCols),
+            lodash.difference(rightCompareCols, rightDfCols)
+        )
+    );
+
+}
+
 export function _isSubsetArray(arr, compareArray) {
     // Returns true if all elements in `arr` are in
     // compareArray, false otherwise.
-    if (arr instanceof Array) {
+    if ((arr instanceof Array) && (compareArray instanceof Array)) {
         if (!(arr.length)) return false;
         return (lodash.difference(arr, compareArray).length == 0);
     }

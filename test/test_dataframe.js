@@ -9,7 +9,13 @@ import {
     verySmallDataFrameCrossJoinResult,
     verySmallDataFrameInnerJoinResult,
     verySmallDataFrameLeftJoinResult,
-    verySmallDataFrameRightJoinResult
+    verySmallDataFrameRightJoinResult,
+
+    smallDataFrame1,
+    smallDataFrame1OrderByIdResult,
+    smallDataFrame1OrderByNameResult,
+    smallDataFrame1OrderByIdWeightResult,
+    smallDataFrame1OrderByIdDescWeightAscResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -470,6 +476,56 @@ describe("DataFrame class", () => {
         it("Should throw an error if there are overlapping columns using right and right array join conditions", function() {
             expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], ["id"])).to.throw();
             expect(() => this.test.df1.rightJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
+        });
+
+    });
+
+    describe("orderBy()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame1;
+            this.currentTest.orderByIdResultDf = smallDataFrame1OrderByIdResult;
+            this.currentTest.orderByNameResultDf = smallDataFrame1OrderByNameResult;
+            this.currentTest.orderByIdWeightResultDf = smallDataFrame1OrderByIdWeightResult;
+            this.currentTest.orderByIdWeightDescResultDf = smallDataFrame1OrderByIdDescWeightAscResult;
+        });
+
+        it("Should return a new DataFrame ordered by the specified columns and sort order", function() {
+            let result1 = this.test.df.orderBy(["id"]);
+            expect(result1.toArray()).to.deep.equal(this.test.orderByIdResultDf.toArray());
+            expect(result1.columns).to.deep.equal(this.test.orderByIdResultDf.columns);
+
+            let result2 = this.test.df.orderBy(["name"]);
+            expect(result2.toArray()).to.deep.equal(this.test.orderByNameResultDf.toArray());
+            expect(result2.columns).to.deep.equal(this.test.orderByNameResultDf.columns);
+
+            let result3 = this.test.df.orderBy(["id", "weight"]);
+            expect(result3.toArray()).to.deep.equal(this.test.orderByIdWeightResultDf.toArray());
+            expect(result3.columns).to.deep.equal(this.test.orderByIdWeightResultDf.columns);
+
+            let result4 = this.test.df.orderBy(["id", "weight"], ["desc", "asc"]);
+            expect(result4.toArray()).to.deep.equal(this.test.orderByIdWeightDescResultDf.toArray());
+            expect(result4.columns).to.deep.equal(this.test.orderByIdWeightDescResultDf.columns);
+        });
+
+        it("Should throw an error if no columns are specified", function() {
+            expect(() => this.test.df.orderBy([])).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed", function() {
+            expect(() => this.test.df.orderBy("notAnArray")).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], "notAnArray")).to.throw();
+        });
+
+        it("Should throw an error if no valid columns are specified", function() {
+            expect(() => this.test.df.orderBy(["invalidColumn"])).to.throw();
+        });
+
+        it("Should throw an error if no valid values are specified for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], ["invalidValue"])).to.throw();
         });
 
     });

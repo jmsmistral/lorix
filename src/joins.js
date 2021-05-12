@@ -77,13 +77,13 @@ export function _crossJoin(df1, df2) {
         let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
         return new DataFrame(rowArray, outputColumns);
     }
-    throw Error("crossJoin expects another DataFrame");
+    throw Error("crossJoin() expects another DataFrame");
 }
 
 
 export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     if (!(rightDf instanceof DataFrame)) {
-        throw Error("Join expects another DataFrame");
+        throw Error("join() expects another DataFrame");
     }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
