@@ -5,7 +5,9 @@ import {
     verySmallDataFrame2,
     verySmallValidObjArray,
     verySmallInvalidObjArray,
-    verySmallDataFrameInnerJoinResult
+    verySmallDataFrameInnerJoinResult,
+    smallDataFrame1,
+    iris
 } from './test/sample_data.js'
 
 
@@ -19,6 +21,10 @@ import {
 
 let df1 = verySmallDataFrame1;
 let df2 = verySmallDataFrame2;
+
+let df3 = smallDataFrame1;
+
+let irisDf = iris;
 
 // let arr1 = verySmallValidObjArray;
 // let arr2 = verySmallInvalidObjArray;
@@ -41,13 +47,28 @@ let df2 = verySmallDataFrame2;
 // dropping columns
 // let df3 = df.drop('name');
 
-console.log("df1");
-df1.head();
+// console.log("df1");
+// df1.head();
 
-console.log("df2");
-df2.head();
+// console.log("df2");
+// df2.head();
 
+// console.log("df3");
 // df3.head();
+
+console.log("iris");
+irisDf.head();
+
+
+
+
+// df3.orderBy(["invalidColumn"]).head();
+// console.log(df3.orderBy(["id"]).toArray());
+// console.log(df3.orderBy(["name"]).toArray());
+// console.log(df3.orderBy(["id", "weight"]).toArray());
+// console.log(df3.orderBy(["id", "weight"], ["desc", "asc"]).toArray());
+// console.log(df3.orderBy(["id"], "test").toArray());
+// console.log(df3.orderBy(["id"], ["wog"]).toArray());
 
 // array iteration
 // console.log(df1.columns);
@@ -55,6 +76,7 @@ df2.head();
 // console.log(df1.toArray());
 
 console.log("df1.withColumn()");
+// df1 = df1.withColumn("newCol");
 // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
 // df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
 // df1 = df1.withColumn("newCol", () => 1 + 2);
@@ -82,6 +104,28 @@ console.log("df1.groupBy()");
 //     }
 // ).head();
 // df1.groupBy(["id", "age"], {"newColz": "count"}); // Error - invalid column reference
+
+// console.log(
+//     irisDf
+//     .groupBy(
+//         ["species"],
+//         {
+//             "sepal_length": ["min", "max", "mean", "count", "sum"]
+//         }
+//     )
+//     .toArray()
+// );
+
+(
+    irisDf
+    .groupBy(
+        ["species"],
+        {
+            "sepal_length": ["min", "max", "mean", "count", "sum"]
+        }
+    )
+    .head()
+)
 
 console.log("df1.window()");
 // df1.head();
@@ -125,7 +169,7 @@ console.log('inner join');
 // )
 // df1.head();
 // (df1.innerJoin(df2, (l, r) => (l.id == r.id) || (r.name == "gary") )).head();
-(df1.innerJoin(df2, (l, r) => (l.id == r.id) )).head();
+// (df1.innerJoin(df2, (l, r) => (l.id == r.id) )).head();
 
 // console.log((df1.innerJoin(df2, ["id"], ["id"])).toArray());
 // console.log(verySmallDataFrameInnerJoinResult.toArray());
@@ -144,7 +188,7 @@ console.log('inner join');
 // (df1.innerJoin(df2, ["id", "age"])).head();  // Indexed inner join
 
 console.log('left join');
-(df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
+// (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
 
 // (df1.leftJoin(df2, "id")).head(); // Error - argument types
 // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
@@ -155,7 +199,7 @@ console.log('left join');
 // df1.leftJoin(df2); // Error
 
 console.log('right join');
-(df1.rightJoin(df2, (l, r) => l.id == r.id)).head();
+// (df1.rightJoin(df2, (l, r) => l.id == r.id)).head();
 
 // (df1.rightJoin(df2, (l, r) => l.id == r.id)).head();
 // (df1.rightJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head();

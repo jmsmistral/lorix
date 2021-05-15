@@ -66,15 +66,7 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
      * aggregations. e.g. {"colA": "sum", "colB": ["sum", "count"]}.
      */
 
-    // Inputs check
-    if (
-        !(groupByCols instanceof Array) ||
-        groupByCols.length < 1
-    ) {
-        throw Error("Invalid groupBy columns provided.");
-    }
-
-    // If no aggregation map is passed, return the group Map
+    // If no aggregation object is passed, return a Map defining the groups
     let groupByFunctions = _generateGroupByFunctions(groupByCols);
     if (groupByAggs == undefined) {
         return d3Array.group(df.rows, ...groupByFunctions);

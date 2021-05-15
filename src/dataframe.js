@@ -101,13 +101,14 @@ export class DataFrame {
         // Returns a new Dataframe with a new column definition.
         // Note: if a reference is made to a non-existent column
         // the result will be undefined.
+
         // Check that `col` is a string that does not start with a number.
         if (!_isValidColumnName(col)) {
             throw Error(`Column name "${col}" is not valid.`);
         }
 
         // Check that `expr` is a function.
-        if(expr & !(expr instanceof Function)) {
+        if((expr == undefined) || !(expr instanceof Function)) {
             throw Error("expr provided to withColumn needs to be a function.")
         }
 
@@ -166,7 +167,7 @@ export class DataFrame {
             throw Error(`orderBy() requires an optional non-empty sort order array.`);
         }
 
-        // Check column validity
+        // Check column array validity
         if (!(_isSubsetArray(cols, this.columns))) {
             throw Error(`Invalid columns found in orderBy(): ${lodash.difference(cols, this.columns)}`);
         }
@@ -178,7 +179,17 @@ export class DataFrame {
     }
 
     groupBy(cols, agg) {
-        // Returns a GroupBy object
+        // Return a Map or a DataFrame depending on whether
+        // `agg` is defined or not.
+        if (!(cols instanceof Array) || !(cols.length)) {
+            throw Error(`groupBy() requires non-empty array of columns.`);
+        }
+
+        // Check column array validity
+        if (!(_isSubsetArray(cols, this.columns))) {
+            throw Error(`Invalid columns found in groupBy(): ${lodash.difference(cols, this.columns)}`);
+        }
+
         return groupAggregation(this, cols, agg);
     }
 

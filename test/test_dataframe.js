@@ -15,7 +15,10 @@ import {
     smallDataFrame1OrderByIdResult,
     smallDataFrame1OrderByNameResult,
     smallDataFrame1OrderByIdWeightResult,
-    smallDataFrame1OrderByIdDescWeightAscResult
+    smallDataFrame1OrderByIdDescWeightAscResult,
+
+    iris,
+    irisGroupBySpeciesResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -529,6 +532,49 @@ describe("DataFrame class", () => {
         });
 
         it("Should throw an error if no valid values are specified for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], ["invalidValue"])).to.throw();
+        });
+
+    });
+
+    describe("groupBy()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = iris;
+            this.currentTest.groupBySpeciesResultDf = irisGroupBySpeciesResult;
+        });
+
+        it("Should return a new DataFrame grouped by the specified columns with the specified aggregations", function() {
+            let result1 = (
+                this.test.df
+                .groupBy(
+                    ["species"],
+                    {
+                        "sepal_length": ["min", "max", "mean", "count", "sum"]
+                    }
+                )
+            );
+            expect(result1.toArray()).to.deep.equal(this.test.groupBySpeciesResultDf.toArray());
+            expect(result1.columns).to.deep.equal(this.test.groupBySpeciesResultDf.columns);
+        });
+
+        it.skip("Should throw an error if no columns are specified", function() {
+            expect(() => this.test.df.orderBy([])).to.throw();
+        });
+
+        it.skip("Should throw an error if an array is not passed", function() {
+            expect(() => this.test.df.orderBy("notAnArray")).to.throw();
+        });
+
+        it.skip("Should throw an error if an array is not passed for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], "notAnArray")).to.throw();
+        });
+
+        it.skip("Should throw an error if no valid columns are specified", function() {
+            expect(() => this.test.df.orderBy(["invalidColumn"])).to.throw();
+        });
+
+        it.skip("Should throw an error if no valid values are specified for sort order", function() {
             expect(() => this.test.df.orderBy(["id"], ["invalidValue"])).to.throw();
         });
 

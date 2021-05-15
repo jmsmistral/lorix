@@ -200,7 +200,7 @@ function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
-    // TODO check that columns in join exist on both dataframes
+
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
     // Perform join using right dataframe index
@@ -227,6 +227,7 @@ function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
+
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
     // Perform join using right dataframe index

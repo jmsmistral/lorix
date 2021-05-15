@@ -1,4 +1,9 @@
 import { DataFrame } from '../src/dataframe.js';
+import { readCsv } from '../src/io.js';
+
+
+// Iris dataset
+export let iris = await readCsv("./test/data/iris.csv");
 
 // Very Small DataFrames
 export let verySmallDataFrame1 = (
@@ -151,6 +156,30 @@ export let smallDataFrame1OrderByIdResult = (
     )
 );
 
+// orderBy of smallDataFrame1 by name
+export let smallDataFrame1OrderByNameResult = (
+    new DataFrame(
+        [
+            { 'id': 201, 'name': 'alex', 'weight': 95 },
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 78, 'name': 'carl', 'weight': 86 },
+            { 'id': 169, 'name': 'dwayne', 'weight': 99 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 23, 'name': 'fred', 'weight': 62 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 54, 'name': 'wayne', 'weight': 87 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);
+
 // orderBy of smallDataFrame1 by id, weight
 export let smallDataFrame1OrderByIdWeightResult = (
     new DataFrame(
@@ -199,26 +228,42 @@ export let smallDataFrame1OrderByIdDescWeightAscResult = (
     )
 );
 
-// orderBy of smallDataFrame1 by name
-export let smallDataFrame1OrderByNameResult = (
+// groupBy of iris by
+export let irisGroupBySpeciesResult = (
     new DataFrame(
         [
-            { 'id': 201, 'name': 'alex', 'weight': 95 },
-            { 'id': 100, 'name': 'billy', 'weight': 102 },
-            { 'id': 78, 'name': 'carl', 'weight': 86 },
-            { 'id': 169, 'name': 'dwayne', 'weight': 99 },
-            { 'id': 101, 'name': 'elon', 'weight': 74 },
-            { 'id': 23, 'name': 'fred', 'weight': 62 },
-            { 'id': 9, 'name': 'gary', 'weight': 87 },
-            { 'id': 45, 'name': 'issac', 'weight': 104 },
-            { 'id': 2, 'name': 'jane', 'weight': 97 },
-            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
-            { 'id': 1, 'name': 'joseph', 'weight': 71 },
-            { 'id': 5, 'name': 'roger', 'weight': 107 },
-            { 'id': 100, 'name': 'sean', 'weight': 85 },
-            { 'id': 17, 'name': 'steven', 'weight': 107 },
-            { 'id': 54, 'name': 'wayne', 'weight': 87 }
+            {
+              species: 'setosa',
+              sepal_length_min: 4.3,
+              sepal_length_max: 5.8,
+              sepal_length_mean: 5.005999999999999,
+              sepal_length_count: 50,
+              sepal_length_sum: 250.29999999999998
+            },
+            {
+              species: 'versicolor',
+              sepal_length_min: 4.9,
+              sepal_length_max: 7,
+              sepal_length_mean: 5.936,
+              sepal_length_count: 50,
+              sepal_length_sum: 296.8
+            },
+            {
+              species: 'virginica',
+              sepal_length_min: 4.9,
+              sepal_length_max: 7.9,
+              sepal_length_mean: 6.587999999999998,
+              sepal_length_count: 50,
+              sepal_length_sum: 329.3999999999999
+            }
         ],
-        ['id', 'name', 'weight']
+        [
+            'species',
+            'sepal_length_min',
+            'sepal_length_max',
+            'sepal_length_mean',
+            'sepal_length_count',
+            'sepal_length_sum'
+        ]
     )
 );
