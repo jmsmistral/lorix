@@ -23,6 +23,7 @@ function _flattenAggMap(groups, groupByCols, aggColName, p = {}) {
 }
 
 function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
+    // let map = undefined;
     let map;
     let aggColumnName = aggCol + "_" + type;
     if (type == "sum") {
@@ -39,6 +40,11 @@ function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
     }
     if (type == "count") {
         map = d3Array.rollup(df.rows, v => v.length, ...groupByFunctions);
+    }
+
+    // Catch any undefined aggregation types passed
+    if (map == undefined) {
+        throw Error(`Invalid aggregation provided to groupBy '${type}'`);
     }
 
     return new DataFrame(_flattenAggMap(map, groupByCols, aggColumnName), groupByCols.concat([aggColumnName]));

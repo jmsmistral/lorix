@@ -558,24 +558,23 @@ describe("DataFrame class", () => {
             expect(result1.columns).to.deep.equal(this.test.groupBySpeciesResultDf.columns);
         });
 
-        it.skip("Should throw an error if no columns are specified", function() {
-            expect(() => this.test.df.orderBy([])).to.throw();
+        it("Should throw an error if no columns are specified", function() {
+            expect(() => this.test.df.groupBy([])).to.throw();
         });
 
-        it.skip("Should throw an error if an array is not passed", function() {
-            expect(() => this.test.df.orderBy("notAnArray")).to.throw();
+        it("Should throw an error if an array is not passed", function() {
+            expect(() => this.test.df.groupBy("notAnArray")).to.throw();
         });
 
-        it.skip("Should throw an error if an array is not passed for sort order", function() {
-            expect(() => this.test.df.orderBy(["id"], "notAnArray")).to.throw();
+        it("Should throw an error if no valid columns are specified", function() {
+            expect(() => this.test.df.groupBy(["invalidColumn"])).to.throw();
         });
 
-        it.skip("Should throw an error if no valid columns are specified", function() {
-            expect(() => this.test.df.orderBy(["invalidColumn"])).to.throw();
-        });
-
-        it.skip("Should throw an error if no valid values are specified for sort order", function() {
-            expect(() => this.test.df.orderBy(["id"], ["invalidValue"])).to.throw();
+        it("Should throw an error if no valid values are specified for aggregation", function() {
+            expect(() => this.test.df.groupBy(
+                ["species"],
+                {"sepal_length": ["min", "max", "invalidAgg"]}
+            )).to.throw();
         });
 
     });
