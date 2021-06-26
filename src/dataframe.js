@@ -13,6 +13,7 @@ import {
 import {
     validateFunctionReferencesWithProxy,
     _getUniqueObjectProperties,
+    _isSubsetArray,
     _isValidColumnName
 } from "./utils.js";
 
@@ -100,13 +101,14 @@ export class DataFrame {
         // Returns a new Dataframe with a new column definition.
         // Note: if a reference is made to a non-existent column
         // the result will be undefined.
+
         // Check that `col` is a string that does not start with a number.
         if (!_isValidColumnName(col)) {
             throw Error(`Column name "${col}" is not valid.`);
         }
 
         // Check that `expr` is a function.
-        if(expr & !(expr instanceof Function)) {
+        if((expr == undefined) || !(expr instanceof Function)) {
             throw Error("expr provided to withColumn needs to be a function.")
         }
 
@@ -120,45 +122,36 @@ export class DataFrame {
 
     crossJoin(df) {
         if (arguments.length < 1 || arguments.length > 1) {
-            throw Error(`crossJoin takes a single argument. Arguments passed: ${arguments.length}`);
+            throw Error(`crossJoin() takes a single argument. Arguments passed: ${arguments.length}`);
         }
         return _crossJoin(this, df);
     }
 
     innerJoin(df, leftOn, rightOn) {
         if (arguments.length < 2 || arguments.length > 3) {
-            throw Error(`innerJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+            throw Error(`innerJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _innerJoin(this, df, on, leftOn, rightOn);
         return _join("inner", this, df, on, leftOn, rightOn);
     }
 
     leftJoin(df, leftOn, rightOn) {
         if (arguments.length < 2 || arguments.length > 3) {
-            throw Error(`leftJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+            throw Error(`leftJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _leftJoin(this, df, on, leftOn, rightOn);
         return _join("left", this, df, on, leftOn, rightOn);
     }
 
     rightJoin(df, leftOn, rightOn) {
         if (arguments.length < 2 || arguments.length > 3) {
-            throw Error(`rightJoin takes either two or three arguments. Arguments passed: ${arguments.length}`);
+            throw Error(`rightJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
         }
         let on;
         if (arguments.length == 2) on = leftOn;
-        // return _rightJoin(this, df, on, leftOn, rightOn);
         return _join("right", this, df, on, leftOn, rightOn);
-    }
-
-    groupBy(cols, agg) {
-        // Returns a GroupBy object
-        // return (new GroupBy(this, cols)).groups;
-        return groupAggregation(this, cols, agg);
     }
 
     orderBy(cols, order) {
@@ -167,10 +160,37 @@ export class DataFrame {
         // as defined for each corresponding element in the `order`
         // array.
         // e.g. df.orderBy(["col1", "col2"], ["asc", "desc"])
-        if (!(cols instanceof Array) || cols.length < 1) {
-            throw Error("orderBy requires an array of at least one column, and an optional array defining the order.");
+        if (!(cols instanceof Array) || !(cols.length)) {
+            throw Error(`orderBy() requires non-empty array of columns.`);
         }
+        if (arguments.length == 2 && (!(order instanceof Array) || !(order.length))) {
+            throw Error(`orderBy() requires an optional non-empty sort order array.`);
+        }
+
+        // Check column array validity
+        if (!(_isSubsetArray(cols, this.columns))) {
+            throw Error(`Invalid columns found in orderBy(): ${lodash.difference(cols, this.columns)}`);
+        }
+        if (arguments.length == 2 && !(_isSubsetArray(order, ["asc", "desc"]))) {
+            throw Error(`Invalid columns found in orderBy(): ${lodash.difference(order, ["asc", "desc"])}`);
+        }
+
         return new DataFrame(lodash.orderBy(this.rows, cols, order || []), this.columns);
+    }
+
+    groupBy(cols, agg) {
+        // Return a Map or a DataFrame depending on whether
+        // `agg` is defined or not.
+        if (!(cols instanceof Array) || !(cols.length)) {
+            throw Error(`groupBy() requires non-empty array of columns.`);
+        }
+
+        // Check column array validity
+        if (!(_isSubsetArray(cols, this.columns))) {
+            throw Error(`Invalid columns found in groupBy(): ${lodash.difference(cols, this.columns)}`);
+        }
+
+        return groupAggregation(this, cols, agg);
     }
 
     window(groupByCols, orderByCols, agg) {

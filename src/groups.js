@@ -2,7 +2,7 @@ import d3Array from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from "./dataframe.js";
-import { _isColumnArrayInDataframe } from './utils.js';
+import { _isSubsetArray } from './utils.js';
 
 
 // GROUPBY FUNCTIONS
@@ -23,6 +23,7 @@ function _flattenAggMap(groups, groupByCols, aggColName, p = {}) {
 }
 
 function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
+    // let map = undefined;
     let map;
     let aggColumnName = aggCol + "_" + type;
     if (type == "sum") {
@@ -39,6 +40,11 @@ function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
     }
     if (type == "count") {
         map = d3Array.rollup(df.rows, v => v.length, ...groupByFunctions);
+    }
+
+    // Catch any undefined aggregation types passed
+    if (map == undefined) {
+        throw Error(`Invalid aggregation provided to groupBy '${type}'`);
     }
 
     return new DataFrame(_flattenAggMap(map, groupByCols, aggColumnName), groupByCols.concat([aggColumnName]));
@@ -66,15 +72,7 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
      * aggregations. e.g. {"colA": "sum", "colB": ["sum", "count"]}.
      */
 
-    // Inputs check
-    if (
-        !(groupByCols instanceof Array) ||
-        groupByCols.length < 1
-    ) {
-        throw Error("Invalid groupBy columns provided.");
-    }
-
-    // If no aggregation map is passed, return the group Map
+    // If no aggregation object is passed, return a Map defining the groups
     let groupByFunctions = _generateGroupByFunctions(groupByCols);
     if (groupByAggs == undefined) {
         return d3Array.group(df.rows, ...groupByFunctions);
@@ -82,7 +80,7 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
 
     // Check that columns exist in Dataframe
     let aggCols = Object.getOwnPropertyNames(groupByAggs);
-    if (!(_isColumnArrayInDataframe(df.columns, groupByCols.concat(aggCols)))) {
+    if (!(_isSubsetArray(groupByCols.concat(aggCols), df.columns))) {
         throw Error(`Invalid columns provided to groupBy '${groupByCols.concat(aggCols)}'`);
     }
 
@@ -207,7 +205,7 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
     }
 
     // Check that columns exist in Dataframe
-    if (!(_isColumnArrayInDataframe(df.columns, [...groupByCols, ...orderByCols[0]]))) {
+    if (!(_isSubsetArray([...groupByCols, ...orderByCols[0]], df.columns))) {
         throw Error(`Invalid columns provided in group or order array '${[...groupByCols, ...orderByCols[0]]}'`);
     }
 

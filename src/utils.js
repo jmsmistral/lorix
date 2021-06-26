@@ -3,14 +3,6 @@ import { DummyEqualDataFrame, DummyNonEqualDataFrame } from './proxy.js';
 import lodash from 'lodash';
 
 
-function _getRandomString() {
-    return Math.random().toString(36).substring(2, 15);
-}
-
-export function generateRandomValue() {
-    return (_getRandomString() + _getRandomString());
-}
-
 export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfCols) {
     // Runs join condition function on dummy DFs to
     // check which columns are being referenced.
@@ -41,8 +33,9 @@ export function validateJoinFunctionReferencesWithProxy(fn, leftDfCols, rightDfC
 }
 
 export function validateFunctionReferencesWithProxy(fn, cols) {
-    // Runs join condition function on dummy DFs to
+    // Runs function on dummy DFs to
     // check which columns are being referenced.
+    // Not specific to join functions.
     let nonEqualDummyDf = new DummyNonEqualDataFrame(cols);
     fn(nonEqualDummyDf.rows[0]);
 
@@ -55,34 +48,7 @@ export function validateFunctionReferencesWithProxy(fn, cols) {
     ]);
 }
 
-export function validateJoinArrayReferences(joinCols, dfCols) {
-    // Returns true if all columns in `cols` are in `expectedCols`.
-    return joinCols.filter(col => !(dfCols.includes(col))).length == 0;
-}
-
-export function getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, rightCompareCols) {
-    // Returns the unique array of columns that
-    // are referenced but do not exist in the DataFrame.
-    if (arguments.length == 3) {
-        // let cols = leftCompareCols;
-        // return (
-        //     lodash.union(
-        //         lodash.difference(cols, leftDfCols),
-        //         lodash.difference(cols, rightDfCols)
-        //     )
-        // );
-        rightCompareCols = leftCompareCols;
-    }
-    return (
-        lodash.union(
-            lodash.difference(leftCompareCols, leftDfCols),
-            lodash.difference(rightCompareCols, rightDfCols)
-        )
-    );
-
-}
-
-export function validateOverlappingColumns(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
+export function validateOverlappingColumnsArrayJoin(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
     // Check if any of the columns that are not
     // part of the join condition, have the same
     // name between both datasets. Throw an error
@@ -100,7 +66,7 @@ export function validateOverlappingColumns(leftDfCols, rightDfCols, leftJoinCols
     }
 }
 
-export function validateOverlappingColumnsInFunction(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
+export function validateOverlappingColumnsFunctionJoin(leftDfCols, rightDfCols, leftJoinCols, rightJoinCols) {
     // Check if any of the columns that are not
     // part of the functional join condition, have
     // the same name between both datasets. Throw
@@ -116,9 +82,29 @@ export function validateOverlappingColumnsInFunction(leftDfCols, rightDfCols, le
     }
 }
 
-export function _isColumnArrayInDataframe(dfCols, groupByCols) {
-    if (groupByCols.length < 1) return false;
-    return (lodash.difference(groupByCols, dfCols).length == 0);
+export function _getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols, rightCompareCols) {
+    // Returns the unique array of columns that
+    // are referenced but do not exist in the DataFrame.
+    if (arguments.length == 3) {
+        rightCompareCols = leftCompareCols;
+    }
+    return (
+        lodash.union(
+            lodash.difference(leftCompareCols, leftDfCols),
+            lodash.difference(rightCompareCols, rightDfCols)
+        )
+    );
+
+}
+
+export function _isSubsetArray(arr, compareArray) {
+    // Returns true if all elements in `arr` are in
+    // compareArray, false otherwise.
+    if ((arr instanceof Array) && (compareArray instanceof Array)) {
+        if (!(arr.length)) return false;
+        return (lodash.difference(arr, compareArray).length == 0);
+    }
+    throw Error("Array expected.");
 }
 
 export function _isString(val) {

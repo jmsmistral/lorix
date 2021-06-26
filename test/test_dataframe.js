@@ -9,7 +9,16 @@ import {
     verySmallDataFrameCrossJoinResult,
     verySmallDataFrameInnerJoinResult,
     verySmallDataFrameLeftJoinResult,
-    verySmallDataFrameRightJoinResult
+    verySmallDataFrameRightJoinResult,
+
+    smallDataFrame1,
+    smallDataFrame1OrderByIdResult,
+    smallDataFrame1OrderByNameResult,
+    smallDataFrame1OrderByIdWeightResult,
+    smallDataFrame1OrderByIdDescWeightAscResult,
+
+    iris,
+    irisGroupBySpeciesResult
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -152,6 +161,10 @@ describe("DataFrame class", () => {
                 expect(row).to.haveOwnProperty("newCol");
                 expect(row["newCol"]).to.equal(2);
             }
+        });
+
+        it("Should throw an error if no definition is provided for the new column", function() {
+            expect(() => {this.test.df.withColumn("newCol")}).to.throw();
         });
 
         it("Should throw an error when a function is not passed as the column definition", function() {
@@ -470,6 +483,98 @@ describe("DataFrame class", () => {
         it("Should throw an error if there are overlapping columns using right and right array join conditions", function() {
             expect(() => this.test.df1.rightJoin(this.test.df2, ["id"], ["id"])).to.throw();
             expect(() => this.test.df1.rightJoin(this.test.df3, ["id"], ["idCol"])).to.throw();
+        });
+
+    });
+
+    describe("orderBy()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame1;
+            this.currentTest.orderByIdResultDf = smallDataFrame1OrderByIdResult;
+            this.currentTest.orderByNameResultDf = smallDataFrame1OrderByNameResult;
+            this.currentTest.orderByIdWeightResultDf = smallDataFrame1OrderByIdWeightResult;
+            this.currentTest.orderByIdWeightDescResultDf = smallDataFrame1OrderByIdDescWeightAscResult;
+        });
+
+        it("Should return a new DataFrame ordered by the specified columns and sort order", function() {
+            let result1 = this.test.df.orderBy(["id"]);
+            expect(result1.toArray()).to.deep.equal(this.test.orderByIdResultDf.toArray());
+            expect(result1.columns).to.deep.equal(this.test.orderByIdResultDf.columns);
+
+            let result2 = this.test.df.orderBy(["name"]);
+            expect(result2.toArray()).to.deep.equal(this.test.orderByNameResultDf.toArray());
+            expect(result2.columns).to.deep.equal(this.test.orderByNameResultDf.columns);
+
+            let result3 = this.test.df.orderBy(["id", "weight"]);
+            expect(result3.toArray()).to.deep.equal(this.test.orderByIdWeightResultDf.toArray());
+            expect(result3.columns).to.deep.equal(this.test.orderByIdWeightResultDf.columns);
+
+            let result4 = this.test.df.orderBy(["id", "weight"], ["desc", "asc"]);
+            expect(result4.toArray()).to.deep.equal(this.test.orderByIdWeightDescResultDf.toArray());
+            expect(result4.columns).to.deep.equal(this.test.orderByIdWeightDescResultDf.columns);
+        });
+
+        it("Should throw an error if no columns are specified", function() {
+            expect(() => this.test.df.orderBy([])).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed", function() {
+            expect(() => this.test.df.orderBy("notAnArray")).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], "notAnArray")).to.throw();
+        });
+
+        it("Should throw an error if no valid columns are specified", function() {
+            expect(() => this.test.df.orderBy(["invalidColumn"])).to.throw();
+        });
+
+        it("Should throw an error if no valid values are specified for sort order", function() {
+            expect(() => this.test.df.orderBy(["id"], ["invalidValue"])).to.throw();
+        });
+
+    });
+
+    describe("groupBy()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = iris;
+            this.currentTest.groupBySpeciesResultDf = irisGroupBySpeciesResult;
+        });
+
+        it("Should return a new DataFrame grouped by the specified columns with the specified aggregations", function() {
+            let result1 = (
+                this.test.df
+                .groupBy(
+                    ["species"],
+                    {
+                        "sepal_length": ["min", "max", "mean", "count", "sum"]
+                    }
+                )
+            );
+            expect(result1.toArray()).to.deep.equal(this.test.groupBySpeciesResultDf.toArray());
+            expect(result1.columns).to.deep.equal(this.test.groupBySpeciesResultDf.columns);
+        });
+
+        it("Should throw an error if no columns are specified", function() {
+            expect(() => this.test.df.groupBy([])).to.throw();
+        });
+
+        it("Should throw an error if an array is not passed", function() {
+            expect(() => this.test.df.groupBy("notAnArray")).to.throw();
+        });
+
+        it("Should throw an error if no valid columns are specified", function() {
+            expect(() => this.test.df.groupBy(["invalidColumn"])).to.throw();
+        });
+
+        it("Should throw an error if no valid values are specified for aggregation", function() {
+            expect(() => this.test.df.groupBy(
+                ["species"],
+                {"sepal_length": ["min", "max", "invalidAgg"]}
+            )).to.throw();
         });
 
     });

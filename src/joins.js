@@ -4,10 +4,10 @@ import lodash from 'lodash';
 import { DataFrame } from './dataframe.js';
 import {
     validateJoinFunctionReferencesWithProxy,
-    validateJoinArrayReferences,
-    getInvalidJoinColumns,
-    validateOverlappingColumns,
-    validateOverlappingColumnsInFunction
+    _isSubsetArray,
+    _getInvalidJoinColumns,
+    validateOverlappingColumnsArrayJoin,
+    validateOverlappingColumnsFunctionJoin
 } from './utils.js';
 
 
@@ -77,13 +77,13 @@ export function _crossJoin(df1, df2) {
         let outputColumns = rowArray.length ? Object.getOwnPropertyNames(rowArray[0]) : df1.columns.concat(df2.columns);
         return new DataFrame(rowArray, outputColumns);
     }
-    throw Error("crossJoin expects another DataFrame");
+    throw Error("crossJoin() expects another DataFrame");
 }
 
 
 export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     if (!(rightDf instanceof DataFrame)) {
-        throw Error("Join expects another DataFrame");
+        throw Error("join() expects another DataFrame");
     }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
@@ -99,18 +99,18 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
             // and error if at least one is invalid
             let left, right, both;
             ({left, right, both} = validateJoinFunctionReferencesWithProxy(on, leftDf.columns, rightDf.columns));
-            validateOverlappingColumnsInFunction(leftDf.columns, rightDf.columns, left, right);
+            validateOverlappingColumnsFunctionJoin(leftDf.columns, rightDf.columns, left, right);
             return _dispatchNonIndexedJoin(type, leftDf, rightDf, on);
         }
 
         if (on instanceof Array && on.length) {
             // Single array of columns provided (no rightOn)
             // Check that all specified columns exit in both DataFrames.
-            if (validateJoinArrayReferences(on, leftDf.columns) && validateJoinArrayReferences(on, rightDf.columns)) {
-                validateOverlappingColumns(leftDf.columns, rightDf.columns, on);
+            if (_isSubsetArray(on, leftDf.columns) && _isSubsetArray(on, rightDf.columns)) {
+                validateOverlappingColumnsArrayJoin(leftDf.columns, rightDf.columns, on);
                 return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
             }
-            let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, on);
+            let invalidCols = _getInvalidJoinColumns(leftDf.columns, rightDf.columns, on);
             throw Error(`Invalid columns found in join condition: ${invalidCols}`);
         }
         throw Error("'on' needs to be either a function or a non-empty array");
@@ -119,11 +119,11 @@ export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     // Condition made-up of two arrays (leftOn and rightOn)
     if ((leftOn instanceof Array && leftOn.length) && (rightOn instanceof Array && rightOn.length) && (leftOn.length == rightOn.length)) {
         // Check that all specified columns exit in both DataFrames.
-        if (validateJoinArrayReferences(leftOn, leftDf.columns) && validateJoinArrayReferences(rightOn, rightDf.columns)) {
-            validateOverlappingColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
+        if (_isSubsetArray(leftOn, leftDf.columns) && _isSubsetArray(rightOn, rightDf.columns)) {
+            validateOverlappingColumnsArrayJoin(leftDf.columns, rightDf.columns, leftOn, rightOn);
             return _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn);
         }
-        let invalidCols = getInvalidJoinColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
+        let invalidCols = _getInvalidJoinColumns(leftDf.columns, rightDf.columns, leftOn, rightOn);
         throw Error(`Invalid columns found in join condition: ${invalidCols}`);
     }
     throw Error("'leftOn' and 'rightOn' need to be non-empty arrays of equal length");
@@ -200,7 +200,7 @@ function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
-    // TODO check that columns in join exist on both dataframes
+
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
     // Perform join using right dataframe index
@@ -227,6 +227,7 @@ function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // or both "leftOn" and "rightOn" parameters.
     // The join condition is based on the equality
     // of the array of columns in the specified order.
+
     // Index right-hand dataframe
     const rightDfIndex = _getIndex(rightDf, (rightOn ? rightOn : on));
     // Perform join using right dataframe index
