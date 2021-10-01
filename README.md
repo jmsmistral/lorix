@@ -92,7 +92,7 @@ let df = df1.drop("colA");
 
 ### Define new column
 
-Pass a function that returns an expression row represents a row object from the DataFrame, where column values can be accessed as below.
+Pass a function that returns a value for the new column. The function accepts a single parameter that represents a row in the DataFrame, where column values can be accessed as shown below.
 
 ```javascript
 let df = df1.withColumn("newCol", (row) => row["colA"] + row["colB"]);
@@ -105,7 +105,7 @@ let df = df1.withColumn("newCol", () => 1 + 2);
 let df = df1.withColumn("newCol", () => new Date());
 ```
 
-Calls return a new DataFrame, so can be chained to define multiple columns in one block
+Calls return a new DataFrame, so can be chained to define multiple columns in one block.
 
 ```javascript
 let df = (
@@ -113,6 +113,14 @@ let df = (
     .withColumn("newCol", () => 1)
     .withColumn("newCol2", () => 2)
 );
+```
+
+### Filter rows
+
+Pass a function that returns a boolean for each row. The function accepts a single parameter that represents a row in the DataFrame, where column values can be accessed as shown below.
+
+```javascript
+let df = df1.filter("newCol", (row) => row["colA"] + row["colB"]);
 ```
 
 ### Sorting
