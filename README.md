@@ -66,7 +66,7 @@ for (let row of df1) {
 let df = [...df1];
 ```
 
-### Export DataFrame rows as object array
+### Export DataFrame rows as an object array
 
 Returns an array of object, where each object is a row mapping columns to values.
 
@@ -133,6 +133,37 @@ let df = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
 let df = df1.orderBy("id"); // Error - requires an array of columns
 ```
 
+### Joining DataFrames
+
+Two DataFrames can be joined in a number of ways. Lorix provides functions that mirror SQL join types, and adds other types that appear in Spark:
+- Cross Join
+- Inner Join
+- Left Join
+- Right Join
+- Left Anti Join (_in development_)
+- Right Anti Join (_in development_)
+
+The join condition can be defined in the following ways:
+1. a single array of common column names.
+2. two arrays of the same size, with position-based joining between them.
+3. function defining the exact join condition between the two DataFrames.
+
+When using a function, the parameters represent left and right DataFrames
+being joined. These are used to refer to the DataFrame columns.
+
+```javascript
+let df = df1.crossJoin(df2)
+
+let df = df1.innerJoin(df2, ["colA", "colB"]);  // Columns must exist in both DataFrames
+let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);  // Equivalent to colA == colB and colC == colD
+let df = df1.innerJoin(df2, (l, r) => l.colA == r.colB);
+let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
+
+let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
+
+let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
+```
+
 ### Aggregating with groupBy
 
 Use the `.groupBy()` function of a DataFrame as an analogue of SQL's GROUP BY to perform aggregations.
@@ -177,39 +208,6 @@ let df = df1.window(
     }
 );
 ```
-
-
-### Joining DataFrames
-
-Two DataFrames can be joined in a number of ways. Lorix provides functions that mirror SQL join types, and adds other types that appear in Spark:
-- Cross Join
-- Inner Join
-- Left Join
-- Right Join
-- Left Anti Join (_in development_)
-- Right Anti Join (_in development_)
-
-The join condition can be defined in the following ways:
-1. a single array of common column names.
-2. two arrays of the same size, with position-based joining between them.
-3. function defining the exact join condition between the two DataFrames.
-
-When using a function, the parameters represent left and right DataFrames
-being joined. These are used to refer to the DataFrame columns.
-
-```javascript
-let df = df1.crossJoin(df2)
-
-let df = df1.innerJoin(df2, ["colA", "colB"]);  // Columns must exist in both DataFrames
-let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);  // Equivalent to colA == colB and colC == colD
-let df = df1.innerJoin(df2, (l, r) => l.colA == r.colB);
-let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
-
-let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
-
-let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-```
-
 
 # License
 
