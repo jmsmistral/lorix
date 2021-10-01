@@ -603,8 +603,17 @@ describe("DataFrame class", () => {
             expect(resultWeight.columns).to.deep.equal(this.test.filterWeightResultDf.columns);
         });
 
-        it.skip("Should throw an error if no function is specified", function() {
+        it("Should throw an error if no function is specified", function() {
             expect(() => this.test.df.filter()).to.throw();
+        });
+
+        it("Should throw an error when a type other than a function is passed", function() {
+            expect(() => {this.test.df.filter(1)}).to.throw();
+            expect(() => {this.test.df.filter("stringInsteadOfFunction")}).to.throw();
+        });
+
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.filter("newCol", (row) => row["nonExistingColumn"] > 1)}).to.throw();
         });
 
     });

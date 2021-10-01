@@ -93,8 +93,14 @@ console.log("df1.withColumn()");
 console.log("df1.filter()");
 
 // df3.filter((r) => r["id"] == 100).head();
-df3.filter((r) => r["weight"] < 80 && r["id"] > 20).head();
-
+// (
+    //     df3
+    //     .filter((r) => r["weight"] < 80)
+    //     .filter((r) => r["id"] > 20)
+    //     .head()
+    // )
+// df3.filter((r) => r["nonExistantCol"] == 100).head(); // Error - invalid column
+// df3.filter("test").head(); // Error - needs a function
 
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));
