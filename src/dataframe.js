@@ -120,6 +120,25 @@ export class DataFrame {
         return new DataFrame(newRows, this.columns.concat([col]));
     }
 
+    filter(expr) {
+        // Returns a new Dataframe with rows filtered according
+        // to the function `expr`.
+        // Note: if a reference is made to a non-existent column
+        // an error will be thrown.
+
+        // Check that `expr` is a function.
+        if((expr == undefined) || !(expr instanceof Function)) {
+            throw Error("expr provided to filter needs to be a function.")
+        }
+
+        // Check what existing columns are being referenced,
+        // if any, and throw an error if at least one does not exist.
+        validateFunctionReferencesWithProxy(expr, this.columns);
+
+        let newRows = this.rows.filter((row) => expr(row));
+        return new DataFrame(newRows, this.columns);
+    }
+
     crossJoin(df) {
         if (arguments.length < 1 || arguments.length > 1) {
             throw Error(`crossJoin() takes a single argument. Arguments passed: ${arguments.length}`);

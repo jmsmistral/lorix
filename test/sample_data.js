@@ -267,3 +267,28 @@ export let irisGroupBySpeciesResult = (
         ]
     )
 );
+
+
+
+
+//  filter result 1
+export let smallDataFrame1FilterIdResult = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);
+
+export let smallDataFrame1FilterWeightResult = (
+    new DataFrame(
+        [
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 23, 'name': 'fred', 'weight': 62 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);

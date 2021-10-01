@@ -17,6 +17,9 @@ import {
     smallDataFrame1OrderByIdWeightResult,
     smallDataFrame1OrderByIdDescWeightAscResult,
 
+    smallDataFrame1FilterIdResult,
+    smallDataFrame1FilterWeightResult,
+
     iris,
     irisGroupBySpeciesResult
 } from "./sample_data.js"
@@ -575,6 +578,33 @@ describe("DataFrame class", () => {
                 ["species"],
                 {"sepal_length": ["min", "max", "invalidAgg"]}
             )).to.throw();
+        });
+
+    });
+
+    describe("filter()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame1;
+            this.currentTest.filterIdResultDf = smallDataFrame1FilterIdResult;
+            this.currentTest.filterWeightResultDf = smallDataFrame1FilterWeightResult;
+        });
+
+        it("Should return a new DataFrame filtered by the specified columns", function() {
+            let resultId = this.test.df.filter( (row) => row["id"] == 100);
+            let resultWeight = this.test.df.filter( (row) => row["weight"] < 80);
+
+            // Filter based on id
+            expect(resultId.toArray()).to.deep.equal(this.test.filterIdResultDf.toArray());
+            expect(resultId.columns).to.deep.equal(this.test.filterIdResultDf.columns);
+
+            // Filter based on weight
+            expect(resultWeight.toArray()).to.deep.equal(this.test.filterWeightResultDf.toArray());
+            expect(resultWeight.columns).to.deep.equal(this.test.filterWeightResultDf.columns);
+        });
+
+        it.skip("Should throw an error if no function is specified", function() {
+            expect(() => this.test.df.filter()).to.throw();
         });
 
     });
