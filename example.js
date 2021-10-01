@@ -90,6 +90,17 @@ console.log("df1.withColumn()");
 //     .withColumn("newCol1", () => 2)
 // )
 
+console.log("df1.filter()");
+
+// df3.filter((r) => r["id"] == 100).head();
+// (
+    //     df3
+    //     .filter((r) => r["weight"] < 80)
+    //     .filter((r) => r["id"] > 20)
+    //     .head()
+    // )
+// df3.filter((r) => r["nonExistantCol"] == 100).head(); // Error - invalid column
+// df3.filter("test").head(); // Error - needs a function
 
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));
@@ -116,16 +127,16 @@ console.log("df1.groupBy()");
 //     .toArray()
 // );
 
-(
-    irisDf
-    .groupBy(
-        ["species"],
-        {
-            "sepal_length": ["min", "max", "mean", "count", "sum"]
-        }
-    )
-    .head()
-)
+// (
+//     irisDf
+//     .groupBy(
+//         ["species"],
+//         {
+//             "sepal_length": ["min", "max", "mean", "count", "sum"]
+//         }
+//     )
+//     .head()
+// )
 
 console.log("df1.window()");
 // df1.head();
