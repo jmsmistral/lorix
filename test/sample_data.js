@@ -76,6 +76,27 @@ export let smallDataFrame1 = (
     )
 );
 
+export let smallDataFrame2 = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 },
+            { 'id': 1000, 'name': 'billy', 'weight': 102 },
+            { 'id': 1001, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 }
+          ],
+        ['id', 'name', 'weight']
+    )
+);
+
 
 // Test result validation datasets
 
@@ -269,9 +290,7 @@ export let irisGroupBySpeciesResult = (
 );
 
 
-
-
-//  filter result 1
+//  filter results
 export let smallDataFrame1FilterIdResult = (
     new DataFrame(
         [
@@ -288,6 +307,66 @@ export let smallDataFrame1FilterWeightResult = (
             { 'id': 1, 'name': 'joseph', 'weight': 71 },
             { 'id': 23, 'name': 'fred', 'weight': 62 },
             { 'id': 101, 'name': 'elon', 'weight': 74 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);
+
+
+
+// distinct results
+export let smallDataFrame2DistinctAllResult = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 },
+            { 'id': 1000, 'name': 'billy', 'weight': 102 },
+            { 'id': 1001, 'name': 'billy', 'weight': 102 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);
+
+export let smallDataFrame2DistinctIdResult = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 },
+            { 'id': 1000, 'name': 'billy', 'weight': 102 },
+            { 'id': 1001, 'name': 'billy', 'weight': 102 }
+        ],
+        ['id', 'name', 'weight']
+    )
+);
+
+export let smallDataFrame2DistinctNameWeightResult = (
+    new DataFrame(
+        [
+            { 'id': 100, 'name': 'billy', 'weight': 102 },
+            { 'id': 2, 'name': 'jane', 'weight': 97 },
+            { 'id': 5, 'name': 'roger', 'weight': 107 },
+            { 'id': 9, 'name': 'gary', 'weight': 87 },
+            { 'id': 1, 'name': 'joseph', 'weight': 71 },
+            { 'id': 3, 'name': 'jennifer', 'weight': 84 },
+            { 'id': 100, 'name': 'sean', 'weight': 85 },
+            { 'id': 17, 'name': 'steven', 'weight': 107 },
+            { 'id': 101, 'name': 'elon', 'weight': 74 },
+            { 'id': 45, 'name': 'issac', 'weight': 104 }
         ],
         ['id', 'name', 'weight']
     )

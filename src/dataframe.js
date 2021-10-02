@@ -14,7 +14,9 @@ import {
     validateFunctionReferencesWithProxy,
     _getUniqueObjectProperties,
     _isSubsetArray,
-    _isValidColumnName
+    _isValidColumnName,
+    _getArrayOfObjectReferences,
+    _getDistinctFn
 } from "./utils.js";
 
 
@@ -126,9 +128,14 @@ export class DataFrame {
         // Note: if a reference is made to a non-existent column
         // an error will be thrown.
 
+        // Check number of arguments.
+        if (arguments.length < 1 || arguments.length > 1) {
+            throw Error(`filter() takes a single argument. Arguments passed: ${arguments.length}`);
+        }
+
         // Check that `expr` is a function.
         if((expr == undefined) || !(expr instanceof Function)) {
-            throw Error("expr provided to filter needs to be a function.")
+            throw Error("`expr` provided to filter needs to be a function.")
         }
 
         // Check what existing columns are being referenced,
@@ -137,6 +144,35 @@ export class DataFrame {
 
         let newRows = this.rows.filter((row) => expr(row));
         return new DataFrame(newRows, this.columns);
+    }
+
+    distinct(subset=[]) {
+        // Return a new DataFrame with duplicate rows dropped.
+        // If `subset` of columns is not passed, then duplicates
+        // will be identified across all columns.
+
+        // Check number of arguments.
+        if (arguments.length > 1) {
+            throw Error(`distinct() takes a single argument. Arguments passed: ${arguments.length}`);
+        }
+
+        if (!(subset instanceof Array)) {
+            throw Error("`subset` provided to distinct needs to be a function.")
+        }
+
+        // Check that all columns specified in `subset` exist in
+        // the DataFrame.
+        if ((subset.length) && !(_isSubsetArray(subset, this.columns))) {
+            throw Error(`Invalid columns specified in distinct(): ${lodash.difference(subset, this.columns)}`);
+        }
+
+        if (subset.length) {
+            return new DataFrame(lodash.uniqBy(this.rows, _getDistinctFn(subset)), this.columns);
+        } else {
+            // If a subset of columns isn't provided, remove
+            // duplicate rows across all DataFrame columns
+            return new DataFrame(lodash.uniqBy(this.rows, _getDistinctFn(this.columns)), this.columns);
+        }
     }
 
     crossJoin(df) {
