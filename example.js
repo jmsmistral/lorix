@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import lorix from './lorix.js';
 
 import {
@@ -7,6 +8,7 @@ import {
     verySmallInvalidObjArray,
     verySmallDataFrameInnerJoinResult,
     smallDataFrame1,
+    smallDataFrame2,
     iris
 } from './test/sample_data.js'
 
@@ -23,6 +25,7 @@ let df1 = verySmallDataFrame1;
 let df2 = verySmallDataFrame2;
 
 let df3 = smallDataFrame1;
+let df4 = smallDataFrame2;
 
 let irisDf = iris;
 
@@ -61,7 +64,6 @@ irisDf.head();
 
 
 
-
 // df3.orderBy(["invalidColumn"]).head();
 // console.log(df3.orderBy(["id"]).toArray());
 // console.log(df3.orderBy(["name"]).toArray());
@@ -75,7 +77,7 @@ irisDf.head();
 // console.log([...df1]);
 // console.log(df1.toArray());
 
-console.log("df1.withColumn()");
+console.log("df.withColumn()");
 // df1 = df1.withColumn("newCol");
 // df1.withColumn("newCol", df1.col("id") + df1.col("age")); // Attempt at cleaner syntax
 // df1 = df1.withColumn("newCol", (row) => row["id"] + row["age"]);
@@ -91,7 +93,6 @@ console.log("df1.withColumn()");
 // )
 
 console.log("df1.filter()");
-
 // df3.filter((r) => r["id"] == 100).head();
 // (
     //     df3
@@ -101,6 +102,19 @@ console.log("df1.filter()");
     // )
 // df3.filter((r) => r["nonExistantCol"] == 100).head(); // Error - invalid column
 // df3.filter("test").head(); // Error - needs a function
+
+
+console.log("df.distinct()");
+// (
+//     df4
+//     .select("id")
+//     .distinct()
+//     .filter((r) => r["id"] > 50)
+//     .orderBy(["id"], ["desc"])
+//     .head(df4.rows.length)
+// )
+
+
 
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));

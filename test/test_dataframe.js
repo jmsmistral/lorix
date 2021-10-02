@@ -12,6 +12,7 @@ import {
     verySmallDataFrameRightJoinResult,
 
     smallDataFrame1,
+    smallDataFrame2,
     smallDataFrame1OrderByIdResult,
     smallDataFrame1OrderByNameResult,
     smallDataFrame1OrderByIdWeightResult,
@@ -19,6 +20,10 @@ import {
 
     smallDataFrame1FilterIdResult,
     smallDataFrame1FilterWeightResult,
+
+    smallDataFrame2DistinctAllResult,
+    smallDataFrame2DistinctIdResult,
+    smallDataFrame2DistinctNameWeightResult,
 
     iris,
     irisGroupBySpeciesResult
@@ -591,8 +596,8 @@ describe("DataFrame class", () => {
         });
 
         it("Should return a new DataFrame filtered by the specified columns", function() {
-            let resultId = this.test.df.filter( (row) => row["id"] == 100);
-            let resultWeight = this.test.df.filter( (row) => row["weight"] < 80);
+            let resultId = this.test.df.filter((row) => row["id"] == 100);
+            let resultWeight = this.test.df.filter((row) => row["weight"] < 80);
 
             // Filter based on id
             expect(resultId.toArray()).to.deep.equal(this.test.filterIdResultDf.toArray());
@@ -613,7 +618,55 @@ describe("DataFrame class", () => {
         });
 
         it("Should throw an error when referencing a non-existent column", function() {
-            expect(() => {this.test.df.filter("newCol", (row) => row["nonExistingColumn"] > 1)}).to.throw();
+            expect(() => {this.test.df.filter((row) => row["nonExistingColumn"] > 1)}).to.throw();
+        });
+
+        it("Should throw an error if more than one argument is passed", function() {
+            expect(() => {this.test.df.filter(((row) => row["weight"] < 80), "test")}).to.throw();
+        });
+
+    });
+
+
+    describe("distinct()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame2;
+
+            this.currentTest.distinctAllResultDf = smallDataFrame2DistinctAllResult;
+            this.currentTest.distinctIdResultDf = smallDataFrame2DistinctIdResult;
+            this.currentTest.distinctNameWeightResultDf = smallDataFrame2DistinctNameWeightResult;
+        });
+
+        it("Should return a new DataFrame with duplicate rows dropped as per the specified columns", function() {
+            let resultAll = this.test.df.distinct();
+            let resultId = this.test.df.distinct(["id"]);
+            let resultNameWeight = this.test.df.distinct(["name", "weight"]);
+
+            // Distinct based on all columns
+            expect(resultAll.toArray()).to.deep.equal(this.test.distinctAllResultDf.toArray());
+            expect(resultAll.columns).to.deep.equal(this.test.distinctAllResultDf.columns);
+
+            // Distinct based on id
+            expect(resultId.toArray()).to.deep.equal(this.test.distinctIdResultDf.toArray());
+            expect(resultId.columns).to.deep.equal(this.test.distinctIdResultDf.columns);
+
+            // Distinct based on name and weight
+            expect(resultNameWeight.toArray()).to.deep.equal(this.test.distinctNameWeightResultDf.toArray());
+            expect(resultNameWeight.columns).to.deep.equal(this.test.distinctNameWeightResultDf.columns);
+        });
+
+        it("Should throw an error when a type other than an array is passed", function() {
+            expect(() => {this.test.df.distinct(1)}).to.throw();
+            expect(() => {this.test.df.distinct("stringInsteadOfFunction")}).to.throw();
+        });
+
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.distinct(["nonExistingColumn"])}).to.throw();
+        });
+
+        it("Should throw an error if more than one argument is passed", function() {
+            expect(() => {this.test.df.distinct(["name", "weight"], "anotherArgument")}).to.throw();
         });
 
     });

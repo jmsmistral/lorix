@@ -94,7 +94,6 @@ export function _getInvalidJoinColumns(leftDfCols, rightDfCols, leftCompareCols,
             lodash.difference(rightCompareCols, rightDfCols)
         )
     );
-
 }
 
 export function _isSubsetArray(arr, compareArray) {
@@ -137,4 +136,19 @@ export function _getUniqueObjectProperties(arr) {
         return Object.keys(objectProperties);
     }
     throw Error("_getUniqueObjectProperties() only accepts an array of objects.");
+}
+
+
+export function _getArrayOfObjectReferences(row, cols) {
+    // Returns Array of references to object properties,
+    // where `cols` are the set of properties being
+    // referenced, and `row` the object.
+    return cols.map((col) => row[col]);
+}
+
+export function _getDistinctFn(cols) {
+    // Returns a function that, when run, returns a string of
+    // the concatenation of properties specified in `cols`
+    // in the object `row`.
+    return row => (_getArrayOfObjectReferences(row, cols)).join();
 }
