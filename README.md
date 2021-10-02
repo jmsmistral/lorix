@@ -49,6 +49,8 @@ let df4 = lorix.DataFrame.fromArray(dataArray);
 
 ### Print top _`n`_ rows
 
+`.head(n)` prints the top _`n`_ rows in tabular form to standard output.
+
 ```javascript
 df1.head(); // Print the top 10 rows by default
 df1.head(15); // Define the number of rows to display
@@ -68,7 +70,7 @@ let df = [...df1];
 
 ### Export DataFrame rows as an object array
 
-Returns an array of object, where each object is a row mapping columns to values.
+`toArray()` returns an object array, where each object is a row mapping columns to values.
 
 ```javascript
 let rowArray = df1.toArray();
@@ -76,7 +78,7 @@ let rowArray = df1.toArray();
 
 ### Select columns
 
-Returns a DataFrame with the specified columns.
+`select(col1, col2, ...)` returns a new DataFrame with the specified columns.
 
 ```javascript
 let df = df1.select("colA", "colB");
@@ -84,7 +86,7 @@ let df = df1.select("colA", "colB");
 
 ### Drop columns
 
-Returns a DataFrame without the specified columns.
+`drop(col1, col2, ...)` returns a new DataFrame without the specified columns.
 
 ```javascript
 let df = df1.drop("colA");
@@ -92,7 +94,7 @@ let df = df1.drop("colA");
 
 ### Define new column
 
-Pass a function that returns a value for the new column. The function accepts a single parameter that represents a row in the DataFrame, where column values can be accessed as shown below.
+`withColumn(newCol, fn)` returns a new DataFrame with a new column (`newCol`), as defined by the function `fn`. `fn` accepts a single parameter that represents a DataFrame row to expose access to individual column values.
 
 ```javascript
 let df = df1.withColumn("newCol", (row) => row["colA"] + row["colB"]);
@@ -105,7 +107,7 @@ let df = df1.withColumn("newCol", () => 1 + 2);
 let df = df1.withColumn("newCol", () => new Date());
 ```
 
-Calls return a new DataFrame, so can be chained to define multiple columns in one block.
+Calls can be chained to define multiple columns in a single block.
 
 ```javascript
 let df = (
@@ -117,15 +119,24 @@ let df = (
 
 ### Filter rows
 
-Pass a function that returns a boolean for each row. The function accepts a single parameter that represents a row in the DataFrame, where column values can be accessed as shown below.
+`filter(fn)` returns a new Dataframe with rows filtered according to the function `fn`. `fn` accepts a single parameter that represents a DataFrame row to expose access to individual column values, and must return a boolean value to determine if the row is filtered or not.
 
 ```javascript
-let df = df1.filter("newCol", (row) => row["colA"] + row["colB"]);
+let df = df1.filter(row => row["colA"] > 10);
+```
+
+### Drop duplicate rows
+
+`distinct([subset])` returns a new DataFrame with duplicate rows dropped according to the optional list of columns `subset`. If `subset` is not passed, then duplicates will be identified across all columns. Only the first row found is kept for duplicate instances.
+
+```javascript
+let df = df1.distinct();
+let df = df1.distinct(["colA", "colB"]);
 ```
 
 ### Sorting
 
-The `.orderBy()` function of a DataFrame sorts rows according to the array of columns specified, and optionally the order to sort these by (defaults to ascending order).
+`orderBy(cols, [order])` returns a new DataFrame with rows sorted according to the array of columns specified (`cols`), and optionally an array (`order`) defining the order to sort these by. The order defaults to _ascending_ if not specified.
 
 ```javascript
 let df = df1.orderBy(["colA"]);
@@ -166,9 +177,9 @@ let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 
 ### Aggregating with groupBy
 
-Use the `.groupBy()` function of a DataFrame as an analogue of SQL's GROUP BY to perform aggregations.
-- The first parameter is an array of columns that will be grouped.
-- The second parameter is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
+`groupBy(cols, aggMap)` is an analogue of SQL's GROUP BY, and is used to perform aggregations.
+- `cols` is an array of columns that will be grouped.
+- `aggMap` is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
 
 Output columns are named using the current name suffixed by the aggregation applied, e.g. **colC_sum**, **colC_mean**.
 
