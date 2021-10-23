@@ -23,7 +23,6 @@ function _flattenAggMap(groups, groupByCols, aggColName, p = {}) {
 }
 
 function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
-    // let map = undefined;
     let map;
     let aggColumnName = aggCol + "_" + type;
     if (type == "sum") {
@@ -43,9 +42,8 @@ function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
     }
 
     // Catch any undefined aggregation types passed
-    if (map == undefined) {
-        throw Error(`Invalid aggregation provided to groupBy '${type}'`);
-    }
+    if (map == undefined)
+        throw Error(`Invalid aggregation provided to groupBy: '${type}'`);
 
     return new DataFrame(_flattenAggMap(map, groupByCols, aggColumnName), groupByCols.concat([aggColumnName]));
 }
@@ -98,9 +96,8 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
     }
 
     // Join resultant Dataframes in dfs
-    if (dfs.length > 1) {
+    if (dfs.length > 1)
         return dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
-    }
 
     return dfs[0];
 }
@@ -140,33 +137,29 @@ function _windowFlattenAggMap(groups, groupByCols, aggColName, p = {}) {
     ).flat();
 }
 
+
 function _windowAggregate(aggFunc, df, groupByFunctions, groupByCols, aggCol) {
     let map = d3Array.rollup(df.rows, aggFunc, ...groupByFunctions);
     return new DataFrame(_windowFlattenAggMap(map, groupByCols, aggCol), groupByCols.concat([aggCol]));
 }
 
-export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) {
+
+export function applyWindowFunction(df, windowFunc, groupByCols, orderByCols, windowSize=[]) {
     /**
      * @output
-     * Retuns either:
-     * - A new Dataframe object with the results of the aggregations
-     *   defined in `groupByAggs` for each distinct group of the list
-     *   of columns in `groupByCols`.
-     * - A nested Map object, if no aggregation is provided through
-     *   `groupByAggs`, with the values of each `groupByCols` column
-     *   as the keys at each level of the Map.
+     * Retuns a DataFrame of the same size with the new column containing the
+     * results of the window function.
      *
      * @input
-     * - df: Dataframe on which the groupBy will be executed.
+     * - df: Dataframe on which the window function will be executed.
+     * - windowFunc: Window function to be applied to each group of rows.
      * - groupByCols: Array of strings representing columns to group by.
      * - orderByCols: Array specifying the order columns and optionally another array specifying the order.
-     * - groupByAggs: Object of column-to-aggregation(s) mappings that define
-     * the aggregation(s) to perform for each column, across each group.
-     * A column can have one or more aggregations defined, and this is
-     * passed as either a string or an array of strings specifying the
-     * aggregations. e.g. {"colA": "sum", "colB": ["sum", "count"]}.
+     * - windowSize: Array specifying the size of the window per group, upon which the
+     *               window function is applied.
      *
      * @example
+     * - df.withColumn("newCol", lorix.window(lorix.sum("column"), ["colA"], [], [lorix.unboundedPreceding, lorix.currentRow]))
      */
 
     // console.log(arguments.length);
@@ -181,17 +174,19 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
     if (
         !(groupByCols instanceof Array) ||
         !(orderByCols instanceof Array) ||
+        !(windowSize instanceof Array) ||
         groupByCols.length < 1 ||
         orderByCols.length < 1 ||
         orderByCols.length > 2
-    ) {
+    )
         throw Error("Invalid groupBy or orderBy columns provided. Both parameters need to be supplied.");
-    }
+
+    // Check if the window function is a function
 
     // Sort rows
-    if (orderByCols.length == 1) {
+    if (orderByCols.length == 1)
         df = df.orderBy([...groupByCols , ...orderByCols[0]]);
-    }
+
     if (orderByCols.length == 2) {
         // Ensure that the groupBy columns are sorted in ascending order
         const groupByOrder = groupByCols.map((col) => "asc");
@@ -206,7 +201,7 @@ export function groupSortAggregation(df, groupByCols, orderByCols, groupByAggs) 
 
     // Check that columns exist in Dataframe
     if (!(_isSubsetArray([...groupByCols, ...orderByCols[0]], df.columns))) {
-        throw Error(`Invalid columns provided in group or order array '${[...groupByCols, ...orderByCols[0]]}'`);
+        throw Error(`Invalid columns provided in group or order array: '${[...groupByCols, ...orderByCols[0]]}'`);
     }
 
     let dfs = [];
