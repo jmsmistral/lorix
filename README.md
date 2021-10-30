@@ -203,9 +203,9 @@ let df = df1.groupBy(
 
 ### Window functions
 
-`.window(windowFunc, partitionByCols, [orderByCols], [windowSize])` can be applied within `.withColumn` to apply window function `windowFunc` to the DataFrame. The window parameters follow, defined as:
+`.window(windowFunc, [partitionByCols], [orderByCols], [windowSize])` can be applied within `.withColumn` to apply window function `windowFunc` to the DataFrame. The window parameters follow, defined as:
 
-- `partitionByCols` is an array of columns used to partition the DataFrame rows.
+- `partitionByCols` is an optional array of columns used to partition the DataFrame rows.
 - `orderByCols` is an optional array consisting of two sub-arrays - one defining the set of columns to sort, and another the sort order (see `.orderBy` for more details).
 - `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
     - Positive integer representing the number of rows

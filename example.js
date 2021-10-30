@@ -161,19 +161,19 @@ console.log("df.window()");
 
 (
     df5
-    .withColumn("mean", lorix.window(lorix.mean("salary"), [], []))
+    .withColumn("mean", lorix.window(lorix.mean("salary")))
     .withColumn("mean", (r) => Math.round(r["mean"], 0))
     .head(100)
 );
 
-(
-    df5
-    .withColumn("mean", lorix.window(lorix.mean("salary"), ["dept"], []))
-    .withColumn("mean", (r) => Math.round(r["mean"], 0))
-    .orderBy(["dept", "salary"], ["asc", "desc"])
-    .withColumn("row_num", lorix.window(lorix.rowNumber(), ["dept"], ["salary"]))
-    .head(100)
-);
+// (
+//     df5
+//     .withColumn("mean", lorix.window(lorix.mean("salary"), ["dept"], []))
+//     .withColumn("mean", (r) => Math.round(r["mean"], 0))
+//     .orderBy(["dept", "salary"], ["asc", "desc"])
+//     .withColumn("row_num", lorix.window(lorix.rowNumber(), ["dept"], ["salary"]))
+//     .head(100)
+// );
 
 // console.log(df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]])));
 // df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]]));
