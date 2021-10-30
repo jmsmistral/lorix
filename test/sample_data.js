@@ -97,6 +97,24 @@ export let smallDataFrame2 = (
     )
 );
 
+export let smallDataFrame3 = (
+    new DataFrame(
+        [
+            {'name': 'Beverly', 'dept': 2, 'salary': 16233},
+            {'name': 'Kameko',  'dept': 2, 'salary': 16233},
+            {'name': 'Ursa',    'dept': 3, 'salary': 15427},
+            {'name': 'Ferris',  'dept': 1, 'salary': 19745},
+            {'name': 'Noel',    'dept': 1, 'salary': 19745},
+            {'name': 'Abel',    'dept': 3, 'salary': 12369},
+            {'name': 'Raphael', 'dept': 1, 'salary': 8227},
+            {'name': 'Jack',    'dept': 1, 'salary': 9710},
+            {'name': 'May',     'dept': 3, 'salary': 9308},
+            {'name': 'Haviva',  'dept': 2, 'salary': 9308}
+        ],
+        ['name', 'dept', 'salary']
+    )
+);
+
 
 // Test result validation datasets
 

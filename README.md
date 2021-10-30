@@ -214,9 +214,12 @@ let df = df1.groupBy(
     - `currentRow` represents the current row
 
 Lorix currently exposes the following window functions:
+- `sum(col)` - sum of values
 - `min(col)` - minimum value
 - `max(col)` - maximum value
+- `mean(col)` - mean value
 - `median(col)` - median value
+- `mode(col)` - mode value
 - `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1]
 - `variance(col)` - returns an unbiased estimator of the population variance
 - `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance
