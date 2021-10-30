@@ -157,7 +157,14 @@ console.log("df1.window()");
 df3.head();
 // console.log(df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]])));
 // df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]]));
-df3.withColumn("quantile", lorix.window(lorix.min("weight"), ["id"], [["weight"], ["desc"]])).head();
+df3.withColumn("min", lorix.window(lorix.min("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("max", lorix.window(lorix.max("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("median", lorix.window(lorix.median("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("quantile", lorix.window(lorix.quantile("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("firstQuartile", lorix.window(lorix.quantile("weight", 0.25), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("thirdQuartile", lorix.window(lorix.quantile("weight", 0.75), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("variance", lorix.window(lorix.variance("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+df3.withColumn("stdev", lorix.window(lorix.stdev("weight"), ["id"], [["weight"], ["desc"]])).head(100);
 
 // df.withColumn("quantile", lorix.window(lorix.sum("age"), ["id"], [], [lorix.unboundedPreceeding, lorix.currentRow]));
 
