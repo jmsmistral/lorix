@@ -1,11 +1,9 @@
 import d3Array from 'd3-array';
-import lodash from 'lodash';
 
 import { DataFrame } from "./dataframe.js";
 import { _isSubsetArray } from './utils.js';
 
 
-// GROUPBY FUNCTIONS
 function _generateGroupByFunctions(cols) {
     let groupByFunctions = [];
     for (let col of cols)
@@ -14,32 +12,37 @@ function _generateGroupByFunctions(cols) {
 }
 
 
-function _flattenAggMap(groups, groupByCols, aggColName, p = {}) {
+function _flattenAggMap(groups, groupByCols, aggColName, resultAgg={}) {
+    /**
+     * Traverses the Map of group columns, populating an output
+     * object with both the group columns, and the results of the
+     * pre-applied .rollup() function.
+     */
+
     return Array.from(groups, ([key, value]) =>
         value instanceof Map
-        ? _flattenAggMap(value, groupByCols.slice(1), aggColName, Object.assign({}, { ...p, [groupByCols[0]]: key } ))
-        : Object.assign({}, { ...p, [groupByCols[0]]: key, [aggColName] : value })
+        ? _flattenAggMap(value, groupByCols.slice(1), aggColName, Object.assign({}, { ...resultAgg, [groupByCols[0]]: key } ))
+        : Object.assign({}, { ...resultAgg, [groupByCols[0]]: key, [aggColName] : value })
     ).flat();
 }
 
 function _aggregate(type, df, groupByFunctions, groupByCols, aggCol) {
     let map;
     let aggColumnName = aggCol + "_" + type;
-    if (type == "sum") {
+    if (type == "sum")
         map = d3Array.rollup(df.rows, v => d3Array.sum(v, d => d[aggCol]), ...groupByFunctions);
-    }
-    if (type == "mean") {
+
+    if (type == "mean")
         map = d3Array.rollup(df.rows, v => d3Array.mean(v, d => d[aggCol]), ...groupByFunctions);
-    }
-    if (type == "min") {
+
+    if (type == "min")
         map = d3Array.rollup(df.rows, v => d3Array.min(v, d => d[aggCol]), ...groupByFunctions);
-    }
-    if (type == "max") {
+
+    if (type == "max")
         map = d3Array.rollup(df.rows, v => d3Array.max(v, d => d[aggCol]), ...groupByFunctions);
-    }
-    if (type == "count") {
+
+    if (type == "count")
         map = d3Array.rollup(df.rows, v => v.length, ...groupByFunctions);
-    }
 
     // Catch any undefined aggregation types passed
     if (map == undefined)
@@ -72,15 +75,13 @@ export function groupAggregation(df, groupByCols, groupByAggs) {
 
     // If no aggregation object is passed, return a Map defining the groups
     let groupByFunctions = _generateGroupByFunctions(groupByCols);
-    if (groupByAggs == undefined) {
+    if (groupByAggs == undefined)
         return d3Array.group(df.rows, ...groupByFunctions);
-    }
 
     // Check that columns exist in Dataframe
     let aggCols = Object.getOwnPropertyNames(groupByAggs);
-    if (!(_isSubsetArray(groupByCols.concat(aggCols), df.columns))) {
+    if (!(_isSubsetArray(groupByCols.concat(aggCols), df.columns)))
         throw Error(`Invalid columns provided to groupBy '${groupByCols.concat(aggCols)}'`);
-    }
 
     let dfs = [];
     for (let [k, v] of Object.entries(groupByAggs)) {

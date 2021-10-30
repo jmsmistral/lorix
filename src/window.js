@@ -1,6 +1,8 @@
 import d3Array from 'd3-array';
 
+import { DataFrame } from "./dataframe.js";
 import { _isSubsetArray } from './utils.js';
+
 
 export const unboundedPreceding = 0;
 export const unboundedProceding = Infinity;
@@ -32,6 +34,11 @@ export function stdev(col) {
 }
 
 function _generateGroupByFunctions(cols) {
+    /**
+     * Returns an array of functions (one for each col in `cols`) which
+     * is used by d3-array to apply .rollup() and .group() (used in
+     * calculating groupBy and window functions).
+     */
     let groupByFunctions = [];
     for (let col of cols)
         groupByFunctions.push((g) => g[col]);
@@ -39,33 +46,21 @@ function _generateGroupByFunctions(cols) {
 }
 
 
-function _windowFlattenAggMap(groups, groupByCols, windowFunc, p={}) {
-    // console.log(groups);
-    // console.log(groupByCols);
-    // console.log(windowFunc.toString());
+function _runWindowOverMap(groups, groupByCols, windowFunc, newCol, resultAgg={}) {
+    /**
+     * Traverses the Map of group columns, populating an output
+     * object with both the group columns, and the results of applying
+     * the window function to the array of rows in the leaf nodes of the
+     * Map.
+     */
 
-    let result = Array.from(groups, ([key, value]) => {
-        if (value instanceof Map) {
-            return _windowFlattenAggMap(value, groupByCols.slice(1), windowFunc, Object.assign({}, { ...p, [groupByCols[0]]: key } ));
-        } else {
-            console.log(value[0]);
-            // console.log(windowFunc(value[0]))
-            // Object.assign({}, { ...p, [groupByCols[0]]: key, "result": windowFunc(value) })
-            // Object.assign({}, { ...p, [groupByCols[0]]: key, [aggColName]: windowFunc(value) })
-            // console.log(value);
-        }
-    }); //.flat();
-
-    console.log(result);
+    return Array.from(groups, ([key, value]) => {
+        if (value instanceof Map)
+            return _runWindowOverMap(value, groupByCols.slice(1), windowFunc, newCol, Object.assign({}, {...resultAgg, [groupByCols[0]]: key} ));
+        return Object.assign({}, {...resultAgg, [groupByCols[0]]: key, [newCol]: windowFunc(value)});
+    });
 }
 
-
-function _windowAggregate(windowFunc, df, groupByFunctions, groupByCols, aggCol) {
-
-    let map = d3Array.group(df.rows, ...groupByFunctions);
-    // let map = d3Array.rollup(df.rows, windowFunc, ...groupByFunctions);
-    // return new DataFrame(_windowFlattenAggMap(map, groupByCols, aggCol), groupByCols.concat([aggCol]));
-}
 
 export function window(windowFunc, groupByCols, orderByCols=[], windowSize=[]) {
     /*
@@ -93,7 +88,7 @@ export function window(windowFunc, groupByCols, orderByCols=[], windowSize=[]) {
 }
 
 
-export function applyWindowFunction(df, windowFunc, groupByCols, orderByCols, windowSize) {
+export function applyWindowFunction(df, newCol, windowFunc, groupByCols, orderByCols, windowSize) {
     /**
      * @output
      * Retuns a DataFrame of the same size with the new column containing the
@@ -112,16 +107,6 @@ export function applyWindowFunction(df, windowFunc, groupByCols, orderByCols, wi
      * - df.withColumn("newCol", lorix.window(lorix.sum("column"), ["colA"], [], [lorix.unboundedPreceding, lorix.currentRow]))
      */
 
-    console.log("arguments.length: " + arguments.length);
-    console.log("df: " + df);
-    console.log("windowFunc: " + windowFunc);
-    console.log("groupByCols: " + groupByCols);
-    console.log("orderByCols: " + orderByCols);
-    console.log("windowSize: " + windowSize);
-    console.log(groupByCols instanceof Array);
-    console.log(orderByCols instanceof Array);
-    console.log(windowSize instanceof Array);
-
     // Sort rows
     if (orderByCols.length == 1)
         df = df.orderBy([...groupByCols , ...orderByCols[0]]);
@@ -139,35 +124,9 @@ export function applyWindowFunction(df, windowFunc, groupByCols, orderByCols, wi
     // Get Map with results per group
     let groupByFunctions = _generateGroupByFunctions(groupByCols);
     let map = d3Array.group(df.rows, ...groupByFunctions);
-    console.log(map);
 
     // Apply window function to ordered partitions
-    _windowFlattenAggMap(map, groupByCols, windowFunc);
+    let windowDf = new DataFrame(_runWindowOverMap(map, groupByCols, windowFunc, newCol), groupByCols.concat([newCol]));
 
-    // return new DataFrame(_windowFlattenAggMap(map, groupByCols, aggCol), groupByCols.concat([aggCol]));
-
-    // let dfs = [];
-    // for (let [k, v] of Object.entries(groupByAggs)) {
-    //     // Check if value is list of aggregations for the
-    //     // given column, or a single one.
-    //     if (v instanceof Array) {
-    //         for (let agg of v) {
-    //             if (agg instanceof Function) {
-    //                 dfs.push(_windowAggregate(agg, df, groupByFunctions, groupByCols, k));
-    //             }
-    //         }
-    //     } else {
-    //         if (v instanceof Function) {
-    //             dfs.push(_windowAggregate(v, df, groupByFunctions, groupByCols, k));
-    //         }
-    //     }
-    // }
-
-    // Join resultant Dataframes in dfs
-    // if (dfs.length > 1) {
-    //     const windowAggResults = dfs.reduce((df1, df2) => df1.innerJoin(df2, groupByCols));
-    //     return df.leftJoin(windowAggResults, groupByCols);
-    // }
-
-    // return dfs[0];
+    return df.leftJoin(windowDf, groupByCols);
 }

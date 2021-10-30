@@ -155,7 +155,9 @@ console.log("df1.groupBy()");
 console.log("df1.window()");
 
 df3.head();
-console.log(df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]])));
+// console.log(df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]])));
+// df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]]));
+df3.withColumn("quantile", lorix.window(lorix.min("weight"), ["id"], [["weight"], ["desc"]])).head();
 
 // df.withColumn("quantile", lorix.window(lorix.sum("age"), ["id"], [], [lorix.unboundedPreceeding, lorix.currentRow]));
 
