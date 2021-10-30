@@ -181,6 +181,13 @@ let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 - `cols` is an array of columns that will be grouped.
 - `aggMap` is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
 
+Available aggregate functions are currently:
+- sum
+- mean
+- count
+- min
+- max
+
 Output columns are named using the current name suffixed by the aggregation applied, e.g. **colC_sum**, **colC_mean**.
 
 ```javascript
@@ -188,35 +195,41 @@ let df = df1.groupBy(
     ["colA", "colB"],
     {
         "colC": ["sum", "mean", "count"],
-        "colD": "sum"
+        "colD": "sum",
+        "colE": ["min", "max"]
     }
 );
 ```
 
-### Aggregating with window functions
+### Window functions
 
-Use the `.window()` function of a DataFrame to aggregate using window functions.
-- The first parameter is an array of columns that will be grouped.
-- The second parameter is an array of arrays specifying the order of rows within each group:
-  - The first array specifies the columns to sort (by default in ascending order)
-  - The second is optional, and specifies the order for each sort column
-- The final parameter is a mapping of new column name to the window function. All window functions
-take the name of the column they operate over, and any other optional parameters.
+`.window(windowFunc, partitionByCols, [orderByCols], [windowSize])` can be applied within `.withColumn` to apply window function `windowFunc` to the DataFrame. The window parameters follow, defined as:
+
+- `partitionByCols` is an array of columns used to partition the DataFrame rows.
+- `orderByCols` is an optional array consisting of two sub-arrays - one defining the set of columns to sort, and another the sort order (see `.orderBy` for more details).
+- `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
+    - Positive integer representing the number of rows
+    - `unboundedPreceding` all previous rows, relative to the current row
+    - `unboundedProceding` all following rows, relative to the current row
+    - `currentRow` represents the current row
+
+Lorix currently exposes the following window functions:
+- `min(col)` - minimum value
+- `max(col)` - maximum value
+- `median(col)` - median value
+- `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1]
+- `variance(col)` - returns an unbiased estimator of the population variance
+- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance
 
 ```javascript
-let df = df1.window(
-    ["colA"],
-    [["colB"], ["desc"]],
-    {
-        "min": lorix.min("colC"),
-        "max": lorix.max("colC"),
-        "median": lorix.median("colC"),
-        "quantile": lorix.quantile("colC"),  // Default is 0.5 (median)
-        "first_qrtl": lorix.quantile("colC", 0.25),  // First quartile
-        "third_qrtl": lorix.quantile("colC", 0.75),  // Third quartile
-        "variance": lorix.variance("colC"),
-        "stdev": lorix.stdev("colC")
-    }
+let df = df1.withColumn(
+    "colMin",
+    lorix.window(
+        lorix.stdev("colX"),   // window function (takes a column name, and any other required/option parameters)
+        ["colA"],              // columns defining how rows are partitioned
+        [["colB"], ["desc"]],  // optional - order columns
+        [14, lorix.currentRow] // optional - window size definition (14 rows preceding to current row)
+    )
 );
 ```
 
