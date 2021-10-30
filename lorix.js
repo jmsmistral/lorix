@@ -14,8 +14,14 @@ import {
     variance,
     stdev,
     min,
-    max
-} from "./src/groups.js";
+    max,
+
+    unboundedPreceding,
+    unboundedProceding,
+    currentRow,
+
+    window
+} from "./src/window.js";
 
 import { DataFrame } from "./src/dataframe.js";
 
@@ -41,6 +47,12 @@ export default {
     stdev: stdev,
     min: min,
     max: max,
+
+    unboundedPreceding: unboundedPreceding,
+    unboundedProceding: unboundedProceding,
+    currentRow: currentRow,
+
+    window: window,
 
     // DataFrame class
     DataFrame: DataFrame

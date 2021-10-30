@@ -6,9 +6,12 @@ import {
 } from "./joins.js";
 
 import {
-    groupAggregation,
-    groupSortAggregation
+    groupAggregation
 } from "./groups.js"
+
+import {
+    applyWindowFunction
+} from "./window.js"
 
 import {
     validateFunctionReferencesWithProxy,
@@ -105,21 +108,26 @@ export class DataFrame {
         // the result will be undefined.
 
         // Check that `col` is a string that does not start with a number.
-        if (!_isValidColumnName(col)) {
+        if (!_isValidColumnName(col))
             throw Error(`Column name "${col}" is not valid.`);
-        }
 
         // Check that `expr` is a function.
-        if((expr == undefined) || !(expr instanceof Function)) {
+        if ((expr == undefined) || !(expr instanceof Function))
             throw Error("expr provided to withColumn needs to be a function.")
+
+        // Check if function is a window function or not
+        if (expr.hasOwnProperty("isWindow")) {
+            console.log(expr());
+            // const windowParams = expr();
+            return applyWindowFunction(this, ...expr());
         }
-
-        // Check what existing columns are being referenced,
-        // if any, and throw an error if at least one does not exist.
-        validateFunctionReferencesWithProxy(expr, this.columns);
-
-        let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
-        return new DataFrame(newRows, this.columns.concat([col]));
+        else {
+            // Check what existing columns are being referenced,
+            // if any, and throw an error if at least one does not exist.
+            validateFunctionReferencesWithProxy(expr, this.columns);
+            let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
+            return new DataFrame(newRows, this.columns.concat([col]));
+        }
     }
 
     filter(expr) {
@@ -152,19 +160,16 @@ export class DataFrame {
         // will be identified across all columns.
 
         // Check number of arguments.
-        if (arguments.length > 1) {
+        if (arguments.length > 1)
             throw Error(`distinct() takes a single argument. Arguments passed: ${arguments.length}`);
-        }
 
-        if (!(subset instanceof Array)) {
+        if (!(subset instanceof Array))
             throw Error("`subset` provided to distinct needs to be a function.")
-        }
 
         // Check that all columns specified in `subset` exist in
         // the DataFrame.
-        if ((subset.length) && !(_isSubsetArray(subset, this.columns))) {
+        if ((subset.length) && !(_isSubsetArray(subset, this.columns)))
             throw Error(`Invalid columns specified in distinct(): ${lodash.difference(subset, this.columns)}`);
-        }
 
         if (subset.length) {
             return new DataFrame(lodash.uniqBy(this.rows, _getDistinctFn(subset)), this.columns);
@@ -246,22 +251,6 @@ export class DataFrame {
         }
 
         return groupAggregation(this, cols, agg);
-    }
-
-    window(groupByCols, orderByCols, agg) {
-        /**
-         * @output
-         * Dataframe with new columns defined as the result
-         * of the aggregations from the agg object applied to each
-         * group of rows defined by `groupByCols` and optionally
-         * sorted as defined by `orderByCols`.
-         * Note: the window function needs to return a single value when
-         * called for each group.
-         *
-         * @inputs
-         *
-         */
-        return groupSortAggregation(this, groupByCols, orderByCols || [], agg);
     }
 
 }
