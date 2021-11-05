@@ -81,35 +81,27 @@ function _getSliceIndices(partitionArray, currentIndex, prev, next) {
 
     if (prev == unboundedPreceding && next == unboundedProceding)
             return;
-            // return partitionArray;
 
     if (prev == unboundedPreceding && next == currentRow)
         return [0, currentIndex + 1];
-        // return partitionArray.slice(0, currentIndex + 1);
 
     if (prev == currentRow && next == unboundedProceding)
         return [currentIndex];
-        // return partitionArray.slice(currentIndex);
 
     if (prev == currentRow && next == currentRow)
         return [currentIndex, currentIndex + 1];
-        // return partitionArray.slice(currentIndex, currentIndex + 1);
 
     if (!isNaN(prev) && next == currentRow)
         return [_precedingIndexThreshold(prev, currentIndex), currentIndex + 1];
-        // return partitionArray.slice(_precedingIndexThreshold(prev, currentIndex), currentIndex + 1);
 
     if (prev == currentRow && !isNaN(next))
         return [currentIndex, _procedingIndexThreshold(next, currentIndex, pArrLength)];
-        // return partitionArray.slice(currentIndex, _procedingIndexThreshold(next, currentIndex, pArrLength));
 
     if (prev == unboundedPreceding && !isNaN(next))
         return [0, _procedingIndexThreshold(next, currentIndex, pArrLength)];
-        // return partitionArray.slice(0, _procedingIndexThreshold(next, currentIndex, pArrLength));
 
     if (!isNaN(prev) && next == unboundedProceding)
         return [_precedingIndexThreshold(prev, currentIndex)];
-        // return partitionArray.slice(_precedingIndexThreshold(prev, currentIndex));
 
     if (!isNaN(prev) && !isNaN(next))
         return [_precedingIndexThreshold(prev, currentIndex), _procedingIndexThreshold(next, currentIndex, pArrLength)];
@@ -139,46 +131,7 @@ function _resizePartitionRows(arr, windowSize, windowArrayColName) {
 }
 
 
-function _runWindowOverMapWithWindowSize(groups, partitionByCols, windowFunc, newCol, windowSize, resultAgg={}) {
-
-    // Generate temp unique id for col
-    const windowArrayColName = "WINDOW_RESULT_COL_" + uuid();
-    console.log(windowArrayColName);
-
-
-
-
-
-    if (windowSize.length) {
-        // console.log(value);
-        value = _resizePartitionRows(value, windowSize, windowArrayColName);
-        console.log("window size calculated:");
-        console.log(value);
-        let result = value.map( (r, i, v) => {
-            if (r[windowArrayColName].length == 1)
-                return windowFunc(v.slice(r[windowArrayColName[0]]));
-            return windowFunc(v.slice(r[windowArrayColName[0], windowArrayColName[1]]));
-        });
-        console.log("result:");
-        console.log(result);
-        // for (const row of result)
-        //     console.log(row);
-        console.log();
-        // let windowRows = []
-        // for (let row of value) {
-        //     console.log("row:");
-        //     console.log(row);
-        //     console.log();
-            // console.log(row[windowArrayColName]);
-            // console.log(windowFunc(row[windowArrayColName]));
-            // windowRows.push(Object.assign({}, {...resultAgg, [partitionByCols[0]]: key, [newCol]: windowFunc(row[windowArrayColName])}));
-        // }
-        // return windowRows;
-    }
-}
-
-
-function _runWindowOverMap(groups, partitionByCols, windowFunc, newCol, windowSize, resultAgg={}) {
+function _runWindowOverMapWithWindowSize(partitions, partitionByCols, windowFunc, newCol, windowSize, resultAgg={}) {
     /**
      * Traverses the Map of partitioned rows, populating an output
      * object with both the partition columns, and the results of applying
@@ -186,7 +139,37 @@ function _runWindowOverMap(groups, partitionByCols, windowFunc, newCol, windowSi
      * Map.
      */
 
-    return Array.from(groups, ([key, value]) => {
+    // Generate temp unique id for col
+    let windowArrayColName = uuid();
+    let cleanRow, dummy;
+
+    return Array.from(partitions, ([key, value]) => {
+        if (value instanceof Map)
+            return _runWindowOverMapWithWindowSize(value, partitionByCols.slice(1), windowFunc, newCol, windowSize, Object.assign({}, {...resultAgg, [partitionByCols[0]]: key}));
+
+        // Add window indices to each row, and apply
+        // window function to each adjusted sub-partition
+        // per row.
+        value = _resizePartitionRows(value, windowSize, windowArrayColName);
+        return value.map( (r, _i, v) => {
+            ({[windowArrayColName]: dummy, ...cleanRow} = r);  // Remove temporary property holding window indices
+            if (r[windowArrayColName].length == 1)
+                return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0]))});
+            return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0], r[windowArrayColName][1]))});
+        });
+    }).flat();
+}
+
+
+function _runWindowOverMap(partitions, partitionByCols, windowFunc, newCol, windowSize, resultAgg={}) {
+    /**
+     * Traverses the Map of partitioned rows, populating an output
+     * object with both the partition columns, and the results of applying
+     * the window function to the array of rows in the leaf nodes of the
+     * Map.
+     */
+
+    return Array.from(partitions, ([key, value]) => {
         if (value instanceof Map)
             return _runWindowOverMap(value, partitionByCols.slice(1), windowFunc, newCol, windowSize, Object.assign({}, {...resultAgg, [partitionByCols[0]]: key}));
         return Object.assign({}, {...resultAgg, [partitionByCols[0]]: key, [newCol]: windowFunc(value)});
@@ -247,6 +230,9 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
         df = df.orderBy([...partitionByCols , ...orderByCols[0]], [...partitionByOrder, ...orderByCols[1]]);
     }
 
+    if (windowSize.length == 2 && (windowSize[0] == unboundedPreceding && windowSize[1] == unboundedProceding))
+        windowSize = [];
+
     // Check that columns exist in Dataframe
     if (partitionByCols.length && !(_isSubsetArray(partitionByCols, df.columns)))
         throw Error(`Invalid columns provided in window function group or order array: '${partitionByCols}'`);
@@ -254,17 +240,19 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
     if (orderByCols.length && !(_isSubsetArray(orderByCols[0], df.columns)))
         throw Error(`Invalid columns provided in window function group or order array: '${orderByCols[0]}'`);
 
-    // Get Map with results per group
+    // Get Map with results per partition
     let partitionFunctions = _generatePartitionFunctions(partitionByCols);
-    let map = d3Array.group(df.rows, ...partitionFunctions);
+    let partitionMap = d3Array.group(df.rows, ...partitionFunctions);
 
     // Apply window function to ordered partitions
     if (partitionByCols.length) {
-        let windowDf = new DataFrame(_runWindowOverMap(map, partitionByCols, windowFunc, newCol, windowSize), partitionByCols.concat([newCol]));
+        if (windowSize.length)
+            return new DataFrame(_runWindowOverMapWithWindowSize(partitionMap, partitionByCols, windowFunc, newCol, windowSize), df.columns.concat([newCol]));
+        let windowDf = new DataFrame(_runWindowOverMap(partitionMap, partitionByCols, windowFunc, newCol, windowSize), partitionByCols.concat([newCol]));
         return df.leftJoin(windowDf, partitionByCols);
     }
 
     // If no partitioning is defined, apply window function across all rows
-    const windowResult = windowFunc(map);
+    const windowResult = windowFunc(partitionMap);
     return df.withColumn(newCol, () => windowResult);
 }
