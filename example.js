@@ -161,8 +161,9 @@ console.log("df.window()");
 
 (
     df5
-    .withColumn("mean", lorix.window(lorix.mean("salary")))
-    .withColumn("mean", (r) => Math.round(r["mean"], 0))
+    .withColumn("stdev", lorix.window(lorix.stdev("salary"), ["dept"], [], [1, lorix.currentRow]))
+    .withColumn("stdev", (r) => Math.round(r["stdev"], 0))
+    .orderBy(["dept", "salary"], ["asc", "desc"])
     .head(100)
 );
 
