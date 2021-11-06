@@ -1,5 +1,4 @@
 import d3Array from 'd3-array';
-import lodash from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 import { DataFrame } from "./dataframe.js";
@@ -7,48 +6,68 @@ import { _isSubsetArray } from './utils.js';
 
 
 export const unboundedPreceding = "UNBOUNDED_PRECEDING";
-export const unboundedProceding = "UNBOUNDED_PROCEDING";
+export const unboundedProceeding = "UNBOUNDED_PROCEEDING";
 export const currentRow = "CURRENT_ROW";
 
 
-export function rowNumber() {
-    return (v => v.keys());
-}
-
 export function sum(col) {
-    return (v => d3Array.sum(v, d => d[col]));
+    return ((v, i) => d3Array.sum(v, d => d[col]));
 }
 
 export function min(col) {
-    return (v => d3Array.min(v, d => d[col]));
+    return ((v, i) => d3Array.min(v, d => d[col]));
 }
 
 export function max(col) {
-    return (v => d3Array.max(v, d => d[col]));
+    return ((v, i) => d3Array.max(v, d => d[col]));
 }
 
 export function mean(col) {
-    return (v => d3Array.mean(v, d => d[col]));
+    return ((v, i) => d3Array.mean(v, d => d[col]));
 }
 
 export function median(col) {
-    return (v => d3Array.median(v, d => d[col]));
+    return ((v, i) => d3Array.median(v, d => d[col]));
 }
 
 export function mode(col) {
-    return (v => d3Array.mode(v, d => d[col]));
+    return ((v, i) => d3Array.mode(v, d => d[col]));
 }
 
 export function quantile(col, p=0.5) {
-    return (v => d3Array.quantile(v, p, d => d[col]));
+    return ((v, i) => d3Array.quantile(v, p, d => d[col]));
 }
 
 export function variance(col) {
-    return (v => d3Array.variance(v, d => d[col]));
+    return ((v, i) => d3Array.variance(v, d => d[col]));
 }
 
 export function stdev(col) {
-    return (v => d3Array.deviation(v, d => d[col]));
+    return ((v, i) => d3Array.deviation(v, d => d[col]));
+}
+
+export function lag(col, n) {
+    let lagFunc = (v, i) => v.length > 1 ? v[0][col] : null;
+    lagFunc.setWindowSize = true;
+    lagFunc.windowSize = [n, currentRow];
+    return lagFunc;
+}
+
+export function lead(col, n) {
+    let leadFunc = (v, i) => v.length > 1 ? v[v.length - 1][col] : null;
+    leadFunc.setWindowSize = true;
+    leadFunc.windowSize = [currentRow, n];
+    return leadFunc;
+}
+
+export function rownumber() {
+    if (arguments.length)
+        throw Error("Window function 'rownumber()' takes no arguments.");
+
+    let rownumberFunc = (v, i) => i + 1;
+    rownumberFunc.setWindowSize = true;
+    rownumberFunc.windowSize = [unboundedPreceding, unboundedProceeding];
+    return rownumberFunc;
 }
 
 
@@ -67,25 +86,40 @@ function _generatePartitionFunctions(cols) {
 
 
 function _precedingIndexThreshold(n, index) {
+    /**
+     * Limits the window size bound calculation
+     * to the array size.
+     */
+
     return ((index - n) < 0) ? 0 : (index - n);
 }
 
 
 function _procedingIndexThreshold(n, index, arrLength) {
-    return ((index + n) > (arrLength - 1)) ? (arrLength - 1) : (index + n);
+    /**
+     * Limits the window size bound calculation
+     * to the array size.
+     */
+
+    return ((index + n) > (arrLength - 1)) ? (arrLength - 1) : (index + n) + 1;
 }
 
 
 function _getSliceIndices(partitionArray, currentIndex, prev, next) {
+    /**
+     * Calculate the index bounds defining the window size
+     * for the given row within it's partition.
+     */
+
     const pArrLength = partitionArray.length;
 
-    if (prev == unboundedPreceding && next == unboundedProceding)
-            return;
+    if (prev == unboundedPreceding && next == unboundedProceeding)
+        return [0, pArrLength - 1];
 
     if (prev == unboundedPreceding && next == currentRow)
         return [0, currentIndex + 1];
 
-    if (prev == currentRow && next == unboundedProceding)
+    if (prev == currentRow && next == unboundedProceeding)
         return [currentIndex];
 
     if (prev == currentRow && next == currentRow)
@@ -94,13 +128,14 @@ function _getSliceIndices(partitionArray, currentIndex, prev, next) {
     if (!isNaN(prev) && next == currentRow)
         return [_precedingIndexThreshold(prev, currentIndex), currentIndex + 1];
 
-    if (prev == currentRow && !isNaN(next))
+    if (prev == currentRow && !isNaN(next)) {
         return [currentIndex, _procedingIndexThreshold(next, currentIndex, pArrLength)];
+    }
 
     if (prev == unboundedPreceding && !isNaN(next))
         return [0, _procedingIndexThreshold(next, currentIndex, pArrLength)];
 
-    if (!isNaN(prev) && next == unboundedProceding)
+    if (!isNaN(prev) && next == unboundedProceeding)
         return [_precedingIndexThreshold(prev, currentIndex)];
 
     if (!isNaN(prev) && !isNaN(next))
@@ -151,11 +186,11 @@ function _runWindowOverMapWithWindowSize(partitions, partitionByCols, windowFunc
         // window function to each adjusted sub-partition
         // per row.
         value = _resizePartitionRows(value, windowSize, windowArrayColName);
-        return value.map( (r, _i, v) => {
+        return value.map( (r, i, v) => {
             ({[windowArrayColName]: dummy, ...cleanRow} = r);  // Remove temporary property holding window indices
             if (r[windowArrayColName].length == 1)
-                return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0]))});
-            return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0], r[windowArrayColName][1]))});
+                return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0]), i)});
+            return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0], r[windowArrayColName][1]), i)});
         });
     }).flat();
 }
@@ -230,8 +265,12 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
         df = df.orderBy([...partitionByCols , ...orderByCols[0]], [...partitionByOrder, ...orderByCols[1]]);
     }
 
-    if (windowSize.length == 2 && (windowSize[0] == unboundedPreceding && windowSize[1] == unboundedProceding))
+    // Reset `windowSize` if full bounds are defined by end-user
+    if (windowSize.length == 2 && (windowSize[0] == unboundedPreceding && windowSize[1] == unboundedProceeding))
         windowSize = [];
+
+    if (windowFunc.hasOwnProperty("setWindowSize"))
+        windowSize = windowFunc.windowSize;
 
     // Check that columns exist in Dataframe
     if (partitionByCols.length && !(_isSubsetArray(partitionByCols, df.columns)))

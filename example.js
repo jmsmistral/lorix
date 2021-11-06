@@ -161,10 +161,14 @@ console.log("df.window()");
 
 (
     df5
-    .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [], [1, lorix.currentRow]))
+    // .withColumn("sum", lorix.window(lorix.lag("salary", 1), ["dept"], []))
+    .withColumn("sum", lorix.window(lorix.lead("salary", 1), ["dept"], []))
+    .withColumn("row", lorix.window(lorix.rownumber(), ["dept"], [["salary"], ["desc"]]))
+    // .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [], [1, lorix.currentRow]))
     // .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [], [lorix.unboundedPreceding, lorix.unboundedProceding]))
-    .withColumn("sum", (r) => Math.round(r["sum"], 0))
-    .orderBy(["dept", "salary"], ["asc", "desc"])
+    // .withColumn("sum", (r) => Math.round(r["sum"], 0))
+    // .orderBy(["dept", "salary"], ["asc", "desc"])
+    .filter((r) => r["row"] == 1)
     .head(100)
 );
 

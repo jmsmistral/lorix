@@ -18,10 +18,12 @@ import {
     min,
     max,
     sum,
-    rowNumber,
+    lag,
+    lead,
+    rownumber,
 
     unboundedPreceding,
-    unboundedProceding,
+    unboundedProceeding,
     currentRow,
 
     window
@@ -54,10 +56,12 @@ export default {
     min: min,
     max: max,
     sum: sum,
-    rowNumber: rowNumber,
+    lag: lag,
+    lead: lead,
+    rownumber: rownumber,
 
     unboundedPreceding: unboundedPreceding,
-    unboundedProceding: unboundedProceding,
+    unboundedProceding: unboundedProceeding,
     currentRow: currentRow,
 
     window: window,

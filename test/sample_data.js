@@ -100,10 +100,10 @@ export let smallDataFrame2 = (
 export let smallDataFrame3 = (
     new DataFrame(
         [
-            {'name': 'Beverly', 'dept': 2, 'salary': 16233},
-            {'name': 'Kameko',  'dept': 2, 'salary': 16233},
+            {'name': 'Beverly', 'dept': 2, 'salary': 16231},
+            {'name': 'Kameko',  'dept': 2, 'salary': 16232},
             {'name': 'Ursa',    'dept': 3, 'salary': 15427},
-            {'name': 'Ferris',  'dept': 1, 'salary': 19745},
+            {'name': 'Ferris',  'dept': 1, 'salary': 19740},
             {'name': 'Noel',    'dept': 1, 'salary': 19745},
             {'name': 'Abel',    'dept': 3, 'salary': 12369},
             {'name': 'Raphael', 'dept': 1, 'salary': 8227},

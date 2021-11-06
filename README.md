@@ -210,19 +210,22 @@ let df = df1.groupBy(
 - `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
     - Positive integer representing the number of rows
     - `unboundedPreceding` all previous rows, relative to the current row
-    - `unboundedProceding` all following rows, relative to the current row
+    - `unboundedProceeding` all following rows, relative to the current row
     - `currentRow` represents the current row
 
 Lorix currently exposes the following window functions:
-- `sum(col)` - sum of values
-- `min(col)` - minimum value
-- `max(col)` - maximum value
-- `mean(col)` - mean value
-- `median(col)` - median value
-- `mode(col)` - mode value
-- `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1]
-- `variance(col)` - returns an unbiased estimator of the population variance
-- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance
+- `sum(col)` - sum of values.
+- `min(col)` - minimum value.
+- `max(col)` - maximum value.
+- `mean(col)` - mean value.
+- `median(col)` - median value.
+- `mode(col)` - mode value.
+- `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1].
+- `variance(col)` - returns an unbiased estimator of the population variance.
+- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
+- `lag(col, n)` - returns the value of the `n`-th row prior to the current row.
+- `lead(col, n)` - returns the value of the `n`-th row after the current row.
+- `rownumber()` - returns the sequential number of a row within the partition.
 
 ```javascript
 let df = df1.withColumn(
