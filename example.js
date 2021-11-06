@@ -9,6 +9,7 @@ import {
     verySmallDataFrameInnerJoinResult,
     smallDataFrame1,
     smallDataFrame2,
+    smallDataFrame3,
     iris
 } from './test/sample_data.js'
 
@@ -26,6 +27,7 @@ let df2 = verySmallDataFrame2;
 
 let df3 = smallDataFrame1;
 let df4 = smallDataFrame2;
+let df5 = smallDataFrame3;
 
 let irisDf = iris;
 
@@ -59,8 +61,11 @@ let irisDf = iris;
 // console.log("df3");
 // df3.head();
 
-console.log("iris");
-irisDf.head();
+console.log("df5s");
+df5.head();
+
+// console.log("iris");
+// irisDf.head();
 
 
 
@@ -152,7 +157,43 @@ console.log("df1.groupBy()");
 //     .head()
 // )
 
-console.log("df1.window()");
+console.log("df.window()");
+
+(
+    df5
+    // .withColumn("sum", lorix.window(lorix.lag("salary", 1), ["dept"], []))
+    .withColumn("sum", lorix.window(lorix.lead("salary", 1), ["dept"], []))
+    .withColumn("row", lorix.window(lorix.rownumber(), ["dept"], [["salary"], ["desc"]]))
+    // .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [], [1, lorix.currentRow]))
+    // .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [], [lorix.unboundedPreceding, lorix.unboundedProceding]))
+    // .withColumn("sum", (r) => Math.round(r["sum"], 0))
+    // .orderBy(["dept", "salary"], ["asc", "desc"])
+    .filter((r) => r["row"] == 1)
+    .head(100)
+);
+
+// (
+//     df5
+//     .withColumn("mean", lorix.window(lorix.mean("salary"), ["dept"], []))
+//     .withColumn("mean", (r) => Math.round(r["mean"], 0))
+//     .orderBy(["dept", "salary"], ["asc", "desc"])
+//     .withColumn("row_num", lorix.window(lorix.rowNumber(), ["dept"], ["salary"]))
+//     .head(100)
+// );
+
+// console.log(df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]])));
+// df3.withColumn("quantile", lorix.window(lorix.quantile("age"), ["id"], [["weight"], ["desc"]]));
+// df5.withColumn("mean", lorix.window(lorix.mean("salary"), [], [])).head(100);
+// df3.withColumn("max", lorix.window(lorix.max("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("median", lorix.window(lorix.median("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("quantile", lorix.window(lorix.quantile("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("firstQuartile", lorix.window(lorix.quantile("weight", 0.25), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("thirdQuartile", lorix.window(lorix.quantile("weight", 0.75), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("variance", lorix.window(lorix.variance("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+// df3.withColumn("stdev", lorix.window(lorix.stdev("weight"), ["id"], [["weight"], ["desc"]])).head(100);
+
+// df.withColumn("quantile", lorix.window(lorix.sum("age"), ["id"], [], [lorix.unboundedPreceeding, lorix.currentRow]));
+
 // df1.head();
 // df1.window(
 //     ["id"],

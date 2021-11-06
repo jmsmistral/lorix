@@ -12,12 +12,15 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 - Load and export data to/from text files and object arrays
 - Exposes a simple, functional data-oriented API that operates over an array of objects
 - Function chaining to encapsulate multiple data transformations in single blocks
+- Helpful error messages to assist debugging
 
 # Why Lorix?
 
-I wanted a _simple_ way to wrangle data with Javascript for my own projects, instead of resorting to using pandas in Python.
-Rather than building something low-level from scratch, and optimizing for performance, I opted to design a DataFrame abstraction
-over existing libraries like _lodash_ and _d3_.
+I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas in Python.
+Rather than building something low-level from scratch, optimizing for performance, I opted to design a DataFrame abstraction
+over existing libraries like _lodash_ and _d3_. The idea isn't for this to compete performance-wise with other libraries
+(far from it!), but to provide an _intuitive_ API for anyone to pick-up and transform small to medium-sized datasets directly
+in Javascript.
 
 # How to install
 
@@ -181,6 +184,13 @@ let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 - `cols` is an array of columns that will be grouped.
 - `aggMap` is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
 
+Available aggregate functions are currently:
+- sum
+- mean
+- count
+- min
+- max
+
 Output columns are named using the current name suffixed by the aggregation applied, e.g. **colC_sum**, **colC_mean**.
 
 ```javascript
@@ -188,35 +198,47 @@ let df = df1.groupBy(
     ["colA", "colB"],
     {
         "colC": ["sum", "mean", "count"],
-        "colD": "sum"
+        "colD": "sum",
+        "colE": ["min", "max"]
     }
 );
 ```
 
-### Aggregating with window functions
+### Window functions
 
-Use the `.window()` function of a DataFrame to aggregate using window functions.
-- The first parameter is an array of columns that will be grouped.
-- The second parameter is an array of arrays specifying the order of rows within each group:
-  - The first array specifies the columns to sort (by default in ascending order)
-  - The second is optional, and specifies the order for each sort column
-- The final parameter is a mapping of new column name to the window function. All window functions
-take the name of the column they operate over, and any other optional parameters.
+`.window(windowFunc, [partitionByCols], [orderByCols], [windowSize])` can be applied within `.withColumn` to apply window function `windowFunc` to the DataFrame. The window parameters follow, defined as:
+
+- `partitionByCols` is an optional array of columns used to partition the DataFrame rows.
+- `orderByCols` is an optional array consisting of two sub-arrays - one defining the set of columns to sort, and another the sort order (see `.orderBy` for more details).
+- `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
+    - Positive integer representing the number of rows
+    - `unboundedPreceding` all previous rows, relative to the current row
+    - `unboundedProceeding` all following rows, relative to the current row
+    - `currentRow` represents the current row
+
+Lorix currently exposes the following window functions:
+- `sum(col)` - sum of values.
+- `min(col)` - minimum value.
+- `max(col)` - maximum value.
+- `mean(col)` - mean value.
+- `median(col)` - median value.
+- `mode(col)` - mode value.
+- `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1].
+- `variance(col)` - returns an unbiased estimator of the population variance.
+- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
+- `lag(col, n)` - returns the value of the `n`-th row prior to the current row.
+- `lead(col, n)` - returns the value of the `n`-th row after the current row.
+- `rownumber()` - returns the sequential number of a row within the partition.
 
 ```javascript
-let df = df1.window(
-    ["colA"],
-    [["colB"], ["desc"]],
-    {
-        "min": lorix.min("colC"),
-        "max": lorix.max("colC"),
-        "median": lorix.median("colC"),
-        "quantile": lorix.quantile("colC"),  // Default is 0.5 (median)
-        "first_qrtl": lorix.quantile("colC", 0.25),  // First quartile
-        "third_qrtl": lorix.quantile("colC", 0.75),  // Third quartile
-        "variance": lorix.variance("colC"),
-        "stdev": lorix.stdev("colC")
-    }
+let df = df1.withColumn(
+    "colMin",
+    lorix.window(
+        lorix.stdev("colX"),   // window function (takes a column name, and any other required/option parameters)
+        ["colA"],              // columns defining how rows are partitioned
+        [["colB"], ["desc"]],  // optional - order columns
+        [14, lorix.currentRow] // optional - window size definition (14 rows preceding to current row)
+    )
 );
 ```
 
