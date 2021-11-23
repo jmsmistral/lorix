@@ -389,3 +389,23 @@ export let smallDataFrame2DistinctNameWeightResult = (
         ['id', 'name', 'weight']
     )
 );
+
+
+// window functions
+export let smallDataFrame3WindowFuncsOrderedPartition = (
+    new DataFrame(
+        [
+            { 'name': 'Noel',    'dept': 1, 'salary': 19745, 'sum': 57422, 'lag': null,  'lead': 19740, 'stddev': 6250, 'rownum': 1 },
+            { 'name': 'Ferris',  'dept': 1, 'salary': 19740, 'sum': 57422, 'lag': 19745, 'lead': 9710,  'stddev': 6250, 'rownum': 2 },
+            { 'name': 'Jack',    'dept': 1, 'salary': 9710,  'sum': 57422, 'lag': 19740, 'lead': 8227,  'stddev': 6250, 'rownum': 3 },
+            { 'name': 'Raphael', 'dept': 1, 'salary': 8227,  'sum': 57422, 'lag': 9710,  'lead': null,  'stddev': 6250, 'rownum': 4 },
+            { 'name': 'Kameko',  'dept': 2, 'salary': 16232, 'sum': 41771, 'lag': null,  'lead': 16231, 'stddev': 3997, 'rownum': 1 },
+            { 'name': 'Beverly', 'dept': 2, 'salary': 16231, 'sum': 41771, 'lag': 16232, 'lead': 9308,  'stddev': 3997, 'rownum': 2 },
+            { 'name': 'Haviva',  'dept': 2, 'salary': 9308,  'sum': 41771, 'lag': 16231, 'lead': null,  'stddev': 3997, 'rownum': 3 },
+            { 'name': 'Ursa',    'dept': 3, 'salary': 15427, 'sum': 37104, 'lag': null,  'lead': 12369, 'stddev': 3060, 'rownum': 1 },
+            { 'name': 'Abel',    'dept': 3, 'salary': 12369, 'sum': 37104, 'lag': 15427, 'lead': 9308,  'stddev': 3060, 'rownum': 2 },
+            { 'name': 'May',     'dept': 3, 'salary': 9308,  'sum': 37104, 'lag': 12369, 'lead': null,  'stddev': 3060, 'rownum': 3 }
+        ],
+        ['name', 'dept', 'salary', 'sum', 'lag', 'lead', 'stddev', 'rownum']
+    )
+);

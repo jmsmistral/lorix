@@ -1,74 +1,13 @@
-import d3Array from 'd3-array';
-import { v4 as uuid } from 'uuid';
+import d3Array from "d3-array";
+import { v4 as uuid } from "uuid";
 
 import { DataFrame } from "./dataframe.js";
-import { _isSubsetArray } from './utils.js';
+import { _isSubsetArray } from "./utils.js";
 
 
 export const unboundedPreceding = "UNBOUNDED_PRECEDING";
 export const unboundedProceeding = "UNBOUNDED_PROCEEDING";
 export const currentRow = "CURRENT_ROW";
-
-
-export function sum(col) {
-    return ((v, i) => d3Array.sum(v, d => d[col]));
-}
-
-export function min(col) {
-    return ((v, i) => d3Array.min(v, d => d[col]));
-}
-
-export function max(col) {
-    return ((v, i) => d3Array.max(v, d => d[col]));
-}
-
-export function mean(col) {
-    return ((v, i) => d3Array.mean(v, d => d[col]));
-}
-
-export function median(col) {
-    return ((v, i) => d3Array.median(v, d => d[col]));
-}
-
-export function mode(col) {
-    return ((v, i) => d3Array.mode(v, d => d[col]));
-}
-
-export function quantile(col, p=0.5) {
-    return ((v, i) => d3Array.quantile(v, p, d => d[col]));
-}
-
-export function variance(col) {
-    return ((v, i) => d3Array.variance(v, d => d[col]));
-}
-
-export function stdev(col) {
-    return ((v, i) => d3Array.deviation(v, d => d[col]));
-}
-
-export function lag(col, n) {
-    let lagFunc = (v, i) => v.length > 1 ? v[0][col] : null;
-    lagFunc.setWindowSize = true;
-    lagFunc.windowSize = [n, currentRow];
-    return lagFunc;
-}
-
-export function lead(col, n) {
-    let leadFunc = (v, i) => v.length > 1 ? v[v.length - 1][col] : null;
-    leadFunc.setWindowSize = true;
-    leadFunc.windowSize = [currentRow, n];
-    return leadFunc;
-}
-
-export function rownumber() {
-    if (arguments.length)
-        throw Error("Window function 'rownumber()' takes no arguments.");
-
-    let rownumberFunc = (v, i) => i + 1;
-    rownumberFunc.setWindowSize = true;
-    rownumberFunc.windowSize = [unboundedPreceding, unboundedProceeding];
-    return rownumberFunc;
-}
 
 
 function _generatePartitionFunctions(cols) {

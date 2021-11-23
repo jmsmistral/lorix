@@ -159,15 +159,20 @@ describe("DataFrame class", () => {
         });
 
         it("Should overwrite the values of a column when an existing column name is specified", function() {
+            const newColName = "newCol";
             const df = (
                 this.test.df
-                .withColumn("newCol", () => 1)
-                .withColumn("newCol", () => 2)
+                .withColumn(newColName, () => 1)
+                .withColumn(newColName, () => 2)
             );
-            expect(df.columns.includes("newCol")).to.be.true;
+
+            const numInstances = df.columns.filter((col) => col == newColName).length;
+
+            expect(numInstances).to.equal(1);  // There shouldn't be more than one instance of a column name
+            expect(df.columns.includes(newColName)).to.be.true;
             for (let row of df) {
-                expect(row).to.haveOwnProperty("newCol");
-                expect(row["newCol"]).to.equal(2);
+                expect(row).to.haveOwnProperty(newColName);
+                expect(row[newColName]).to.equal(2);
             }
         });
 

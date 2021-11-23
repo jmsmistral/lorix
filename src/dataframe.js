@@ -123,7 +123,8 @@ export class DataFrame {
         // and throw an error if at least one does not exist.
         validateFunctionReferencesWithProxy(expr, this.columns);
         let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
-        return new DataFrame(newRows, this.columns.concat([col]));
+        let newCols = this.columns.includes(col) ? this.columns : this.columns.concat([col]);
+        return new DataFrame(newRows, newCols);
     }
 
     filter(expr) {

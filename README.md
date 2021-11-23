@@ -16,7 +16,7 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 
 # Why Lorix?
 
-I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas in Python.
+I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas on Python.
 Rather than building something low-level from scratch, optimizing for performance, I opted to design a DataFrame abstraction
 over existing libraries like _lodash_ and _d3_. The idea isn't for this to compete performance-wise with other libraries
 (far from it!), but to provide an _intuitive_ API for anyone to pick-up and transform small to medium-sized datasets directly
@@ -222,7 +222,6 @@ Lorix currently exposes the following window functions:
 - `max(col)` - maximum value.
 - `mean(col)` - mean value.
 - `median(col)` - median value.
-- `mode(col)` - mode value.
 - `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1].
 - `variance(col)` - returns an unbiased estimator of the population variance.
 - `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
