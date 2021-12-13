@@ -32,9 +32,8 @@ export class DataFrame {
 
     // Enable to iterate over DataFrame rows
     *iterator() {
-        for (let row of this.rows) {
+        for (let row of this.rows)
             yield row;
-        }
     }
 
     [Symbol.iterator]() {
@@ -45,9 +44,8 @@ export class DataFrame {
         // Return a Dataframe from an array of objects.
         if (arr instanceof Array) {
             let cols = _getUniqueObjectProperties(arr);
-            if (cols.length > 0) {
+            if (cols.length > 0)
                 return new DataFrame(arr, cols);
-            }
         }
         throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
