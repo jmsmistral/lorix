@@ -32,9 +32,8 @@ export class DataFrame {
 
     // Enable to iterate over DataFrame rows
     *iterator() {
-        for (let row of this.rows) {
+        for (let row of this.rows)
             yield row;
-        }
     }
 
     [Symbol.iterator]() {
@@ -45,9 +44,8 @@ export class DataFrame {
         // Return a Dataframe from an array of objects.
         if (arr instanceof Array) {
             let cols = _getUniqueObjectProperties(arr);
-            if (cols.length > 0) {
+            if (cols.length > 0)
                 return new DataFrame(arr, cols);
-            }
         }
         throw Error("Dataframe.fromArray() only accepts a non-empty array of objects.");
     }
@@ -123,7 +121,8 @@ export class DataFrame {
         // and throw an error if at least one does not exist.
         validateFunctionReferencesWithProxy(expr, this.columns);
         let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
-        return new DataFrame(newRows, this.columns.concat([col]));
+        let newCols = this.columns.includes(col) ? this.columns : this.columns.concat([col]);
+        return new DataFrame(newRows, newCols);
     }
 
     filter(expr) {
