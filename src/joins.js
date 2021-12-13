@@ -1,4 +1,4 @@
-import d3Array from 'd3-array';
+import {cross, group} from 'd3-array';
 import lodash from 'lodash';
 
 import { DataFrame } from './dataframe.js';
@@ -70,7 +70,7 @@ function _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn) {
 export function _crossJoin(df1, df2) {
     if (df2 instanceof DataFrame) {
         let commonCols = df1.columns.filter(col => df2.columns.includes(col));
-        let rowArray = d3Array.cross(df1, df2, (left, right) => {
+        let rowArray = cross(df1, df2, (left, right) => {
             if (commonCols.length) return _cleanCommonCols(left, right, commonCols);
             return {...left, ...right};
         }).filter(Boolean); // Used to filter-out any undefined
@@ -303,7 +303,7 @@ function _getIndex(df, cols) {
         // Generate functions for indexing with d3
         groupFuncs.push(arr => arr[joinCol]);
     }
-    return d3Array.group(df, ...groupFuncs);
+    return group(df, ...groupFuncs);
 }
 
 

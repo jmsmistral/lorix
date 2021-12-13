@@ -1,4 +1,13 @@
-import d3Array from 'd3-array';
+import {
+    sum as d3Sum,
+    min as d3Min,
+    max as d3Max,
+    mean as d3Mean,
+    median as d3Median,
+    quantile as d3Quantile,
+    variance as d3Variance,
+    deviation as d3Deviation
+} from 'd3-array';
 
 import {
     unboundedPreceding,
@@ -8,75 +17,59 @@ import {
 
 
 export function sum(col) {
-    let sumFunc = ((v, i) => d3Array.sum(v, d => d[col]));
+    let sumFunc = ((v, i) => d3Sum(v, d => d[col]));
     sumFunc.columnPropName = col;
     sumFunc.funcName = "sum()";
     return sumFunc;
-
-    // return ((v, i) => d3Array.sum(v, d => d[col]));
 }
 
 export function min(col) {
-    let minFunc = ((v, i) => d3Array.min(v, d => d[col]));
+    let minFunc = ((v, i) => d3Min(v, d => d[col]));
     minFunc.columnPropName = col;
     minFunc.funcName = "min()";
     return minFunc;
-
-    // return ((v, i) => d3Array.min(v, d => d[col]));
 }
 
 export function max(col) {
-    let maxFunc = ((v, i) => d3Array.max(v, d => d[col]));
+    let maxFunc = ((v, i) => d3Max(v, d => d[col]));
     maxFunc.columnPropName = col;
     maxFunc.funcName = "max()";
     return maxFunc;
-
-    // return ((v, i) => d3Array.max(v, d => d[col]));
 }
 
 export function mean(col) {
-    let meanFunc = ((v, i) => d3Array.mean(v, d => d[col]));
+    let meanFunc = ((v, i) => d3Mean(v, d => d[col]));
     meanFunc.columnPropName = col;
     meanFunc.funcName = "mean()";
     return meanFunc;
-
-    // return ((v, i) => d3Array.mean(v, d => d[col]));
 }
 
 export function median(col) {
-    let medianFunc = ((v, i) => d3Array.median(v, d => d[col]));
+    let medianFunc = ((v, i) => d3Median(v, d => d[col]));
     medianFunc.columnPropName = col;
     medianFunc.funcName = "median()";
     return medianFunc;
-
-    // return ((v, i) => d3Array.median(v, d => d[col]));
 }
 
 export function quantile(col, p=0.5) {
-    let quantileFunc = ((v, i) => d3Array.quantile(v, p, d => d[col]));
+    let quantileFunc = ((v, i) => d3Quantile(v, p, d => d[col]));
     quantileFunc.columnPropName = col;
     quantileFunc.funcName = "quantile()";
     return quantileFunc;
-
-    // return ((v, i) => d3Array.quantile(v, p, d => d[col]));
 }
 
 export function variance(col) {
-    let varianceFunc = ((v, i) => v.length > 1 ? d3Array.variance(v, d => d[col]) : null);
+    let varianceFunc = ((v, i) => v.length > 1 ? d3Variance(v, d => d[col]) : null);
     varianceFunc.columnPropName = col;
     varianceFunc.funcName = "variance()";
     return varianceFunc;
-
-    // return ((v, i) => v.length > 1 ? d3Array.variance(v, d => d[col]) : null);
 }
 
 export function stddev(col) {
-    let stddevFunc = ((v, i) => v.length > 1 ? d3Array.deviation(v, d => d[col]) : null);
+    let stddevFunc = ((v, i) => v.length > 1 ? d3Deviation(v, d => d[col]) : null);
     stddevFunc.columnPropName = col;
     stddevFunc.funcName = "stddev()";
     return stddevFunc;
-
-    // return ((v, i) => v.length > 1 ? d3Array.deviation(v, d => d[col]) : null);
 }
 
 export function lag(col, n) {

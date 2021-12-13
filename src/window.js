@@ -1,4 +1,4 @@
-import d3Array from "d3-array";
+import { group } from "d3-array";
 import { v4 as uuid } from "uuid";
 
 import { DataFrame } from "./dataframe.js";
@@ -220,7 +220,7 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
 
     // Get Map with results per partition
     let partitionFunctions = _generatePartitionFunctions(partitionByCols);
-    let partitionMap = d3Array.group(df.rows, ...partitionFunctions);
+    let partitionMap = group(df.rows, ...partitionFunctions);
 
     // Apply window function to ordered partitions
     if (partitionByCols.length) {
