@@ -154,10 +154,12 @@ Two DataFrames can be joined in a number of ways. Lorix provides functions that 
 - Inner Join
 - Left Join
 - Right Join
-- Left Anti Join (_in development_)
-- Right Anti Join (_in development_)
+- Left Anti Join
+- Right Anti Join
+- Full Outer Join _(in development)_
 
 The join condition can be defined in the following ways:
+
 1. a single array of common column names.
 2. two arrays of the same size, with position-based joining between them.
 3. function defining the exact join condition between the two DataFrames.
@@ -176,15 +178,21 @@ let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
 let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
 
 let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
+
+let df = df1.leftAntiJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
+
+let df = df1.rightAntiJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 ```
 
 ### Aggregating with groupBy
 
 `groupBy(cols, aggMap)` is an analogue of SQL's GROUP BY, and is used to perform aggregations.
+
 - `cols` is an array of columns that will be grouped.
 - `aggMap` is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
 
 Available aggregate functions are currently:
+
 - sum
 - mean
 - count
@@ -217,6 +225,7 @@ let df = df1.groupBy(
     - `currentRow` represents the current row
 
 Lorix currently exposes the following window functions:
+
 - `sum(col)` - sum of values.
 - `min(col)` - minimum value.
 - `max(col)` - maximum value.

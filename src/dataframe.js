@@ -196,6 +196,15 @@ export class DataFrame {
         return _join("left", this, df, on, leftOn, rightOn);
     }
 
+    leftAntiJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3)
+            throw Error(`leftAntiJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
+
+        let on;
+        if (arguments.length == 2) on = leftOn;
+        return _join("leftAnti", this, df, on, leftOn, rightOn);
+    }
+
     rightJoin(df, leftOn, rightOn) {
         if (arguments.length < 2 || arguments.length > 3)
             throw Error(`rightJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
@@ -203,6 +212,15 @@ export class DataFrame {
         let on;
         if (arguments.length == 2) on = leftOn;
         return _join("right", this, df, on, leftOn, rightOn);
+    }
+
+    rightAntiJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3)
+            throw Error(`rightAntiJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
+
+        let on;
+        if (arguments.length == 2) on = leftOn;
+        return _join("rightAnti", this, df, on, leftOn, rightOn);
     }
 
     orderBy(cols, order) {

@@ -53,17 +53,17 @@ let irisDf = iris;
 // dropping columns
 // let df3 = df.drop('name');
 
-// console.log("df1");
-// df1.head();
+console.log("df1");
+df1.head();
 
-// console.log("df2");
-// df2.head();
+console.log("df2");
+df2.head();
 
 // console.log("df3");
 // df3.head();
 
-console.log("df5s");
-df5.head();
+// console.log("df5s");
+// df5.head();
 
 // console.log("iris");
 // irisDf.head();
@@ -176,9 +176,9 @@ console.log("df.window()");
 // );
 
 
-(
-    df5
-    .withColumn("sum", lorix.window(lorix.sum("caca")))
+// (
+    // df5
+    // .withColumn("sum", lorix.window(lorix.sum("caca")))
     // .withColumn("sum", lorix.window(lorix.sum("salary"),          ["dept"], [["salary"], ["desc"]], [1, lorix.currentRow] ))
     // .withColumn("lag", lorix.window(lorix.lag("salary", 1),       ["dept"], [["salary"], ["desc"]], [1, lorix.currentRow] ))
     // .withColumn("lead", lorix.window(lorix.lead("salary", 1),     ["dept"], [["salary"], ["desc"]], [1, lorix.currentRow] ))
@@ -193,8 +193,8 @@ console.log("df.window()");
     // .withColumn("variance", (r) => r["variance"] !== null ? Math.round(r["variance"], 0) : null)
     // .withColumn("mean", (r) => r["mean"] !== null ? Math.round(r["mean"], 0) : null)
     // .withColumn("median", (r) => r["median"] !== null ? Math.round(r["median"], 0) : null)
-    .head(100)
-)
+    // .head(100)
+// )
 
 // (
 //     df5
@@ -298,15 +298,23 @@ console.log('right join');
 // (df1.rightJoin(df2, ["id", "age"], ["id", "age"])).head();
 // df1.rightJoin(df2); // Error
 
-// try {
-//     df1.createIndex("id");
-//     console.log(df1.isColumnIndexed("id"));
-//     // console.log(df1.isColumnIndexed("names")); // Error
-//     df1.createIndex("name");
-//     // df1.createIndex("names"); // Error
-// } catch(err) {
-//     console.log(err);
-// }
+
+console.log('left anti join');
+// console.log((df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).toArray()) // Non-indexed left join
+console.log(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  ).toArray()); // Non-indexed left join
+// (df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
+// (df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
+
+// (df1.leftJoin(df2, "id")).head(); // Error - argument types
+// (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
+// (df1.leftJoin(df2, (l, r) => (l.id == r.id) & (l.age == r.age))).head(); // Non-indexed left join
+// (df1.leftJoin(df2, (l, r) => (l.id == r.id) | (l.age == r.age))).head();
+
+// (df1.leftAntiJoin(df2, ["id", "name"])).head();
+// (df1.rightAntiJoin(df2, ["id", "name"])).head();
+
+// (df1.leftJoin(df2, ["id", "age"], ["id", "age"])).head();
+// df1.leftJoin(df2); // Error
 
 // await lorix.writeTsv(df1, "df1_output.tsv");
 // await lorix.writeCsv(df1, "df1_output.csv");

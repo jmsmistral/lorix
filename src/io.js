@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
-// import d3Dsv from "d3-dsv";
 import {
     autoType,
     csvParse,
@@ -31,7 +29,6 @@ function readFile(filePath) {
 
 function writeFile(filePath, string) {
     return new Promise((resolve, reject) => {
-        // console.log(`Writing file ${path.join(process.cwd(), filePath)}`)
         fs.writeFile(path.join(process.cwd(), filePath), string, "utf8", (err) => {
             // TODO provide descriptive error messages
             if (err) {
