@@ -300,8 +300,10 @@ console.log('right join');
 
 
 console.log('left anti join');
+// console.log((df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).toArray()) // Non-indexed left join
+console.log(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  ).toArray()); // Non-indexed left join
 // (df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
-(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
+// (df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
 
 // (df1.leftJoin(df2, "id")).head(); // Error - argument types
 // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
@@ -309,7 +311,7 @@ console.log('left anti join');
 // (df1.leftJoin(df2, (l, r) => (l.id == r.id) | (l.age == r.age))).head();
 
 // (df1.leftAntiJoin(df2, ["id", "name"])).head();
-(df1.rightAntiJoin(df2, ["id", "name"])).head();
+// (df1.rightAntiJoin(df2, ["id", "name"])).head();
 
 // (df1.leftJoin(df2, ["id", "age"], ["id", "age"])).head();
 // df1.leftJoin(df2); // Error

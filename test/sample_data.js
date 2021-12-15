@@ -171,6 +171,26 @@ export let verySmallDataFrameRightJoinResult = (
     )
 );
 
+// Left anti join of verySmallDataFrame1 and verySmallDataFrame2
+export let verySmallDataFrameLeftAntiJoinResult = (
+    new DataFrame(
+        [
+            { "id": 3, "name": "roger", "age": null }
+        ],
+        ["id", "name", "age"]
+    )
+);
+
+// Right join of verySmallDataFrame1 and verySmallDataFrame2
+export let verySmallDataFrameRightAntiJoinResult = (
+    new DataFrame(
+        [
+            { "id": 4, "name": "gary", "age": 40 }
+        ],
+        ["id", "name", "age"]
+    )
+);
+
 // orderBy of smallDataFrame1 by id
 export let smallDataFrame1OrderByIdResult = (
     new DataFrame(
