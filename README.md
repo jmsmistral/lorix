@@ -240,7 +240,7 @@ Lorix currently exposes the following window functions:
 
 ```javascript
 let df = df1.withColumn(
-    "colMin",
+    "colStddev",
     lorix.window(
         lorix.stdev("colX"),   // window function (takes a column name, and any other required/option parameters)
         ["colA"],              // columns defining how rows are partitioned
