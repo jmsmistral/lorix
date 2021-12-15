@@ -48,9 +48,13 @@ function _dispatchNonIndexedJoin(type, leftDf, rightDf, on) {
         case "inner":
             return _nonIndexedInnerJoin(leftDf, rightDf, on);
         case "left":
-            return _nonIndexedLeftJoin(leftDf, rightDf, on);
+            return _nonIndexedLeftJoin(leftDf, rightDf, on, false);
         case "right":
-            return _nonIndexedRightJoin(leftDf, rightDf, on);
+            return _nonIndexedRightJoin(leftDf, rightDf, on, false);
+        case "leftAnti":
+            return _nonIndexedLeftJoin(leftDf, rightDf, on, true);
+        case "rightAnti":
+            return _nonIndexedRightJoin(leftDf, rightDf, on, true);
     }
 }
 
@@ -60,9 +64,14 @@ function _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn) {
         case "inner":
             return _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn);
         case "left":
-            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn);
+            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn, false);
         case "right":
-            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn);
+            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, false);
+        case "leftAnti":
+            return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn, true);
+        case "rightAnti":
+            return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, true);
+
     }
 }
 
@@ -83,11 +92,11 @@ export function _crossJoin(df1, df2) {
 
 export function _join(type="inner", leftDf, rightDf, on, leftOn, rightOn) {
     if (!(rightDf instanceof DataFrame)) {
-        throw Error("join() expects another DataFrame");
+        throw Error("A join can only be performed on another DataFrame");
     }
     // Check that a join condition exists
     if (!on && !(leftOn || rightOn)) {
-        throw Error("Need to specify either 'on', or both 'leftOn' and 'rightOn'");
+        throw Error("Invalid join. Specify either 'on', or both 'leftOn' and 'rightOn'");
     }
 
     // Determine if condition is a
@@ -150,7 +159,7 @@ function _nonIndexedInnerJoin(leftDf, rightDf, on) {
 }
 
 
-function _nonIndexedLeftJoin(leftDf, rightDf, on) {
+function _nonIndexedLeftJoin(leftDf, rightDf, on, isAntiJoin=false) {
     // Returns a DataFrame representing the join
     // of leftDf and rightDf DataFrames, based on the
     // join condition function provided via the "on"
@@ -164,7 +173,9 @@ function _nonIndexedLeftJoin(leftDf, rightDf, on) {
     const outputRowArray = leftDf.rows.flatMap((leftRow) => {
         const matchingRows = sortedRightDfRowArray.filter((rightRow) => on(leftRow, rightRow));
         if (!matchingRows.length) return {...leftRow, ...nullRow};
-        return matchingRows.map((rightRow) => ({...leftRow, ...rightRow}));
+        if (!isAntiJoin)
+            return matchingRows.map((rightRow) => ({...leftRow, ...rightRow}));
+        return [];
     });
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
@@ -172,7 +183,7 @@ function _nonIndexedLeftJoin(leftDf, rightDf, on) {
 }
 
 
-function _nonIndexedRightJoin(leftDf, rightDf, on) {
+function _nonIndexedRightJoin(leftDf, rightDf, on, isAntiJoin=false) {
     // Returns a DataFrame representing the join
     // of leftDf and rightDf DataFrames, based on the
     // join condition function provided via the "on"
@@ -186,7 +197,9 @@ function _nonIndexedRightJoin(leftDf, rightDf, on) {
     const outputRowArray = rightDf.rows.flatMap((rightRow) => {
         const matchingRows = sortedLeftDfRowArray.filter((leftRow) => on(leftRow, rightRow));
         if (!matchingRows.length) return {...nullRow, ...rightRow};
-        return matchingRows.map((leftRow) => ({...leftRow, ...rightRow}));
+        if (!isAntiJoin)
+            return matchingRows.map((leftRow) => ({...leftRow, ...rightRow}));
+        return [];
     });
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
@@ -221,7 +234,7 @@ function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
 }
 
 
-function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
+function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn, isAnti=false) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
     // or both "leftOn" and "rightOn" parameters.
@@ -237,15 +250,16 @@ function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // overwritten when combining objects
     let nullRow = _getRightNullRow(leftDf, rightDf);
     let outputRowArray = [];
-    for (let row of leftDf.rows) {
-        let matchingRows = _lookupIndex(row, leftDfJoinCols, rightDfIndex);
-        if (matchingRows) {
-            for (let matchedRow of matchingRows) {
-                outputRowArray.push({...row, ...matchedRow});
-            }
+    for (let leftRow of leftDf.rows) {
+        let matchingRows = _lookupIndex(leftRow, leftDfJoinCols, rightDfIndex);
+        if (!matchingRows) {
+            outputRowArray.push({...leftRow, ...nullRow});
             continue;
         }
-        outputRowArray.push({...row, ...nullRow});
+        if (!isAnti) {
+            for (let matchedRow of matchingRows)
+                outputRowArray.push({...leftRow, ...matchedRow});
+        }
     }
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
@@ -253,7 +267,7 @@ function _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn) {
 }
 
 
-function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn) {
+function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, isAnti=false) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
     // or both "leftOn" and "rightOn" parameters.
@@ -268,15 +282,16 @@ function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // overwritten when combining objects
     let nullRow = _getLeftNullRow(leftDf, rightDf);
     let outputRowArray = [];
-    for (let row of rightDf.rows) {
-        let matchingRows = _lookupIndex(row, rightDfJoinCols, leftDfIndex);
-        if (matchingRows) {
-            for (let matchedRow of matchingRows) {
-                outputRowArray.push({...matchedRow, ...row});
-            }
+    for (let rightRow of rightDf.rows) {
+        let matchingRows = _lookupIndex(rightRow, rightDfJoinCols, leftDfIndex);
+        if (!matchingRows) {
+            outputRowArray.push({...nullRow, ...rightRow});
             continue;
         }
-        outputRowArray.push({...nullRow, ...row});
+        if (!isAnti) {
+            for (let matchedRow of matchingRows)
+                outputRowArray.push({...matchedRow, ...rightRow});
+        }
     }
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
@@ -317,9 +332,8 @@ function _lookupIndex(row, cols, index) {
     if (indexValue instanceof Map) {
         joinCols.shift();
         return _lookupIndex(row, joinCols, indexValue);
-    } else {
-        return indexValue;
     }
+    return indexValue;
 }
 
 
