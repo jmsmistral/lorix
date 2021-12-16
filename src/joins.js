@@ -55,6 +55,8 @@ function _dispatchNonIndexedJoin(type, leftDf, rightDf, on) {
             return _nonIndexedLeftJoin(leftDf, rightDf, on, true);
         case "rightAnti":
             return _nonIndexedRightJoin(leftDf, rightDf, on, true);
+        case "fullOuter":
+            return _nonIndexedFullOuterJoin(leftDf, rightDf, on);
     }
 }
 
@@ -71,7 +73,8 @@ function _dispatchIndexedJoin(type, leftDf, rightDf, on, leftOn, rightOn) {
             return _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn, true);
         case "rightAnti":
             return _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, true);
-
+        case "fullOuter":
+            return _indexedFullOuterJoin(leftDf, rightDf, on, leftOn, rightOn);
     }
 }
 
@@ -207,6 +210,19 @@ function _nonIndexedRightJoin(leftDf, rightDf, on, isAntiJoin=false) {
 }
 
 
+function _nonIndexedFullOuterJoin(leftDf, rightDf, on) {
+    // Returns a DataFrame representing the join
+    // of leftDf and rightDf DataFrames, based on the
+    // join condition function provided via the "on"
+    // parameter. This function takes two rows, and
+    // returns true if the rows match, and false
+    // otherwise.
+    let dfLeftJoin = _nonIndexedLeftJoin(leftDf, rightDf, on, false);
+    let dfRightAntiJoin = _nonIndexedRightJoin(leftDf, rightDf, on, true);
+    return new DataFrame([...dfLeftJoin.rows, ...dfRightAntiJoin.rows], dfLeftJoin.columns);
+}
+
+
 function _indexedInnerJoin(leftDf, rightDf, on, leftOn, rightOn) {
     // Joins two dataframes based on the array
     // of join columns defined either in the "on",
@@ -296,6 +312,19 @@ function _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, isAnti=false) {
 
     let outputColumns = outputRowArray.length ? Object.getOwnPropertyNames(outputRowArray[0]) : leftDf.columns.concat(rightDf.columns);
     return new DataFrame(outputRowArray, outputColumns);
+}
+
+
+function _indexedFullOuterJoin(leftDf, rightDf, on, leftOn, rightOn, isAnti=false) {
+    // Joins two dataframes based on the array
+    // of join columns defined either in the "on",
+    // or both "leftOn" and "rightOn" parameters.
+    // The join condition is based on the equality
+    // of the array of columns in the specified order.
+    // Index left-hand dataframe
+    let dfLeftJoin = _indexedLeftJoin(leftDf, rightDf, on, leftOn, rightOn, false);
+    let dfRightAntiJoin = _indexedRightJoin(leftDf, rightDf, on, leftOn, rightOn, true);
+    return new DataFrame([...dfLeftJoin.rows, ...dfRightAntiJoin.rows], dfLeftJoin.columns);
 }
 
 

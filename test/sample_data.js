@@ -39,6 +39,17 @@ export let verySmallDataFrame3 = (
     )
 );
 
+export let verySmallDataFrame4 = (
+    new DataFrame(
+        [
+            {"gender": "male", "id": 1, "name": "billy"},
+            {"gender": "male", "id": 2, "name": "jane"},
+            {"gender": "female", "id": 3, "name": "roger"}
+        ],
+        ["gender", "id", "name"]
+    )
+);
+
 export let verySmallValidObjArray = [
     {"id": 1, "name": "billy"},
     {"id": 2, "name": "jane"},
@@ -181,13 +192,26 @@ export let verySmallDataFrameLeftAntiJoinResult = (
     )
 );
 
-// Right join of verySmallDataFrame1 and verySmallDataFrame2
+// Right anti join of verySmallDataFrame1 and verySmallDataFrame2
 export let verySmallDataFrameRightAntiJoinResult = (
     new DataFrame(
         [
             { "id": 4, "name": "gary", "age": 40 }
         ],
         ["id", "name", "age"]
+    )
+);
+
+// Full outer join of verySmallDataFrame2 and verySmallDataFrame4
+export let verySmallDataFrameFullOuterJoinResult = (
+    new DataFrame(
+        [
+            { "id": 1, "name": "billy", "age": 10, "gender": "male" },
+            { "id": 2, "name": "jane", "age": 20, "gender": "male" },
+            { "id": 4, "name": "gary", "age": 40, "gender": null },
+            { "age": null, "gender": "female", "id": 3, "name": "roger" }
+        ],
+        ["id", "name", "age", "gender"]
     )
 );
 

@@ -5,6 +5,8 @@ import { currentRow } from './src/window.js';
 import {
     verySmallDataFrame1,
     verySmallDataFrame2,
+    verySmallDataFrame3,
+    verySmallDataFrame4,
     verySmallValidObjArray,
     verySmallInvalidObjArray,
     verySmallDataFrameInnerJoinResult,
@@ -25,6 +27,7 @@ import {
 
 let df1 = verySmallDataFrame1;
 let df2 = verySmallDataFrame2;
+let df6 = verySmallDataFrame4;
 
 let df3 = smallDataFrame1;
 let df4 = smallDataFrame2;
@@ -53,8 +56,8 @@ let irisDf = iris;
 // dropping columns
 // let df3 = df.drop('name');
 
-console.log("df1");
-df1.head();
+// console.log("df1");
+// df1.head();
 
 console.log("df2");
 df2.head();
@@ -64,6 +67,9 @@ df2.head();
 
 // console.log("df5s");
 // df5.head();
+
+console.log("df6s");
+df6.head();
 
 // console.log("iris");
 // irisDf.head();
@@ -301,9 +307,12 @@ console.log('right join');
 
 console.log('left anti join');
 // console.log((df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).toArray()) // Non-indexed left join
-console.log(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  ).toArray()); // Non-indexed left join
+// console.log(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  ).toArray()); // Non-indexed left join
 // (df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
 // (df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
+// (df2.fullOuterJoin(df6, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
+// (df2.fullOuterJoin(df6, ["id", "name"])).head(100);
+console.log((df2.fullOuterJoin(df6, ["id", "name"])).toArray());
 
 // (df1.leftJoin(df2, "id")).head(); // Error - argument types
 // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
