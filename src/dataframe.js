@@ -26,6 +26,15 @@ import {
 
 export class DataFrame {
     constructor(rowArray=[], columns=[]) {
+
+        // Check that row properties align with specified columns
+        if (rowArray.length && columns.length) {
+            const rowColumns = _getUniqueObjectProperties(rowArray);
+            const diff = lodash.difference(rowColumns, columns)
+            if (diff.length)
+                throw Error(`There are differences between row properties and specified columns: '${diff.join(', ')}'`);
+        }
+
         this.rows = rowArray;
         this.columns = columns;
     }
@@ -221,6 +230,15 @@ export class DataFrame {
         let on;
         if (arguments.length == 2) on = leftOn;
         return _join("rightAnti", this, df, on, leftOn, rightOn);
+    }
+
+    fullOuterJoin(df, leftOn, rightOn) {
+        if (arguments.length < 2 || arguments.length > 3)
+            throw Error(`fullOuterJoin() takes either two or three arguments. Arguments passed: ${arguments.length}`);
+
+        let on;
+        if (arguments.length == 2) on = leftOn;
+        return _join("fullOuter", this, df, on, leftOn, rightOn);
     }
 
     orderBy(cols, order) {

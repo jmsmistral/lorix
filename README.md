@@ -156,7 +156,7 @@ Two DataFrames can be joined in a number of ways. Lorix provides functions that 
 - Right Join
 - Left Anti Join
 - Right Anti Join
-- Full Outer Join _(in development)_
+- Full Outer Join
 
 The join condition can be defined in the following ways:
 
@@ -182,6 +182,8 @@ let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
 let df = df1.leftAntiJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
 
 let df = df1.rightAntiJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
+
+let df = df1.fullOuterJoin(df2, ["colA", "colB"]);
 ```
 
 ### Aggregating with groupBy
