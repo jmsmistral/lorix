@@ -5,6 +5,7 @@ import {
     verySmallDataFrame1,
     verySmallDataFrame2,
     verySmallDataFrame4,
+
     verySmallValidObjArray,
     verySmallInvalidObjArray,
     verySmallDataFrameCrossJoinResult,
@@ -17,6 +18,8 @@ import {
 
     smallDataFrame1,
     smallDataFrame2,
+    smallDataFrame4,
+
     smallDataFrame1OrderByIdResult,
     smallDataFrame1OrderByNameResult,
     smallDataFrame1OrderByIdWeightResult,
@@ -29,8 +32,17 @@ import {
     smallDataFrame2DistinctIdResult,
     smallDataFrame2DistinctNameWeightResult,
 
+    smallDataFrame4ReplaceName,
+    smallDataFrame4ReplaceNameColour,
+    smallDataFrame4ReplaceAllName,
+    smallDataFrame4ReplaceAllNameColour,
+
+    smallDataFrame4RegexReplaceName,
+    smallDataFrame4RegexReplaceNameGlobal,
+    smallDataFrame4RegexReplaceNameColourGlobal,
+
     iris,
-    irisGroupBySpeciesResult
+    irisGroupBySpeciesResult,
 } from "./sample_data.js"
 
 import { DataFrame } from "../src/dataframe.js";
@@ -922,6 +934,134 @@ describe("DataFrame class", () => {
 
         it("Should throw an error if more than one argument is passed", function() {
             expect(() => {this.test.df.distinct(["name", "weight"], "anotherArgument")}).to.throw();
+        });
+
+    });
+
+
+    describe("replace()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame4;
+
+            this.currentTest.replaceNameResultDf = smallDataFrame4ReplaceName;
+            this.currentTest.replaceNameColourResultDf = smallDataFrame4ReplaceNameColour;
+        });
+
+        it("Should return a new DataFrame with values correctly replaced across the specified columns", function() {
+            let resultName = this.test.df.replace(["name"], "r", "rrr");
+            let resultNameColour = this.test.df.replace(["name", "colour"], "r", "rrr");
+
+            expect(resultName.toArray()).to.deep.equal(this.test.replaceNameResultDf.toArray());
+            expect(resultName.columns).to.deep.equal(this.test.replaceNameResultDf.columns);
+
+            expect(resultNameColour.toArray()).to.deep.equal(this.test.replaceNameColourResultDf.toArray());
+            expect(resultNameColour.columns).to.deep.equal(this.test.replaceNameColourResultDf.columns);
+        });
+
+        it("Should throw an error when a type other than an array is passed as first parameter", function() {
+            expect(() => {this.test.df.replace(1, "r", "rrr")}).to.throw();
+        });
+
+        it("Should throw an error when a type other than a string is passed for first and second parameters", function() {
+            expect(() => {this.test.df.replace(["name"], 1, "rrr")}).to.throw();
+            expect(() => {this.test.df.replace(["name"], "r", 1)}).to.throw();
+        });
+
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.replace(["nonExistentColumn"], "r", "rrr");}).to.throw();
+        });
+
+        it("Should throw an error if an incorrect number of arguments are passed", function() {
+            expect(() => {this.test.df.replace();}).to.throw();
+            expect(() => {this.test.df.replace(["name"], "r", "rrr", 1);}).to.throw();
+        });
+
+    });
+
+
+    describe("replaceAll()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame4;
+
+            this.currentTest.replaceAllNameResultDf = smallDataFrame4ReplaceAllName;
+            this.currentTest.replaceAllNameColourResultDf = smallDataFrame4ReplaceAllNameColour;
+        });
+
+        it("Should return a new DataFrame with values correctly replaced across the specified columns", function() {
+            let resultName = this.test.df.replaceAll(["name"], "r", "rrr");
+            let resultNameColour = this.test.df.replaceAll(["name", "colour"], "r", "rrr");
+
+            expect(resultName.toArray()).to.deep.equal(this.test.replaceAllNameResultDf.toArray());
+            expect(resultName.columns).to.deep.equal(this.test.replaceAllNameResultDf.columns);
+
+            expect(resultNameColour.toArray()).to.deep.equal(this.test.replaceAllNameColourResultDf.toArray());
+            expect(resultNameColour.columns).to.deep.equal(this.test.replaceAllNameColourResultDf.columns);
+        });
+
+        it("Should throw an error when a type other than an array is passed as first parameter", function() {
+            expect(() => {this.test.df.replaceAll(1, "r", "rrr")}).to.throw();
+        });
+
+        it("Should throw an error when a type other than a string is passed for first and second parameters", function() {
+            expect(() => {this.test.df.replaceAll(["name"], 1, "rrr")}).to.throw();
+            expect(() => {this.test.df.replaceAll(["name"], "r", 1)}).to.throw();
+        });
+
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.replaceAll(["nonExistentColumn"], "r", "rrr");}).to.throw();
+        });
+
+        it("Should throw an error if an incorrect number of arguments are passed", function() {
+            expect(() => {this.test.df.replaceAll();}).to.throw();
+            expect(() => {this.test.df.replaceAll(["name"], "r", "rrr", 1);}).to.throw();
+        });
+
+    });
+
+
+    describe("regexReplace()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame4;
+
+            this.currentTest.replaceAllNameResultDf = smallDataFrame4RegexReplaceName;
+            this.currentTest.replaceAllNameGlobalResultDf = smallDataFrame4RegexReplaceNameGlobal;
+            this.currentTest.replaceAllNameColourGlobalResultDf = smallDataFrame4RegexReplaceNameColourGlobal;
+        });
+
+        it("Should return a new DataFrame with values correctly replaced across the specified columns", function() {
+            let resultName = this.test.df.regexReplace(["name"], /r/i, "rrr");
+            let resultNameGlobal = this.test.df.regexReplace(["name"], /r/ig, "rrr");
+            let resultNameColourGlobal = this.test.df.regexReplace(["name", "colour"], /r/ig, "rrr");
+
+            expect(resultName.toArray()).to.deep.equal(this.test.replaceAllNameResultDf.toArray());
+            expect(resultName.columns).to.deep.equal(this.test.replaceAllNameResultDf.columns);
+
+            expect(resultNameGlobal.toArray()).to.deep.equal(this.test.replaceAllNameGlobalResultDf.toArray());
+            expect(resultNameGlobal.columns).to.deep.equal(this.test.replaceAllNameGlobalResultDf.columns);
+
+            expect(resultNameColourGlobal.toArray()).to.deep.equal(this.test.replaceAllNameColourGlobalResultDf.toArray());
+            expect(resultNameColourGlobal.columns).to.deep.equal(this.test.replaceAllNameColourGlobalResultDf.columns);
+        });
+
+        it("Should throw an error when a type other than an array is passed as first parameter", function() {
+            expect(() => {this.test.df.regexReplace(1, /r/i, "rrr")}).to.throw();
+        });
+
+        it("Should throw an error when a type other than a string is passed for first and second parameters", function() {
+            expect(() => {this.test.df.regexReplace(["name"], 1, "rrr")}).to.throw();
+            expect(() => {this.test.df.regexReplace(["name"], /r/i, 1)}).to.throw();
+        });
+
+        it("Should throw an error when referencing a non-existent column", function() {
+            expect(() => {this.test.df.regexReplace(["nonExistentColumn"], /r/i, "rrr");}).to.throw();
+        });
+
+        it("Should throw an error if an incorrect number of arguments are passed", function() {
+            expect(() => {this.test.df.regexReplace();}).to.throw();
+            expect(() => {this.test.df.regexReplace(["name"], /r/i, "rrr", 1);}).to.throw();
         });
 
     });

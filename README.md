@@ -24,6 +24,7 @@ in Javascript.
 
 # How to install
 
+_**Requires Node v15+**_
 ```
 npm install lorix
 ```
@@ -126,6 +127,20 @@ let df = (
 
 ```javascript
 let df = df1.filter(row => row["colA"] > 10);
+```
+
+### Replace strings
+
+String values can be replaced using one of the following DataFrame methods. Each accepts an array of columns over which the string-replacement is applied:
+
+- `replace(cols, oldString, newString)` - Returns a new DataFrame with first instance of string `oldString` replaced by `newString`.
+- `replaceAll(cols, oldString, newString)` - Returns a new DataFrame with all instances of string `oldString` replaced by `newString`.
+- `regexReplace(cols, replaceRegex, newString)` - Returns a new DataFrame with regular expression `replaceRegex` replaced by `newString`.
+
+```javascript
+let df = df1.replace(["colA", "colB"], "oldSubstring", "newSubstring");
+let df = df1.replaceAll(["colA"], "oldSubstring", "newSubstring");
+let df = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
 ```
 
 ### Drop duplicate rows
