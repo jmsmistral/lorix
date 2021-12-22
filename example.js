@@ -13,6 +13,7 @@ import {
     smallDataFrame1,
     smallDataFrame2,
     smallDataFrame3,
+    smallDataFrame4,
     iris
 } from './test/sample_data.js'
 
@@ -25,13 +26,15 @@ import {
 // let df3 = await lorix.readDsv('test.psv', {}); // Error
 // let df3 = await lorix.readDsv('test.psv', "|");
 
-let df1 = verySmallDataFrame1;
-let df2 = verySmallDataFrame2;
-let df6 = verySmallDataFrame4;
+let vsDf1 = verySmallDataFrame1;
+let vsDf2 = verySmallDataFrame2;
+let vsDf3 = verySmallDataFrame3;
+let vsDf4 = verySmallDataFrame4;
 
-let df3 = smallDataFrame1;
-let df4 = smallDataFrame2;
-let df5 = smallDataFrame3;
+let sDf1 = smallDataFrame1;
+let sDf2 = smallDataFrame2;
+let sDf3 = smallDataFrame3;
+let sDf4 = smallDataFrame4;
 
 let irisDf = iris;
 
@@ -59,17 +62,20 @@ let irisDf = iris;
 // console.log("df1");
 // df1.head();
 
-console.log("df2");
-df2.head();
+// console.log("df2");
+// df2.head();
 
 // console.log("df3");
 // df3.head();
 
+console.log("sDf4");
+sDf4.head();
+
 // console.log("df5s");
 // df5.head();
 
-console.log("df6s");
-df6.head();
+// console.log("df6s");
+// df6.head();
 
 // console.log("iris");
 // irisDf.head();
@@ -312,7 +318,7 @@ console.log('left anti join');
 // (df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
 // (df2.fullOuterJoin(df6, (l, r) => (l.id == r.id) && (l.name == r.name)  )).head(100); // Non-indexed left join
 // (df2.fullOuterJoin(df6, ["id", "name"])).head(100);
-console.log((df2.fullOuterJoin(df6, ["id", "name"])).toArray());
+// console.log((df2.fullOuterJoin(df6, ["id", "name"])).toArray());
 
 // (df1.leftJoin(df2, "id")).head(); // Error - argument types
 // (df1.leftJoin(df2, (l, r) => l.id == r.id)).head(); // Non-indexed left join
@@ -324,6 +330,15 @@ console.log((df2.fullOuterJoin(df6, ["id", "name"])).toArray());
 
 // (df1.leftJoin(df2, ["id", "age"], ["id", "age"])).head();
 // df1.leftJoin(df2); // Error
+
+console.log("replace()");
+// signature: df1.replace(["col"], valueToReplace, newValue);
+// (df4.replace(["name"], "billy", "silly")).head(100);
+
+console.log(sDf4.regexReplace(["name"], /r/i, "rrr").toArray());
+console.log(sDf4.regexReplace(["name"], /r/ig, "rrr").toArray());
+console.log(sDf4.regexReplace(["name", "colour"], /r/ig, "rrr").toArray());
+
 
 // await lorix.writeTsv(df1, "df1_output.tsv");
 // await lorix.writeCsv(df1, "df1_output.csv");

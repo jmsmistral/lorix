@@ -126,6 +126,27 @@ export let smallDataFrame3 = (
     )
 );
 
+export let smallDataFrame4 = (
+    new DataFrame(
+        [
+            { "id": 100,  "name": "billy",    "colour": "red",    "weight": 102 },
+            { "id": 2,    "name": "jane",     "colour": "blue",   "weight": 97 },
+            { "id": 5,    "name": "roger",    "colour": "green",  "weight": 107 },
+            { "id": 9,    "name": "gary",     "colour": "blue",   "weight": 87 },
+            { "id": 1,    "name": "joseph",   "colour": "yellow", "weight": 71 },
+            { "id": 3,    "name": "jennifer", "colour": "yellow", "weight": 84 },
+            { "id": 100,  "name": "sean",     "colour": "red",    "weight": 85 },
+            { "id": 17,   "name": "steven",   "colour": "orange", "weight": 107 },
+            { "id": 101,  "name": "elon",     "colour": "red",    "weight": 74 },
+            { "id": 45,   "name": "issac",    "colour": "green",  "weight": 104 },
+            { "id": 1000, "name": "billy",    "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy",    "colour": "purple", "weight": 102 },
+            { "id": 2,    "name": "jane",     "colour": "black",  "weight": 97 }
+          ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
 
 // Test result validation datasets
 
@@ -470,5 +491,160 @@ export let smallDataFrame3WindowFuncsWindowSize = (
             {"name" : "May",     "dept" : 3, "salary" : 9308,  "sum" : 21677, "lag" : 12369, "lead" : null,  "stddev" : 2164, "variance" : 4684861,  "mean" : 10839, "median" : 10839, "min" : 9308,  "max" : 12369, "rownum" : 3}
         ],
         ["name", "dept", "salary", "sum", "lag", "lead", "stddev", "variance", "mean", "median", "min", "max", "rownum"]
+    )
+);
+
+// replace Name r -> rrr
+export let smallDataFrame4ReplaceName = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "red", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrroger", "colour": "green", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "red", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "red", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "green", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+// replace Name, Colour r -> rrr
+export let smallDataFrame4ReplaceNameColour = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "rrred", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrroger", "colour": "grrreen", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "rrred", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orrrange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "rrred", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "grrreen", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orrrange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purrrple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+// replaceAll Name r -> rrr
+export let smallDataFrame4ReplaceAllName = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "red", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrrogerrr", "colour": "green", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "red", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "red", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "green", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+// replaceAll Name, Colour r -> rrr
+export let smallDataFrame4ReplaceAllNameColour = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "rrred", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrrogerrr", "colour": "grrreen", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "rrred", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orrrange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "rrred", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "grrreen", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orrrange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purrrple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+
+// regexReplace Name r -> rrr
+export let smallDataFrame4RegexReplaceName = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "red", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrroger", "colour": "green", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "red", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "red", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "green", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+// regexReplace Name r -> rrr Global
+export let smallDataFrame4RegexReplaceNameGlobal = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "red", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrrogerrr", "colour": "green", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "red", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "red", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "green", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
+// regexReplace Name, Colour r -> rrr Global
+export let smallDataFrame4RegexReplaceNameColourGlobal = (
+    new DataFrame(
+        [
+            { "id": 100, "name": "billy", "colour": "rrred", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "blue", "weight": 97 },
+            { "id": 5, "name": "rrrogerrr", "colour": "grrreen", "weight": 107 },
+            { "id": 9, "name": "garrry", "colour": "blue", "weight": 87 },
+            { "id": 1, "name": "joseph", "colour": "yellow", "weight": 71 },
+            { "id": 3, "name": "jenniferrr", "colour": "yellow", "weight": 84 },
+            { "id": 100, "name": "sean", "colour": "rrred", "weight": 85 },
+            { "id": 17, "name": "steven", "colour": "orrrange", "weight": 107 },
+            { "id": 101, "name": "elon", "colour": "rrred", "weight": 74 },
+            { "id": 45, "name": "issac", "colour": "grrreen", "weight": 104 },
+            { "id": 1000, "name": "billy", "colour": "orrrange", "weight": 102 },
+            { "id": 1001, "name": "billy", "colour": "purrrple", "weight": 102 },
+            { "id": 2, "name": "jane", "colour": "black", "weight": 97 }
+        ],
+        ["id", "name", "colour", "weight"]
     )
 );

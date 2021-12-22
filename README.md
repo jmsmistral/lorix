@@ -128,6 +128,20 @@ let df = (
 let df = df1.filter(row => row["colA"] > 10);
 ```
 
+### Replace strings
+
+String values can be replaced using one of the following DataFrame methods. Each accepts an array of columns over which the string-replacement is applied:
+
+- `replace(cols, oldString, newString)` - Returns a new DataFrame with first instance of string `oldString` replaced by `newString` in one or more columns defined in array `cols`.
+- `replaceAll(cols, oldString, newString)` - Returns a new DataFrame with all instances of string `oldString` replaced by `newString` in one or more columns defined in array `cols`.
+- `regexReplace(cols, replaceRegex, newString)` - Returns a new DataFrame with regular expression `replaceRegex` replaced by `newString` in one or more columns defined in array `cols`.
+
+```javascript
+let df = df1.replace(["colA", "colB"], "oldSubstring", "newSubstring");
+let df = df1.replaceAll(["colA"], "oldSubstring", "newSubstring");
+let df = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
+```
+
 ### Drop duplicate rows
 
 `distinct([subset])` returns a new DataFrame with duplicate rows dropped according to the optional list of columns `subset`. If `subset` is not passed, then duplicates will be identified across all columns. Only the first row found is kept for duplicate instances.

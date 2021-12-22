@@ -19,7 +19,8 @@ import {
     _isSubsetArray,
     _isValidColumnName,
     _getArrayOfObjectReferences,
-    _getDistinctFn
+    _getDistinctFn,
+    _isString
 } from "./utils.js";
 
 
@@ -119,7 +120,7 @@ export class DataFrame {
 
         // Check that `expr` is a function.
         if ((expr == undefined) || !(expr instanceof Function))
-            throw Error("expr provided to withColumn needs to be a function.")
+            throw Error("expr provided to withColumn needs to be a function.");
 
         // Check if `expr` is a window function, and
         // apply it to the DataFrame, if so.
@@ -146,7 +147,7 @@ export class DataFrame {
 
         // Check that `expr` is a function.
         if((expr == undefined) || !(expr instanceof Function))
-            throw Error("`expr` provided to filter needs to be a function.")
+            throw Error("`expr` provided to filter needs to be a function.");
 
         // Check what existing columns are being referenced,
         // if any, and throw an error if at least one does not exist.
@@ -166,7 +167,7 @@ export class DataFrame {
             throw Error(`distinct() takes a single argument. Arguments passed: ${arguments.length}`);
 
         if (!(subset instanceof Array))
-            throw Error("`subset` provided to distinct needs to be a function.")
+            throw Error("`subset` provided to distinct needs to be a function.");
 
         // Check that all columns specified in `subset` exist in the DataFrame.
         if ((subset.length) && !(_isSubsetArray(subset, this.columns)))
@@ -178,6 +179,124 @@ export class DataFrame {
         // If a subset of columns isn't provided, remove
         // duplicate rows across all DataFrame columns
         return new DataFrame(lodash.uniqBy(this.rows, _getDistinctFn(this.columns)), this.columns);
+    }
+
+    regexReplace(cols, replaceRegex, newString) {
+        /**
+         * Returns a new DataFrame with regular expression
+         * `replaceRegex` replaced by `newString` in
+         * one or more columns defined in Array `cols`.
+         */
+
+        // Check number of arguments.
+        if (arguments.length < 3 || arguments.length > 3)
+            throw Error(`regexReplace() takes three arguments. Number of arguments passed: ${arguments.length}`);
+
+        // Check that `cols` is an Array.
+        if (!(cols instanceof Array))
+            throw Error("First parameter provided to regexReplace() needs to be an array of columns.");
+
+        // Check that `replaceRegex` is a regular expression.
+        if (!(replaceRegex instanceof RegExp))
+            throw Error("Second parameter provided to regexReplace() needs to be a regular expression.");
+
+        // Check that `newString` is a string.
+        if (!_isString(newString))
+            throw Error("Third parameter provided to regexReplace() needs to be a string.");
+
+        // Check that columns in `cols` are valid.
+        const diff = lodash.difference(cols, this.columns)
+        if (diff.length)
+            throw Error(`Invalid columns provided in regexReplace(): '${diff.join(', ')}'`);
+
+        // Replace strings in columns.
+        let newRows = lodash.cloneDeep(this.rows);
+        for (let col of cols) {
+            newRows = newRows.map((row) => {
+                try {
+                    row[col] = row[col].replace(replaceRegex, newString);
+                    return row;
+                } catch(error) { /* pass if replacing a non-string */ }
+            });
+        }
+
+        return new DataFrame(newRows, this.columns);
+    }
+
+    replaceAll(cols, oldString, newString) {
+        /**
+         * Returns a new DataFrame with all instances of
+         * string `oldString` replaced by `newString` in
+         * one or more columns defined in Array `cols`.
+         */
+
+        // Check number of arguments.
+        if (arguments.length < 3 || arguments.length > 3)
+            throw Error(`replaceAll() takes three arguments. Number of arguments passed: ${arguments.length}`);
+
+        // Check that `cols` is an Array.
+        if (!(cols instanceof Array))
+            throw Error("`cols` provided to replaceAll() needs to be an array of columns.");
+
+        // Check that `oldString` and `newString` are a strings.
+        if (!_isString(oldString) || !_isString(newString))
+            throw Error("Second and third parameters provided to replaceAll() need to be strings.");
+
+        // Check that columns in `cols` are valid.
+        const diff = lodash.difference(cols, this.columns)
+        if (diff.length)
+            throw Error(`Invalid columns provided in replaceAll(): '${diff.join(', ')}'`);
+
+        // Replace strings in columns.
+        let newRows = lodash.cloneDeep(this.rows);
+        for (let col of cols) {
+            newRows = newRows.map((row) => {
+                try {
+                    row[col] = row[col].replaceAll(oldString, newString);
+                    return row;
+                } catch(error) { /* pass if replacing a non-string */ }
+            });
+        }
+
+        return new DataFrame(newRows, this.columns);
+    }
+
+    replace(cols, oldString, newString) {
+        /**
+         * Returns a new DataFrame with first instance of
+         * string `oldString` replaced by `newString` in
+         * one or more columns defined in Array `cols`.
+         */
+
+        // Check number of arguments.
+        if (arguments.length < 3 || arguments.length > 3)
+            throw Error(`replace() takes three arguments. Number of arguments passed: ${arguments.length}`);
+
+        // Check that `cols` is an Array.
+        if(!(cols instanceof Array))
+            throw Error("`cols` provided to replace() needs to be an array of columns.");
+
+        // Check that `oldString` and `newString` are a strings.
+        if (!_isString(oldString) || !_isString(newString))
+            throw Error("Second and third parameters provided to replace() need to be strings.");
+
+        // Check that columns in `cols` are valid.
+        const diff = lodash.difference(cols, this.columns)
+        if (diff.length)
+            throw Error(`Invalid columns provided in replace(): '${diff.join(', ')}'`);
+
+        // Replace strings in columns.
+        let newRows = lodash.cloneDeep(this.rows);
+        for (let col of cols) {
+            newRows = newRows.map((row) => {
+                try {
+                    row[col] = row[col].replace(oldString, newString);
+                    return row;
+                } catch(error) { /* pass if replacing a non-string */ }
+            });
+        }
+
+        return new DataFrame(newRows, this.columns);
     }
 
     crossJoin(df) {
