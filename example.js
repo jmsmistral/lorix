@@ -335,10 +335,13 @@ console.log("replace()");
 // signature: df1.replace(["col"], valueToReplace, newValue);
 // (df4.replace(["name"], "billy", "silly")).head(100);
 
-console.log(sDf4.regexReplace(["name"], /r/i, "rrr").toArray());
-console.log(sDf4.regexReplace(["name"], /r/ig, "rrr").toArray());
-console.log(sDf4.regexReplace(["name", "colour"], /r/ig, "rrr").toArray());
+// console.log(sDf4.regexReplace(["name"], /r/i, "rrr").toArray());
+// console.log(sDf4.regexReplace(["name"], /r/ig, "rrr").toArray());
+// console.log(sDf4.regexReplace(["name", "colour"], /r/ig, "rrr").toArray());
 
+
+console.log("unionByName()");
+console.log(sDf1.unionByName(sDf2).toArray());
 
 // await lorix.writeTsv(df1, "df1_output.tsv");
 // await lorix.writeCsv(df1, "df1_output.csv");

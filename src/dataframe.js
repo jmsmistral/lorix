@@ -31,7 +31,7 @@ export class DataFrame {
         // Check that row properties align with specified columns
         if (rowArray.length && columns.length) {
             const rowColumns = _getUniqueObjectProperties(rowArray);
-            const diff = lodash.difference(rowColumns, columns)
+            const diff = lodash.difference(rowColumns, columns);
             if (diff.length)
                 throw Error(`There are differences between row properties and specified columns: '${diff.join(', ')}'`);
         }
@@ -67,6 +67,10 @@ export class DataFrame {
     head(n=10) {
         if (n > 0)
             console.table(this.rows.slice(0, n), this.columns);
+    }
+
+    size() {
+        return [this.rows.length, this.columns.length];
     }
 
     slice(i=0, j=-1) {
@@ -394,6 +398,26 @@ export class DataFrame {
             throw Error(`Invalid columns found in groupBy(): ${lodash.difference(cols, this.columns)}`);
 
         return groupAggregation(this, cols, agg);
+    }
+
+    unionByName(df) {
+        /**
+         * Returns a new DataFrame including rows from
+         * both DataFrames being unioned.
+         * Throws an error if the columns between both
+         * DataFrames are different.
+         */
+
+        // Check if `df` is a DataFrame
+        if (!(df instanceof DataFrame))
+            throw Error(`Can only union with another DataFrame.`);
+
+        // Check if this DataFrame and `df` have the same columns.
+        const diff = lodash.difference(this.columns, df.columns);
+        if (diff.length)
+            throw Error(`unionByName() cannot union DataFrames with different columns: '${diff.join(', ')}'`);
+
+        return new DataFrame([...this.rows, ...df.rows], this.columns);
     }
 
 }
