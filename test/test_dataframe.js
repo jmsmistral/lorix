@@ -2,6 +2,7 @@ import chai from "chai";
 const { expect } = chai;
 
 import {
+    // Very Small DataFrames
     verySmallDataFrame1,
     verySmallDataFrame2,
     verySmallDataFrame4,
@@ -16,6 +17,7 @@ import {
     verySmallDataFrameRightAntiJoinResult,
     verySmallDataFrameFullOuterJoinResult,
 
+    // Small DataFrames
     smallDataFrame1,
     smallDataFrame2,
     smallDataFrame4,
@@ -40,6 +42,8 @@ import {
     smallDataFrame4RegexReplaceName,
     smallDataFrame4RegexReplaceNameGlobal,
     smallDataFrame4RegexReplaceNameColourGlobal,
+
+    smallDataFrame1and2UnionByName,
 
     iris,
     irisGroupBySpeciesResult,
@@ -1062,6 +1066,35 @@ describe("DataFrame class", () => {
         it("Should throw an error if an incorrect number of arguments are passed", function() {
             expect(() => {this.test.df.regexReplace();}).to.throw();
             expect(() => {this.test.df.regexReplace(["name"], /r/i, "rrr", 1);}).to.throw();
+        });
+
+    });
+
+
+    describe("unionByName()", function() {
+
+        beforeEach(function() {
+            this.currentTest.df = smallDataFrame1;
+            this.currentTest.df2 = smallDataFrame2;
+            this.currentTest.df4 = smallDataFrame4;
+
+            this.currentTest.unionByNameResultDf = smallDataFrame1and2UnionByName;
+        });
+
+        it("Should return a new DataFrame including rows from both DataFrames being unioned", function() {
+            let resultUnionByName = this.test.df.unionByName(this.test.df2);
+
+            expect(resultUnionByName.toArray()).to.deep.equal(this.test.unionByNameResultDf.toArray());
+            expect(resultUnionByName.columns).to.deep.equal(this.test.unionByNameResultDf.columns);
+            expect(resultUnionByName.size()[0]).to.deep.equal(this.test.df.size()[0] + this.test.df2.size()[0]);
+        });
+
+        it("Should throw an error when a type other than a DataFrame is passed as first parameter", function() {
+            expect(() => {this.test.df.unionByName(1)}).to.throw();
+        });
+
+        it("Should throw an error when DataFrames have different columns", function() {
+            expect(() => {this.test.df.unionByName(this.test.df4)}).to.throw();
         });
 
     });

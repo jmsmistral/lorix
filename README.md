@@ -267,6 +267,14 @@ let df = df1.withColumn(
 );
 ```
 
+### Union between DataFrames
+
+`unionByName(df)` returns a new DataFrame including the set of rows from both DataFrames being unioned. Both DataFrames must have the same columns, otherwise an error will be thrown.
+
+```javascript
+let df = df1.unionByName(df2);
+```
+
 # License
 
 Free Software through the [GNU Affero GPL v3](https://www.gnu.org/licenses/why-affero-gpl.en.html)
