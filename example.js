@@ -14,6 +14,7 @@ import {
     smallDataFrame2,
     smallDataFrame3,
     smallDataFrame4,
+    smallDataFrame5,
     iris
 } from './test/sample_data.js'
 
@@ -35,6 +36,7 @@ let sDf1 = smallDataFrame1;
 let sDf2 = smallDataFrame2;
 let sDf3 = smallDataFrame3;
 let sDf4 = smallDataFrame4;
+let sDf5 = smallDataFrame5;
 
 let irisDf = iris;
 
@@ -68,8 +70,11 @@ let irisDf = iris;
 // console.log("df3");
 // df3.head();
 
-console.log("sDf4");
-sDf4.head();
+// console.log("sDf4");
+// sDf4.head();
+
+console.log("sDf5");
+sDf5.head();
 
 // console.log("df5s");
 // df5.head();
@@ -110,6 +115,9 @@ console.log("df.withColumn()");
 //     .withColumn("newCol1", () => 2)
 // )
 
+// Error - needs a hotfix because expr is run on a dummy proxy dataframe
+// sDf5.withColumn("new_date", (row) => row["latest_date"].toISOString()).head();
+
 console.log("df1.filter()");
 // df3.filter((r) => r["id"] == 100).head();
 // (
@@ -121,6 +129,8 @@ console.log("df1.filter()");
 // df3.filter((r) => r["nonExistantCol"] == 100).head(); // Error - invalid column
 // df3.filter("test").head(); // Error - needs a function
 
+// Error - needs a hotfix because expr is run on a dummy proxy dataframe
+// sDf5.filter((row) => row["latest_date"].toISOString().split("T")[0] == "2023-02-06").head();
 
 console.log("df.distinct()");
 // (
@@ -341,7 +351,7 @@ console.log("replace()");
 
 
 console.log("unionByName()");
-console.log(sDf1.unionByName(sDf2).toArray());
+// console.log(sDf1.unionByName(sDf2).toArray());
 
 // await lorix.writeTsv(df1, "df1_output.tsv");
 // await lorix.writeCsv(df1, "df1_output.csv");

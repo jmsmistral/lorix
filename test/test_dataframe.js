@@ -21,6 +21,7 @@ import {
     smallDataFrame1,
     smallDataFrame2,
     smallDataFrame4,
+    smallDataFrame5,
 
     smallDataFrame1OrderByIdResult,
     smallDataFrame1OrderByNameResult,
@@ -214,9 +215,21 @@ describe("DataFrame class", () => {
             }
         });
 
-        it("Should throw an error when referencing a non-existent column", function() {
-            expect(() => {this.test.df.withColumn("newCol", (row) => row["nonExistingColumn"])}).to.throw();
-        });
+        // Temporarily commenting-out this test as supporting the ability to
+        // detect references to columns that do not exist in the DataFrame, also
+        // disables running methods of the column itself. Example: If an existing
+        // column "latest_date" is a Date type, and you want to create a new column
+        // derived from this, that leverages a method of the Date object, such as 
+        // .toISOString(), then an error will be generated; that is, this will error:
+        //
+        // df.withColumn("derived_date", (row) => row["latest_date"].toISOString())
+        //
+        // This is due to the function validateFunctionReferencesWithProxy that checks
+        // the column references made by the function in the `withColumn` using a Proxy 
+        // object.
+        // it("Should throw an error when referencing a non-existent column", function() {
+            // expect(() => {this.test.df.withColumn("newCol", (row) => row["nonExistingColumn"])}).to.throw();
+        // });
 
     });
 
@@ -888,13 +901,25 @@ describe("DataFrame class", () => {
             expect(() => {this.test.df.filter("stringInsteadOfFunction")}).to.throw();
         });
 
-        it("Should throw an error when referencing a non-existent column", function() {
-            expect(() => {this.test.df.filter((row) => row["nonExistingColumn"] > 1)}).to.throw();
-        });
-
         it("Should throw an error if more than one argument is passed", function() {
             expect(() => {this.test.df.filter(((row) => row["weight"] < 80), "test")}).to.throw();
         });
+
+        // Temporarily commenting-out this test as supporting the ability to
+        // detect references to columns that do not exist in the DataFrame, also
+        // disables running methods of the column itself. Example: If an existing
+        // column "latest_date" is a Date type, and you want to create a new column
+        // derived from this, that leverages a method of the Date object, such as 
+        // .toISOString(), then an error will be generated; that is, this will error:
+        //
+        // df.filter((row) => row["latest_date"].toISOString().split("T")[0] == "2023-02-06");
+        //
+        // This is due to the function validateFunctionReferencesWithProxy that checks
+        // the column references made by the function in the `filter` using a Proxy 
+        // object.
+        // it("Should throw an error when referencing a non-existent column", function() {
+            // expect(() => {this.test.df.filter((row) => row["nonExistingColumn"] > 1)}).to.throw();
+        // });
 
     });
 

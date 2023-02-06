@@ -133,7 +133,7 @@ export class DataFrame {
 
         // Check what existing columns are being referenced,
         // and throw an error if at least one does not exist.
-        validateFunctionReferencesWithProxy(expr, this.columns);
+        // validateFunctionReferencesWithProxy(expr, this.columns);
         let newRows = this.rows.map((row) => ({...row, ...{[col]: expr(row)}}));
         let newCols = this.columns.includes(col) ? this.columns : this.columns.concat([col]);
         return new DataFrame(newRows, newCols);
@@ -155,7 +155,7 @@ export class DataFrame {
 
         // Check what existing columns are being referenced,
         // if any, and throw an error if at least one does not exist.
-        validateFunctionReferencesWithProxy(expr, this.columns);
+        // validateFunctionReferencesWithProxy(expr, this.columns);
 
         let newRows = this.rows.filter((row) => expr(row));
         return new DataFrame(newRows, this.columns);

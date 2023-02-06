@@ -147,6 +147,24 @@ export let smallDataFrame4 = (
     )
 );
 
+export let smallDataFrame5 = (
+    new DataFrame(
+        [
+            {"name": "Beverly", "dept": 2, "salary": 16231, "latest_date": new Date()},
+            {"name": "Kameko",  "dept": 2, "salary": 16232, "latest_date": new Date()},
+            {"name": "Ursa",    "dept": 3, "salary": 15427, "latest_date": new Date()},
+            {"name": "Ferris",  "dept": 1, "salary": 19740, "latest_date": new Date()},
+            {"name": "Noel",    "dept": 1, "salary": 19745, "latest_date": new Date()},
+            {"name": "Abel",    "dept": 3, "salary": 12369, "latest_date": new Date()},
+            {"name": "Raphael", "dept": 1, "salary": 8227, "latest_date": new Date()},
+            {"name": "Jack",    "dept": 1, "salary": 9710, "latest_date": new Date()},
+            {"name": "May",     "dept": 3, "salary": 9308, "latest_date": new Date()},
+            {"name": "Haviva",  "dept": 2, "salary": 9308, "latest_date": new Date()}
+        ],
+        ["name", "dept", "salary", "latest_date"]
+    )
+);
+
 
 // Test result validation datasets
 
