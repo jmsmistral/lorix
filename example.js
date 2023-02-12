@@ -15,6 +15,7 @@ import {
     smallDataFrame3,
     smallDataFrame4,
     smallDataFrame5,
+    smallDataFrame6,
     iris
 } from './test/sample_data.js'
 
@@ -37,12 +38,14 @@ let sDf2 = smallDataFrame2;
 let sDf3 = smallDataFrame3;
 let sDf4 = smallDataFrame4;
 let sDf5 = smallDataFrame5;
+let sDf6 = smallDataFrame6;
 
 let irisDf = iris;
 
 // let arr1 = verySmallValidObjArray;
 // let arr2 = verySmallInvalidObjArray;
 
+console.log("lorix.DataFrame.fromArray()");
 // console.log("valid data");
 // let df3 = lorix.DataFrame.fromArray(arr1);
 // df3.head();
@@ -51,6 +54,7 @@ let irisDf = iris;
 // df4.head();
 
 // selecting columns
+console.log("df.select()");
 // console.log(df);
 // const df1 = df.select('id', 'name')
 // console.log(df1);
@@ -59,8 +63,11 @@ let irisDf = iris;
 // df.head();
 
 // dropping columns
+console.log("df.drop()");
 // let df3 = df.drop('name');
 
+// head
+console.log("df.head()");
 // console.log("df1");
 // df1.head();
 
@@ -73,8 +80,8 @@ let irisDf = iris;
 // console.log("sDf4");
 // sDf4.head();
 
-console.log("sDf5");
-sDf5.head();
+// console.log("sDf5");
+// sDf5.head();
 
 // console.log("df5s");
 // df5.head();
@@ -86,7 +93,8 @@ sDf5.head();
 // irisDf.head();
 
 
-
+// sort data
+console.log("df.orderBy()");
 // df3.orderBy(["invalidColumn"]).head();
 // console.log(df3.orderBy(["id"]).toArray());
 // console.log(df3.orderBy(["name"]).toArray());
@@ -143,7 +151,6 @@ console.log("df.distinct()");
 // )
 
 
-
 console.log("df1.groupBy()");
 // console.log(df1.groupBy(["id", "age"]));
 // df1.groupBy(["id", "age"], {"newCol": "sum"});
@@ -180,8 +187,8 @@ console.log("df1.groupBy()");
 //     .head()
 // )
 
-console.log("df.window()");
 
+console.log("df.window()");
 // (
 //     df5
 //     .withColumn("sum", lorix.window(lorix.sum("salary"), ["dept"], [["salary"], ["desc"]]))
@@ -320,7 +327,6 @@ console.log('right join');
 // (df1.rightJoin(df2, ["id", "age"], ["id", "age"])).head();
 // df1.rightJoin(df2); // Error
 
-
 console.log('left anti join');
 // console.log((df1.leftAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  )).toArray()) // Non-indexed left join
 // console.log(df1.rightAntiJoin(df2, (l, r) => (l.id == r.id) && (l.name == r.name)  ).toArray()); // Non-indexed left join
@@ -349,6 +355,28 @@ console.log("replace()");
 // console.log(sDf4.regexReplace(["name"], /r/ig, "rrr").toArray());
 // console.log(sDf4.regexReplace(["name", "colour"], /r/ig, "rrr").toArray());
 
+console.log("pivot()");
+sDf6.head();
+sDf6.pivot(
+    ["id", "name"], // GroupBy Cols
+    "colour",       // Pivot Col
+    "weight",       // Value Col
+    "count"           // Agg Type
+).head();
+
+sDf6.pivot(
+    ["id", "name"], // GroupBy Cols
+    "colour",       // Pivot Col
+    "weight",       // Value Col
+    "sum"           // Agg Type
+).head();
+
+sDf6.pivot(
+    ["id", "name"], // GroupBy Cols
+    "colour",       // Pivot Col
+    "weight",       // Value Col
+    "mean"           // Agg Type
+).head();
 
 console.log("unionByName()");
 // console.log(sDf1.unionByName(sDf2).toArray());

@@ -165,6 +165,36 @@ export let smallDataFrame5 = (
     )
 );
 
+export let smallDataFrame6 = (
+    new DataFrame(
+        [
+            { "id": 100,  "name": "billy",    "colour": "red",    "weight": 102 },
+            { "id": 2,    "name": "jane",     "colour": "blue",   "weight": 97 },
+            { "id": 2,    "name": "jane",     "colour": "red",   "weight": 97 },
+            { "id": 2,    "name": "jane",     "colour": "red",   "weight": 97 },
+            { "id": 2,    "name": "jane",     "colour": null,   "weight": 97 },
+            { "id": 5,    "name": "roger",    "colour": "green",  "weight": 107 },
+            { "id": 9,    "name": "gary",     "colour": "blue",   "weight": 87 },
+            { "id": 1,    "name": "joseph",   "colour": "yellow", "weight": 71 },
+            { "id": 3,    "name": "jennifer", "colour": "yellow", "weight": 84 },
+            { "id": 3,    "name": "jennifer", "colour": "orange", "weight": 84 },
+            { "id": 100,  "name": "sean",     "colour": "red",    "weight": 85 },
+            { "id": 17,   "name": "steven",   "colour": "orange", "weight": 107 },
+            { "id": 17,   "name": "steven",   "colour": null, "weight": 107 },
+            { "id": 17,   "name": "steven",   "colour": null, "weight": 107 },
+            { "id": 101,  "name": "elon",     "colour": "red",    "weight": 74 },
+            { "id": 45,   "name": "issac",    "colour": "green",  "weight": 104 },
+            { "id": 45,   "name": "issac",    "colour": "green",  "weight": 104 },
+            { "id": 45,   "name": "issac",    "colour": "green",  "weight": 104 },
+            { "id": 1000, "name": "billy",    "colour": "orange", "weight": 102 },
+            { "id": 1001, "name": "billy",    "colour": "purple", "weight": 102 },
+            { "id": 1001, "name": "billy",    "colour": "purple", "weight": 102 },
+            { "id": 2,    "name": "jane",     "colour": "black",  "weight": 97 },
+          ],
+        ["id", "name", "colour", "weight"]
+    )
+);
+
 
 // Test result validation datasets
 

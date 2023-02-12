@@ -152,3 +152,58 @@ export function _getDistinctFn(cols) {
     // in the object `row`.
     return row => (_getArrayOfObjectReferences(row, cols)).join();
 }
+
+export function _getDistinctColumnValues(df, col) {
+    /**
+     * Returns an array of distinct values in
+     * column `col`. Does not include null, or
+     * undefined values.
+     */
+
+    return [
+        ...new Set(
+            df
+            .rows
+            .flatMap(row => {
+                if (row[col] !== null) {return row[col]}
+                else { return []}
+            })
+        )
+    ];
+}
+
+export function _getNullObjectFromProperties(props) {
+    /**
+     * Returns an object with properties defined
+     * in array `props` each with null value.
+     */
+
+    let nullObj = {};
+    for (let prop of props)
+        nullObj[prop] = null;
+    return nullObj;
+}
+
+export function _assignPivotValues(df, pivotCol, valueCol, props) {
+    /**
+     * Mutates DataFrame rows to assign values to
+     * pivoted columns.
+     */
+    for (let row of df.rows) {
+        for (let prop of props) {
+            if (row[valueCol] !== null) {
+                row[row[pivotCol]] = row[valueCol];
+            }
+        }
+    }
+}
+
+export function _getPivotColsAggregationMap(props, aggType) {
+    /**
+     * Returns object mapping pivot columns to aggregation.
+     */
+    let aggMap = {};
+    for (let prop of props)
+        aggMap[prop] = aggType;
+    return aggMap;
+}
