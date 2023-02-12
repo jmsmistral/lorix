@@ -20,7 +20,7 @@
     "mocha": "^10.2.0"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha ./test/**/*.js"
+    "test": "./node_modules/mocha/bin/_mocha ./test/**/*.js"
   },
   "keywords": [
     "dataframe",
