@@ -20,7 +20,11 @@ import {
     _isValidColumnName,
     _getArrayOfObjectReferences,
     _getDistinctFn,
-    _isString
+    _isString,
+    _getDistinctColumnValues,
+    _getNullObjectFromProperties,
+    _assignPivotValues,
+    _getPivotColsAggregationMap
 } from "./utils.js";
 
 
@@ -254,7 +258,7 @@ export class DataFrame {
         // Replace strings in columns.
         let newRows = lodash.cloneDeep(this.rows);
         for (let col of cols) {
-            newRows = newRows.map((row) => {
+            newRows = newRows.map(row => {
                 try {
                     row[col] = row[col].replaceAll(oldString, newString);
                     return row;
@@ -292,7 +296,7 @@ export class DataFrame {
         // Replace strings in columns.
         let newRows = lodash.cloneDeep(this.rows);
         for (let col of cols) {
-            newRows = newRows.map((row) => {
+            newRows = newRows.map(row => {
                 try {
                     row[col] = row[col].replace(oldString, newString);
                     return row;
@@ -301,6 +305,52 @@ export class DataFrame {
         }
 
         return new DataFrame(newRows, this.columns);
+    }
+
+    pivot(groupByCols, pivotCol, valueCol, aggType) {
+        /**
+         * Returns a new DataFrame that has been
+         * transposed by aggregating the value columns
+         * across the pivoted values in `pivotCol`, and
+         * grouping these by columns defined by `groupByCols`.
+         */
+
+        let props = _getDistinctColumnValues(this, pivotCol);
+        let nullObj = _getNullObjectFromProperties(props);
+        let rows = [nullObj];
+        // console.log(props);
+        // console.log(nullObj);
+        // console.log(rows);
+        let nullDf = new DataFrame(rows, props);
+        let groupDf = this.groupBy([...groupByCols, pivotCol], {[valueCol]: aggType});
+        let df = groupDf.crossJoin(nullDf);
+        // df.head(100);
+        _assignPivotValues(df, pivotCol, `${valueCol}_${aggType}`, props);
+        // df.head(100);
+        // console.log(_getPivotColsAggregationMap(props));
+        let groupByMap = df.groupBy(groupByCols, _getPivotColsAggregationMap(props, aggType));
+        // groupByMap.head(100);
+        return groupByMap;
+    }
+
+    unionByName(df) {
+        /**
+         * Returns a new DataFrame including rows from
+         * both DataFrames being unioned.
+         * Throws an error if the columns between both
+         * DataFrames are different.
+         */
+
+        // Check if `df` is a DataFrame
+        if (!(df instanceof DataFrame))
+            throw Error(`Can only union with another DataFrame.`);
+
+        // Check if this DataFrame and `df` have the same columns.
+        const diff = lodash.difference(this.columns, df.columns);
+        if (diff.length)
+            throw Error(`unionByName() cannot union DataFrames with different columns: '${diff.join(', ')}'`);
+
+        return new DataFrame([...this.rows, ...df.rows], this.columns);
     }
 
     crossJoin(df) {
@@ -399,25 +449,4 @@ export class DataFrame {
 
         return groupAggregation(this, cols, agg);
     }
-
-    unionByName(df) {
-        /**
-         * Returns a new DataFrame including rows from
-         * both DataFrames being unioned.
-         * Throws an error if the columns between both
-         * DataFrames are different.
-         */
-
-        // Check if `df` is a DataFrame
-        if (!(df instanceof DataFrame))
-            throw Error(`Can only union with another DataFrame.`);
-
-        // Check if this DataFrame and `df` have the same columns.
-        const diff = lodash.difference(this.columns, df.columns);
-        if (diff.length)
-            throw Error(`unionByName() cannot union DataFrames with different columns: '${diff.join(', ')}'`);
-
-        return new DataFrame([...this.rows, ...df.rows], this.columns);
-    }
-
 }
