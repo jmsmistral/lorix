@@ -134,6 +134,26 @@ function _runWindowOverMapWithWindowSize(partitions, partitionByCols, windowFunc
     }).flat();
 }
 
+function _runWindowOverArrayWithWindowSize(rows, windowFunc, newCol, windowSize) {
+    /**
+     * Traverses the Array of rows (non-partitioned), populating an output
+     * object Array with the results of applying the window function to
+     * the array of rows passed in `rows`.
+     */
+
+    // Generate temp unique id for col
+    let windowArrayColName = uuid();
+    let cleanRow, dummy;
+
+    let value = _resizePartitionRows(rows, windowSize, windowArrayColName);
+    return value.map( (r, i, v) => {
+        ({[windowArrayColName]: dummy, ...cleanRow} = r);  // Remove temporary property holding window indices
+        if (r[windowArrayColName].length == 1)
+            return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0]), i)});
+        return Object.assign({}, {...cleanRow, [newCol]: windowFunc(v.slice(r[windowArrayColName][0], r[windowArrayColName][1]), i)});
+    });
+}
+
 
 function _runWindowOverMap(partitions, partitionByCols, windowFunc, newCol, windowSize, resultAgg={}) {
     /**
@@ -222,7 +242,8 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
     let partitionFunctions = _generatePartitionFunctions(partitionByCols);
     let partitionMap = group(df.rows, ...partitionFunctions);
 
-    // Apply window function to ordered partitions
+    // Apply sized window function to ordered partitions
+    // when partition columns are defined.
     if (partitionByCols.length) {
         if (windowSize.length)
             return new DataFrame(_runWindowOverMapWithWindowSize(partitionMap, partitionByCols, windowFunc, newCol, windowSize), df.columns.concat([newCol]));
@@ -230,7 +251,13 @@ export function applyWindowFunction(df, newCol, windowFunc, partitionByCols, ord
         return df.leftJoin(windowDf, partitionByCols);
     }
 
+    // Apply sized window function across all rows when no
+    // partition columns are defined.
+    if (windowSize.length)
+        return new DataFrame(_runWindowOverArrayWithWindowSize(partitionMap, windowFunc, newCol, windowSize), df.columns.concat([newCol]));
+
     // If no partitioning is defined, apply window function across all rows
+    // with no window size constraints.
     const windowResult = windowFunc(partitionMap);
     return df.withColumn(newCol, () => windowResult);
 }
