@@ -24,7 +24,7 @@ GitHub Actions are pinned to commits. Dependabot proposes monthly npm and Action
 ## Release process
 
 1. Finish the changes and run `npm run check` and `npm audit`.
-2. Choose the next version using semantic versioning. The current unreleased changes raise the Node minimum and tighten invalid-input handling, so use a minor release while the package is below 1.0.
+2. Choose the next version using semantic versioning. Use a minor release while the package is below 1.0.
 3. Run `npm version <version> --no-git-tag-version`, update the changelog, and commit both manifest and lockfile with the code.
 4. Publish a GitHub release tagged `v<version>` at the reviewed commit. Use a prerelease version and prerelease release for preview packages.
 5. The publish workflow verifies the tag against the manifest, runs the complete checks, audits dependencies, and publishes the package. Stable releases use the `latest` npm tag; prereleases use `next`.
