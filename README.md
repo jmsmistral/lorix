@@ -38,7 +38,6 @@ npm install lorix
 
 The examples below show individual operations. `df1` and `df2` represent DataFrames containing the columns used in each example; file-loading examples assume the named files exist.
 
-See [CHANGELOG.md](CHANGELOG.md) for release history and compatibility notes.
 
 ### Create a DataFrame
 
@@ -343,6 +342,11 @@ await lorix.writeJson(df1, "output.json");
 # Development
 
 Run `npm ci` followed by `npm run check`. Example fixtures and expected results live in the tests, keeping the README focused on usage. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+# Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and compatibility notes.
+
 
 # License
 
