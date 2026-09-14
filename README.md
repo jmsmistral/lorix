@@ -25,6 +25,7 @@ in Javascript.
 # How to install
 
 Supported Node.js versions: `^22.13.0 || ^24.0.0`
+
 - 22.x starting at 22.13.0; and
 - 24.x starting at 24.0.0
 
@@ -37,7 +38,6 @@ npm install lorix
 # Get Started
 
 The examples below show individual operations. `df1` and `df2` represent DataFrames containing the columns used in each example; file-loading examples assume the named files exist.
-
 
 ### Create a DataFrame
 
@@ -346,7 +346,6 @@ Run `npm ci` followed by `npm run check`. Example fixtures and expected results 
 # Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for release history and compatibility notes.
-
 
 # License
 
