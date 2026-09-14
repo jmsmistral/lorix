@@ -22,7 +22,7 @@
 
 ### Compatibility
 
-- The supported runtime is now Node 22.13+ or Node 24+; Node 15/16 are no longer supported.
+- The supported runtime range is now `^22.13.0 || ^24.0.0`, with CI covering the minimum versions and latest releases in both majors; Node 15/16 are no longer supported.
 - Join signatures and the legacy anti-join schema remain unchanged. Predicates run once per actual row pair and never on dummy values. Missing-column validation follows executed branches; overlapping non-key columns and unequal shared values are rejected instead of overwritten.
 - Unordered window operations retain input order, including interleaved partitions. Explicit window ordering sorts the output. Invalid frames and missing aggregation columns now throw.
 - `distinct()` uses JavaScript Map equality: primitive types stay distinct, NaN compares equal, and objects (including Dates) use reference identity.

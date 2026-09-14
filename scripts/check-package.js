@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readmeExamples } from './readme-examples.js';
+import { exampleProgram } from '../test/readme-cases.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = await mkdtemp(path.join(os.tmpdir(), 'lorix-package-'));
@@ -65,10 +66,10 @@ try {
   );
   const examples = await readmeExamples();
   assert.ok(examples.length > 0);
-  for (const { code, line } of examples) {
+  for (const example of examples) {
     const result = spawnSync(process.execPath, ['--input-type=module'], {
       cwd: directory,
-      input: code,
+      input: exampleProgram(example),
       encoding: 'utf8',
       timeout: 10000,
     });
@@ -76,7 +77,7 @@ try {
     assert.equal(
       result.status,
       0,
-      `Packaged README example at line ${line}: ${result.stderr}`,
+      `Packaged README example at line ${example.line}: ${result.stderr}`,
     );
   }
   console.log(

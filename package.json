@@ -43,7 +43,7 @@
   "author": "Jonathan Sacramento",
   "license": "AGPL-3.0-only",
   "engines": {
-    "node": "^22.13.0 || >=24.0.0"
+    "node": "^22.13.0 || ^24.0.0"
   },
   "files": [
     "lorix.js",
