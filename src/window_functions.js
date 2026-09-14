@@ -1,103 +1,110 @@
 import {
-    sum as d3Sum,
-    min as d3Min,
-    max as d3Max,
-    mean as d3Mean,
-    median as d3Median,
-    quantile as d3Quantile,
-    variance as d3Variance,
-    deviation as d3Deviation
+  sum as d3Sum,
+  min as d3Min,
+  max as d3Max,
+  mean as d3Mean,
+  median as d3Median,
+  quantile as d3Quantile,
+  variance as d3Variance,
+  deviation as d3Deviation,
 } from 'd3-array';
 
 import {
-    unboundedPreceding,
-    unboundedProceeding,
-    currentRow
-} from './window.js'
-
+  unboundedPreceding,
+  unboundedProceeding,
+  currentRow,
+} from './window.js';
 
 export function sum(col) {
-    let sumFunc = ((v, i) => d3Sum(v, d => d[col]));
-    sumFunc.columnPropName = col;
-    sumFunc.funcName = "sum()";
-    return sumFunc;
+  const sumFunc = (v) => d3Sum(v, (d) => d[col]);
+  sumFunc.columnPropName = col;
+  sumFunc.funcName = 'sum()';
+  return sumFunc;
 }
 
 export function min(col) {
-    let minFunc = ((v, i) => d3Min(v, d => d[col]));
-    minFunc.columnPropName = col;
-    minFunc.funcName = "min()";
-    return minFunc;
+  const minFunc = (v) => d3Min(v, (d) => d[col]);
+  minFunc.columnPropName = col;
+  minFunc.funcName = 'min()';
+  return minFunc;
 }
 
 export function max(col) {
-    let maxFunc = ((v, i) => d3Max(v, d => d[col]));
-    maxFunc.columnPropName = col;
-    maxFunc.funcName = "max()";
-    return maxFunc;
+  const maxFunc = (v) => d3Max(v, (d) => d[col]);
+  maxFunc.columnPropName = col;
+  maxFunc.funcName = 'max()';
+  return maxFunc;
 }
 
 export function mean(col) {
-    let meanFunc = ((v, i) => d3Mean(v, d => d[col]));
-    meanFunc.columnPropName = col;
-    meanFunc.funcName = "mean()";
-    return meanFunc;
+  const meanFunc = (v) => d3Mean(v, (d) => d[col]);
+  meanFunc.columnPropName = col;
+  meanFunc.funcName = 'mean()';
+  return meanFunc;
 }
 
 export function median(col) {
-    let medianFunc = ((v, i) => d3Median(v, d => d[col]));
-    medianFunc.columnPropName = col;
-    medianFunc.funcName = "median()";
-    return medianFunc;
+  const medianFunc = (v) => d3Median(v, (d) => d[col]);
+  medianFunc.columnPropName = col;
+  medianFunc.funcName = 'median()';
+  return medianFunc;
 }
 
-export function quantile(col, p=0.5) {
-    let quantileFunc = ((v, i) => d3Quantile(v, p, d => d[col]));
-    quantileFunc.columnPropName = col;
-    quantileFunc.funcName = "quantile()";
-    return quantileFunc;
+export function quantile(col, p = 0.5) {
+  if (typeof p !== 'number' || !Number.isFinite(p) || p < 0 || p > 1)
+    throw Error('quantile() probability must be between 0 and 1.');
+  const quantileFunc = (v) => d3Quantile(v, p, (d) => d[col]);
+  quantileFunc.columnPropName = col;
+  quantileFunc.funcName = 'quantile()';
+  return quantileFunc;
 }
 
 export function variance(col) {
-    let varianceFunc = ((v, i) => v.length > 1 ? d3Variance(v, d => d[col]) : null);
-    varianceFunc.columnPropName = col;
-    varianceFunc.funcName = "variance()";
-    return varianceFunc;
+  const varianceFunc = (v) =>
+    v.length > 1 ? d3Variance(v, (d) => d[col]) : null;
+  varianceFunc.columnPropName = col;
+  varianceFunc.funcName = 'variance()';
+  return varianceFunc;
 }
 
 export function stddev(col) {
-    let stddevFunc = ((v, i) => v.length > 1 ? d3Deviation(v, d => d[col]) : null);
-    stddevFunc.columnPropName = col;
-    stddevFunc.funcName = "stddev()";
-    return stddevFunc;
+  const stddevFunc = (v) =>
+    v.length > 1 ? d3Deviation(v, (d) => d[col]) : null;
+  stddevFunc.columnPropName = col;
+  stddevFunc.funcName = 'stddev()';
+  return stddevFunc;
 }
 
 export function lag(col, n) {
-    let lagFunc = (v, i) => v.length > 1 ? v[0][col] : null;
-    lagFunc.setWindowSize = true;
-    lagFunc.windowSize = [n, currentRow];
-    lagFunc.columnPropName = col;
-    lagFunc.funcName = "lag()";
-    return lagFunc;
+  if (!Number.isSafeInteger(n) || n < 0)
+    throw Error('lag() offset must be a non-negative integer.');
+  const lagFunc = (v) => (v.length === n + 1 ? v[0][col] : null);
+  lagFunc.setWindowSize = true;
+  lagFunc.windowSize = [n, currentRow];
+  lagFunc.columnPropName = col;
+  lagFunc.funcName = 'lag()';
+  return lagFunc;
 }
 
 export function lead(col, n) {
-    let leadFunc = (v, i) => v.length > 1 ? v[v.length - 1][col] : null;
-    leadFunc.setWindowSize = true;
-    leadFunc.windowSize = [currentRow, n];
-    leadFunc.columnPropName = col;
-    leadFunc.funcName = "lead()";
-    return leadFunc;
+  if (!Number.isSafeInteger(n) || n < 0)
+    throw Error('lead() offset must be a non-negative integer.');
+  const leadFunc = (v) => (v.length === n + 1 ? v[n][col] : null);
+  leadFunc.setWindowSize = true;
+  leadFunc.windowSize = [currentRow, n];
+  leadFunc.columnPropName = col;
+  leadFunc.funcName = 'lead()';
+  return leadFunc;
 }
 
 export function rownumber() {
-    if (arguments.length)
-        throw Error("Window function 'rownumber()' takes no arguments.");
+  if (arguments.length)
+    throw Error("Window function 'rownumber()' takes no arguments.");
 
-    let rownumberFunc = (v, i) => i + 1;
-    rownumberFunc.setWindowSize = true;
-    rownumberFunc.windowSize = [unboundedPreceding, unboundedProceeding];
-    rownumberFunc.columnPropName = undefined;
-    rownumberFunc.funcName = "rownumber()";
-    return rownumberFunc;
+  const rownumberFunc = (_rows, i) => i + 1;
+  rownumberFunc.setWindowSize = true;
+  rownumberFunc.windowSize = [unboundedPreceding, unboundedProceeding];
+  rownumberFunc.columnPropName = undefined;
+  rownumberFunc.funcName = 'rownumber()';
+  return rownumberFunc;
 }

@@ -1,282 +1,290 @@
 # Lorix
 
-[![Actions Status](https://github.com/jmsmistral/lorix/workflows/Lorix%20Publish%20Workflow/badge.svg)](https://github.com/jmsmistral/lorix/actions)
+[![CI](https://github.com/jmsmistral/lorix/actions/workflows/lorix-pr-test.yml/badge.svg?branch=master)](https://github.com/jmsmistral/lorix/actions/workflows/lorix-pr-test.yml)
 
-<img align="right" src=docs/images/lorix.png height="110px">
+<img align="right" src="docs/images/lorix.png" height="110" alt="Lorix logo">
 
-Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and transforming data.
+A small JavaScript DataFrame API for loading, joining, grouping, and transforming in-memory data. Lorix combines an array-of-objects interface with the aggregation and indexing tools in D3 and Lodash.
 
-### Features
+## Why Lorix?
 
-- Enables rapid data wrangling on Javascript
-- Load and export data to/from text files and object arrays
-- Exposes a simple, functional data-oriented API that operates over an array of objects
-- Function chaining to encapsulate multiple data transformations in single blocks
-- Helpful error messages to assist debugging
+I built Lorix to make small and medium-sized data-wrangling tasks convenient in JavaScript, without switching to Python. The focus is a composable API and readable transformations. Data stays in memory: this is not a streaming engine or a replacement for a database, and arbitrary predicate joins compare every pair of rows.
 
-# Why Lorix?
+This repository contains the next, unreleased maintenance update. The npm release may not yet include these fixes. See [CHANGELOG.md](CHANGELOG.md) for compatibility notes.
 
-I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas on Python.
-Rather than building something low-level from scratch, optimizing for performance, I opted to design a DataFrame abstraction
-over existing libraries like _lodash_ and _d3_. The idea isn't for this to compete performance-wise with other libraries
-(far from it!), but to provide an _intuitive_ API for anyone to pick-up and transform small to medium-sized datasets directly
-in Javascript.
+## Install
 
-# How to install
+Requires Node.js 22.13+ or 24+. CI checks the supported Node 22 and 24 LTS lines. Lorix uses ES modules; save examples as `.mjs` or set `"type": "module"` in your application's `package.json`.
 
-_**Requires Node v15+**_
-```
+```sh
 npm install lorix
 ```
 
-# Get Started
+## Quick start
 
-### Create a DataFrame
+Every JavaScript block below is a standalone, executable example with assertions. CI runs them against both the source and an installed npm tarball.
 
 ```javascript
-import lorix from "lorix";
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
 
-let df1 = await lorix.readCsv("test.csv"); // Comma-separated file
-let df2 = await lorix.readTsv("test.tsv"); // Tab-separated file
-let df3 = await lorix.readDsv("test.psv", "|"); // User-specified delimiter
+const sales = lorix.DataFrame.fromArray([
+  { team: 'North', units: 2, price: 10 },
+  { team: 'South', units: 1, price: 15 },
+  { team: 'North', units: 3, price: 10 },
+]);
 
-// Array of objects
-// Note: All objects in the array need
-// to have the same properties.
-const dataArray = [
-    {"colA": 1, "colB": 2},
-    {"colA": 2, "colB": 3}
-    {"colA": 3, "colB": 4}
-];
-let df4 = lorix.DataFrame.fromArray(dataArray);
+const totals = sales
+  .withColumn('revenue', (row) => row.units * row.price)
+  .groupBy(['team'], { revenue: 'sum' })
+  .orderBy(['revenue_sum'], ['desc']);
+
+assert.deepEqual(totals.toArray(), [
+  { team: 'North', revenue_sum: 50 },
+  { team: 'South', revenue_sum: 15 },
+]);
+totals.head();
 ```
 
-### Print top _`n`_ rows
+## Rows, columns, and transformations
 
-`.head(n)` prints the top _`n`_ rows in tabular form to standard output.
+`fromArray()` requires a non-empty array of objects with the same own enumerable properties. Use `new lorix.DataFrame([], ['column'])` to construct an empty frame with a schema.
 
-```javascript
-df1.head(); // Print the top 10 rows by default
-df1.head(15); // Define the number of rows to display
-```
+| Method                                    | Behavior                                                                              |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| `size()`                                  | Returns `[rowCount, columnCount]`.                                                    |
+| `head(n = 10)`                            | Prints the first `n` rows using `console.table`.                                      |
+| `toArray()` / iteration                   | Exposes the row array / iterates its rows.                                            |
+| `slice(i = 0, j = -1)`                    | Selects rows; `j` is **inclusive**, and `-1` means through the end.                   |
+| `select(...columns)` / `drop(...columns)` | Keeps / removes named columns.                                                        |
+| `withColumn(name, fn)`                    | Adds or replaces a column using `fn(row)`.                                            |
+| `filter(fn)`                              | Keeps rows for which `fn(row)` is truthy.                                             |
+| `distinct(subset = [])`                   | Keeps the first occurrence of each selected tuple; an empty subset means all columns. |
+| `orderBy(columns, orders?)`               | Sorts by columns with `asc` (default) or `desc` directions.                           |
+| `unionByName(other)`                      | Concatenates rows; column sets must match.                                            |
 
-### Iterate DataFrame rows like an object array
+Transforms return new DataFrames and do not themselves modify source rows. They are **not deeply immutable**: construction and `toArray()` retain references, and operations such as filtering share row objects. Treat rows and nested values as read-only, including inside callbacks; copy data explicitly when independent ownership is needed. Ordinary callbacks follow JavaScript semantics for missing properties (`undefined`).
 
-The DataFrame class implements the iterator pattern to allow users to iterate through rows like an array. This also enables the use of the spread operator for example.
-
-```javascript
-for (let row of df1) {
-    console.log(row);
-}
-
-let df = [...df1];
-```
-
-### Export DataFrame rows as an object array
-
-`toArray()` returns an object array, where each object is a row mapping columns to values.
+`distinct()` compares scalar values without coercion (`1` differs from `'1'`; `null` differs from `undefined`). It treats `NaN` values as equal and compares objects, arrays, and Dates by reference identity. Column selection uses literal names, including names containing dots.
 
 ```javascript
-let rowArray = df1.toArray();
-```
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
 
-### Select columns
-
-`select(col1, col2, ...)` returns a new DataFrame with the specified columns.
-
-```javascript
-let df = df1.select("colA", "colB");
-```
-
-### Drop columns
-
-`drop(col1, col2, ...)` returns a new DataFrame without the specified columns.
-
-```javascript
-let df = df1.drop("colA");
-```
-
-### Define new column
-
-`withColumn(newCol, fn)` returns a new DataFrame with a new column (`newCol`), as defined by the function `fn`. `fn` accepts a single parameter that represents a DataFrame row to expose access to individual column values.
-
-```javascript
-let df = df1.withColumn("newCol", (row) => row["colA"] + row["colB"]);
-```
-
-Passing the row argument is not necessary if the expression doesn't use column values.
-
-```javascript
-let df = df1.withColumn("newCol", () => 1 + 2);
-let df = df1.withColumn("newCol", () => new Date());
-```
-
-Calls can be chained to define multiple columns in a single block.
-
-```javascript
-let df = (
-    df1
-    .withColumn("newCol", () => 1)
-    .withColumn("newCol2", () => 2)
+const people = lorix.DataFrame.fromArray([
+  { name: 'Ada', score: 9 },
+  { name: 'Lin', score: 7 },
+  { name: 'Ada', score: 9 },
+]);
+const selected = people
+  .distinct()
+  .filter((row) => row.score > 8)
+  .select('name');
+assert.deepEqual([...selected], [{ name: 'Ada' }]);
+assert.deepEqual(people.slice(0, 1).size(), [2, 2]);
+assert.deepEqual(people.drop('score').columns, ['name']);
+assert.equal(selected.unionByName(selected).size()[0], 2);
+assert.deepEqual(
+  people
+    .withColumn('score', (row) => row.score + 1)
+    .rows.map((row) => row.score),
+  [10, 8, 10],
 );
 ```
 
-### Filter rows
-
-`filter(fn)` returns a new Dataframe with rows filtered according to the function `fn`. `fn` accepts a single parameter that represents a DataFrame row to expose access to individual column values, and must return a boolean value to determine if the row is filtered or not.
+String helpers accept an array of columns. `replace()` changes the first match, `replaceAll()` changes all matches, and `regexReplace()` uses a regular expression. Non-string cells, including `null`, pass through unchanged.
 
 ```javascript
-let df = df1.filter(row => row["colA"] > 10);
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
+
+const names = lorix.DataFrame.fromArray([{ name: 'a-a' }, { name: null }]);
+assert.deepEqual(names.replace(['name'], 'a', 'b').rows, [
+  { name: 'b-a' },
+  { name: null },
+]);
+assert.deepEqual(names.replaceAll(['name'], 'a', 'b').rows, [
+  { name: 'b-b' },
+  { name: null },
+]);
+assert.deepEqual(names.regexReplace(['name'], /a/g, 'b').rows, [
+  { name: 'b-b' },
+  { name: null },
+]);
 ```
 
-### Replace strings
+## Joins
 
-String values can be replaced using one of the following DataFrame methods. Each accepts an array of columns over which the string-replacement is applied:
+`innerJoin`, `leftJoin`, `rightJoin`, `fullOuterJoin`, `leftAntiJoin`, and `rightAntiJoin` accept another frame and either:
 
-- `replace(cols, oldString, newString)` - Returns a new DataFrame with first instance of string `oldString` replaced by `newString`.
-- `replaceAll(cols, oldString, newString)` - Returns a new DataFrame with all instances of string `oldString` replaced by `newString`.
-- `regexReplace(cols, replaceRegex, newString)` - Returns a new DataFrame with regular expression `replaceRegex` replaced by `newString`.
+- One array of shared key names: `left.innerJoin(right, ['id'])`.
+- Two equally sized key arrays: `left.innerJoin(right, ['customerId'], ['id'])`.
+- A predicate: `left.innerJoin(right, (l, r) => l.customerId === r.id)`.
 
-```javascript
-let df = df1.replace(["colA", "colB"], "oldSubstring", "newSubstring");
-let df = df1.replaceAll(["colA"], "oldSubstring", "newSubstring");
-let df = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
-```
+Array joins use D3 InternMap indexing: primitive keys are not coerced, null keys can match, and object keys use `valueOf()` (for example, a Date uses its timestamp). Predicate joins evaluate real row pairs, respect short-circuiting, and support methods on cell values. Use `&&` and `||` for logical conditions. Missing columns throw only if the predicate actually accesses them; predicates are not evaluated on empty inputs.
 
-### Drop duplicate rows
+Shared columns are coalesced only for corresponding same-name array keys, or when a predicate accesses them on both sides and matched values are equal. Other overlaps throw to prevent data loss; rename a column with `withColumn()` followed by `drop()` before joining. `crossJoin()` suffixes shared names with `_x` and `_y`, rejecting suffix collisions.
 
-`distinct([subset])` returns a new DataFrame with duplicate rows dropped according to the optional list of columns `subset`. If `subset` is not passed, then duplicates will be identified across all columns. Only the first row found is kept for duplicate instances.
+Non-matching outer rows receive `null` for columns available only on the other side. For compatibility, anti joins also include those null-filled columns. Left/inner/full joins traverse left rows; right joins traverse right rows. Full joins append unmatched right rows. Empty results retain their schema.
 
 ```javascript
-let df = df1.distinct();
-let df = df1.distinct(["colA", "colB"]);
-```
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
 
-### Sorting
-
-`orderBy(cols, [order])` returns a new DataFrame with rows sorted according to the array of columns specified (`cols`), and optionally an array (`order`) defining the order to sort these by. The order defaults to _ascending_ if not specified.
-
-```javascript
-let df = df1.orderBy(["colA"]);
-let df = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
-let df = df1.orderBy("id"); // Error - requires an array of columns
-```
-
-### Joining DataFrames
-
-Two DataFrames can be joined in a number of ways. Lorix provides functions that mirror SQL join types, and adds other types that appear in Spark:
-- Cross Join
-- Inner Join
-- Left Join
-- Right Join
-- Left Anti Join
-- Right Anti Join
-- Full Outer Join
-
-The join condition can be defined in the following ways:
-
-1. a single array of common column names.
-2. two arrays of the same size, with position-based joining between them.
-3. function defining the exact join condition between the two DataFrames.
-
-When using a function, the parameters represent left and right DataFrames
-being joined. These are used to refer to the DataFrame columns.
-
-```javascript
-let df = df1.crossJoin(df2)
-
-let df = df1.innerJoin(df2, ["colA", "colB"]);  // Columns must exist in both DataFrames
-let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);  // Equivalent to colA == colB and colC == colD
-let df = df1.innerJoin(df2, (l, r) => l.colA == r.colB);
-let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
-
-let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
-
-let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-
-let df = df1.leftAntiJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
-
-let df = df1.rightAntiJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-
-let df = df1.fullOuterJoin(df2, ["colA", "colB"]);
-```
-
-### Aggregating with groupBy
-
-`groupBy(cols, aggMap)` is an analogue of SQL's GROUP BY, and is used to perform aggregations.
-
-- `cols` is an array of columns that will be grouped.
-- `aggMap` is an object mapping columns to the aggregations you want performed on these. This can either be an array, or a string (e.g. sum, mean, count).
-
-Available aggregate functions are currently:
-
-- sum
-- mean
-- count
-- min
-- max
-
-Output columns are named using the current name suffixed by the aggregation applied, e.g. **colC_sum**, **colC_mean**.
-
-```javascript
-let df = df1.groupBy(
-    ["colA", "colB"],
-    {
-        "colC": ["sum", "mean", "count"],
-        "colD": "sum",
-        "colE": ["min", "max"]
-    }
-);
-```
-
-### Window functions
-
-`.window(windowFunc, [partitionByCols], [orderByCols], [windowSize])` can be applied within `.withColumn` to apply window function `windowFunc` to the DataFrame. The window parameters follow, defined as:
-
-- `partitionByCols` is an optional array of columns used to partition the DataFrame rows.
-- `orderByCols` is an optional array consisting of two sub-arrays - one defining the set of columns to sort, and another the sort order (see `.orderBy` for more details).
-- `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
-    - Positive integer representing the number of rows
-    - `unboundedPreceding` all previous rows, relative to the current row
-    - `unboundedProceeding` all following rows, relative to the current row
-    - `currentRow` represents the current row
-
-Lorix currently exposes the following window functions:
-
-- `sum(col)` - sum of values.
-- `min(col)` - minimum value.
-- `max(col)` - maximum value.
-- `mean(col)` - mean value.
-- `median(col)` - median value.
-- `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1].
-- `variance(col)` - returns an unbiased estimator of the population variance.
-- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
-- `lag(col, n)` - returns the value of the `n`-th row prior to the current row.
-- `lead(col, n)` - returns the value of the `n`-th row after the current row.
-- `rownumber()` - returns the sequential number of a row within the partition.
-
-```javascript
-let df = df1.withColumn(
-    "colStddev",
-    lorix.window(
-        lorix.stdev("colX"),   // window function (takes a column name, and any other required/option parameters)
-        ["colA"],              // columns defining how rows are partitioned
-        [["colB"], ["desc"]],  // optional - order columns
-        [14, lorix.currentRow] // optional - window size definition (14 rows preceding to current row)
+const orders = lorix.DataFrame.fromArray([
+  { customerId: 1, amount: 20 },
+  { customerId: 3, amount: 30 },
+]);
+const customers = lorix.DataFrame.fromArray([
+  { id: 1, name: 'Ada' },
+  { id: 2, name: 'Lin' },
+]);
+assert.deepEqual(orders.leftJoin(customers, ['customerId'], ['id']).rows, [
+  { customerId: 1, amount: 20, id: 1, name: 'Ada' },
+  { customerId: 3, amount: 30, id: null, name: null },
+]);
+assert.equal(
+  orders
+    .innerJoin(
+      customers,
+      (l, r) => l.customerId === r.id && r.name.startsWith('A'),
     )
+    .size()[0],
+  1,
 );
+assert.equal(
+  orders.fullOuterJoin(customers, ['customerId'], ['id']).size()[0],
+  3,
+);
+assert.equal(
+  orders.leftAntiJoin(customers, ['customerId'], ['id']).rows[0].customerId,
+  3,
+);
+assert.equal(orders.rightJoin(customers, ['customerId'], ['id']).size()[0], 2);
+assert.equal(
+  orders.rightAntiJoin(customers, ['customerId'], ['id']).rows[0].id,
+  2,
+);
+assert.equal(orders.crossJoin(customers).size()[0], 4);
+assert.equal(customers.innerJoin(customers, ['id', 'name']).size()[0], 2);
 ```
 
-### Union between DataFrames
+## Grouping and pivoting
 
-`unionByName(df)` returns a new DataFrame including the set of rows from both DataFrames being unioned. Both DataFrames must have the same columns, otherwise an error will be thrown.
+`groupBy(columns, aggregations)` supports `sum`, `mean`, `count`, `min`, and `max`. Output names are `<column>_<aggregation>`. `count` counts rows, including rows with null values; numeric aggregates follow D3's missing-value handling. Without aggregations, `groupBy(columns)` returns a nested D3 `InternMap` of row groups.
+
+`pivot(groupColumns, pivotColumn, valueColumn, aggregation)` produces `<category>_<aggregation>` columns. Categories retain first-seen order and may be strings, numbers, booleans, or bigints. Null/undefined categories are omitted. Missing categories yield `0` for sum/count and `null` for mean/min/max. Categories that produce the same output name (such as `1` and `'1'`) are rejected, as are collisions with group-column names.
 
 ```javascript
-let df = df1.unionByName(df2);
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
+
+const readings = lorix.DataFrame.fromArray([
+  { site: 'A', sensor: 'temperature', value: 10 },
+  { site: 'A', sensor: 'temperature', value: 20 },
+  { site: 'A', sensor: 'humidity', value: 40 },
+]);
+assert.deepEqual(readings.groupBy(['site'], { value: ['sum', 'count'] }).rows, [
+  { site: 'A', value_sum: 70, value_count: 3 },
+]);
+assert.equal(readings.groupBy(['site']).get('A').length, 3);
+assert.deepEqual(readings.pivot(['site'], 'sensor', 'value', 'count').rows, [
+  { site: 'A', temperature_count: 2, humidity_count: 1 },
+]);
 ```
 
-# License
+## Window functions
 
-Free Software through the [GNU Affero GPL v3](https://www.gnu.org/licenses/why-affero-gpl.en.html)
+Use `withColumn(name, lorix.window(fn, partitionColumns?, order?, bounds?))` to calculate a value per row. Multiple partition columns are supported. `order` is `[columns]` or `[columns, directions]`, for example `[['time'], ['asc']]`. Explicit ordering sorts the output by partition columns and then the requested order; otherwise input row order is preserved.
 
-See LICENSE file for details.
+Bounds are `[preceding, following]`, both inclusive of the current row. Each side accepts a non-negative integer, `lorix.currentRow`, or its corresponding `lorix.unboundedPreceding` / `lorix.unboundedProceeding` constant. An omitted or empty bounds array means the entire partition.
+
+Available functions: `sum`, `min`, `max`, `mean`, `median`, `quantile(column, p = 0.5)`, `variance`, `stddev`, `lag(column, n)`, `lead(column, n)`, and `rownumber()`. Variance and standard deviation use sample statistics. Lag/lead require a non-negative integer offset and return `null` when that exact row is absent. Lag, lead, and rownumber determine their own bounds. Custom functions receive `(frameRows, partitionIndex)` for bounded windows, or `(partitionRows)` once per unbounded partition.
+
+`stdev` aliases `stddev`, and the old misspelling `unboundedProceding` remains an alias of `unboundedProceeding`.
+
+```javascript
+import assert from 'node:assert/strict';
+import lorix from 'lorix';
+
+const readings = lorix.DataFrame.fromArray([
+  { site: 'A', time: 1, value: 10 },
+  { site: 'A', time: 2, value: 20 },
+  { site: 'A', time: 3, value: 30 },
+]);
+const result = readings
+  .withColumn(
+    'running',
+    lorix.window(
+      lorix.sum('value'),
+      ['site'],
+      [['time']],
+      [lorix.unboundedPreceding, lorix.currentRow],
+    ),
+  )
+  .withColumn(
+    'previous',
+    lorix.window(lorix.lag('value', 2), ['site'], [['time']]),
+  )
+  .withColumn('deviation', lorix.window(lorix.stddev('value'), ['site']));
+assert.deepEqual(
+  result.rows.map((row) => row.running),
+  [10, 30, 60],
+);
+assert.deepEqual(
+  result.rows.map((row) => row.previous),
+  [null, null, 10],
+);
+assert.deepEqual(
+  result.rows.map((row) => row.deviation),
+  [10, 10, 10],
+);
+assert.deepEqual(readings.columns, ['site', 'time', 'value']);
+```
+
+## Read and write files
+
+`readCsv`, `readTsv`, and `readDsv(path, delimiter)` return promises for DataFrames. Parsing uses D3 `autoType`: numbers, booleans, and dates are inferred, empty cells become null, and numeric-looking identifiers may lose leading zeros. Use `fromArray()` with explicitly typed values when inference is inappropriate.
+
+`writeCsv`, `writeTsv`, `writeDsv(frame, path, delimiter)`, and `writeJson` return promises. Text writers respect declared column order and retain headers for empty frames. Paths may be absolute or relative to the working directory. Writers replace existing files; parent directories must already exist. I/O failures reject with the underlying filesystem error. A custom delimiter must be one character other than a quote or newline.
+
+```javascript
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import lorix from 'lorix';
+
+const directory = await mkdtemp(path.join(os.tmpdir(), 'lorix-example-'));
+try {
+  const data = lorix.DataFrame.fromArray([{ name: 'Ada', score: 9 }]);
+  for (const [write, read, delimiter] of [
+    [lorix.writeCsv, lorix.readCsv, ','],
+    [lorix.writeTsv, lorix.readTsv, '\t'],
+    [lorix.writeDsv, lorix.readDsv, '|'],
+  ]) {
+    const file = path.join(directory, 'data.txt');
+    await write(data, file, delimiter);
+    assert.deepEqual((await read(file, delimiter)).rows, data.rows);
+  }
+  const jsonFile = path.join(directory, 'data.json');
+  await lorix.writeJson(data, jsonFile);
+  assert.deepEqual(JSON.parse(await readFile(jsonFile, 'utf8')), data.rows);
+} finally {
+  await rm(directory, { recursive: true, force: true });
+}
+```
+
+## Development
+
+```sh
+npm ci
+npm run check
+npm run example
+```
+
+`npm run check` runs ESLint, Prettier checks, tests with coverage thresholds, and an isolated package-install check. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and release process. The implementation stays in JavaScript; TypeScript declarations and benchmarks are deferred.
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE).
