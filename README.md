@@ -24,9 +24,9 @@ in Javascript.
 
 # How to install
 
-Supported Node.js versions: 22.x starting at 22.13.0, and 24.x starting at 24.0.0 (`^22.13.0 || ^24.0.0`). Use the latest Node.js 24 LTS release.
-
-GitHub Actions checks both minimum versions and the latest releases in each supported major. Other Node.js majors are outside the tested support range.
+Supported Node.js versions: `^22.13.0 || ^24.0.0`
+- 22.x starting at 22.13.0; and
+- 24.x starting at 24.0.0
 
 Lorix uses ES modules. Save examples as `.mjs` files or set `"type": "module"` in your application's `package.json`.
 
@@ -38,7 +38,7 @@ npm install lorix
 
 The examples below show individual operations. `df1` and `df2` represent DataFrames containing the columns used in each example; file-loading examples assume the named files exist.
 
-This branch contains unreleased fixes; see [CHANGELOG.md](CHANGELOG.md) for compatibility notes.
+See [CHANGELOG.md](CHANGELOG.md) for release history and compatibility notes.
 
 ### Create a DataFrame
 
