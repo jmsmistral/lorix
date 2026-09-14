@@ -3,42 +3,54 @@ name: Publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish (for example, v0.4.0)
+        required: true
+        type: string
+      prerelease:
+        description: Publish a prerelease to the next npm tag
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: publish-${{ github.ref }}
+  group: publish-${{ inputs.tag || github.event.release.tag_name }}
   cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+      IS_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && toJSON(inputs.prerelease) || toJSON(github.event.release.prerelease) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          ref: refs/tags/${{ env.RELEASE_TAG }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
-          cache: npm
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org/
+      - name: Install npm with trusted publishing support
+        run: npm install --global npm@11
       - name: Verify release version
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          IS_PRERELEASE: ${{ github.event.release.prerelease }}
         run: node scripts/check-release.js
       - run: npm ci
       - run: npm run check
       - run: npm audit --audit-level=high
       - name: Publish stable release
-        if: ${{ !github.event.release.prerelease }}
+        if: ${{ env.IS_PRERELEASE == 'false' }}
         run: npm publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
       - name: Publish prerelease
-        if: ${{ github.event.release.prerelease }}
+        if: ${{ env.IS_PRERELEASE == 'true' }}
         run: npm publish --tag next
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
