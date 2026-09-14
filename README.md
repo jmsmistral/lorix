@@ -16,9 +16,9 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 
 # Why Lorix?
 
-I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas on Python.
+I want a _simple_ way to wrangle data with Javascript for some web projects.
 Rather than building something low-level from scratch, optimizing for performance, I opted to design a DataFrame abstraction
-over existing libraries like _lodash_ and _d3_. The idea isn't for this to compete performance-wise with other libraries
+over existing libraries like _lodash_ and _d3_. The idea isn't for this to compare performance-wise with other libraries
 (far from it!), but to provide an _intuitive_ API for anyone to pick-up and transform small to medium-sized datasets directly
 in Javascript.
 
