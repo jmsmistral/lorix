@@ -1,4 +1,6 @@
 /node_modules
+/coverage
+*.tgz
 
 # Ignore output files
 # generated through testing.

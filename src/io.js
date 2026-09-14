@@ -1,93 +1,71 @@
-import fs from "fs";
-import path from "path";
-
+import { readFile, writeFile } from 'node:fs/promises';
 import {
-    autoType,
-    csvParse,
-    tsvParse,
-    csvFormat,
-    tsvFormat,
-    dsvFormat
-} from "d3-dsv";
+  autoType,
+  csvParse,
+  tsvParse,
+  csvFormat,
+  tsvFormat,
+  dsvFormat,
+} from 'd3-dsv';
+import { DataFrame } from './dataframe.js';
 
-import { DataFrame } from "./dataframe.js";
-import { _isString } from "./utils.js";
-
-
-function readFile(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, "utf8", (err, data) => {
-            // TODO provide descriptive error messages
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(data);
-        });
-    });
+function parseData(text, parse) {
+  const rows = parse(text, autoType);
+  const columns = [...rows.columns];
+  delete rows.columns;
+  return new DataFrame(rows, columns);
 }
 
-function writeFile(filePath, string) {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(path.join(process.cwd(), filePath), string, "utf8", (err) => {
-            // TODO provide descriptive error messages
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
+function delimiterFormat(delimiter) {
+  if (
+    typeof delimiter !== 'string' ||
+    delimiter.length !== 1 ||
+    /[\r\n"]/.test(delimiter)
+  ) {
+    throw Error(
+      'Delimiter must be a single character other than a quote or newline.',
+    );
+  }
+  return dsvFormat(delimiter);
+}
+
+function validateFrame(df) {
+  if (!(df instanceof DataFrame)) throw Error('Export requires a DataFrame.');
 }
 
 export async function readCsv(filePath) {
-    const fileData = await readFile(filePath);
-    return new Promise((resolve, reject) => {
-        const rowArray = csvParse(fileData, autoType);
-        const columns = Array.from(rowArray.columns);
-        delete rowArray.columns;
-        resolve(new DataFrame(rowArray, columns));
-    });
-};
+  return parseData(await readFile(filePath, 'utf8'), csvParse);
+}
 
 export async function readTsv(filePath) {
-    const fileData = await readFile(filePath);
-    return new Promise((resolve, reject) => {
-        const rowArray = tsvParse(fileData, autoType);
-        const columns = Array.from(rowArray.columns);
-        delete rowArray.columns;
-        resolve(new DataFrame(rowArray, columns));
-    });
-};
+  return parseData(await readFile(filePath, 'utf8'), tsvParse);
+}
 
 export async function readDsv(filePath, delimiter) {
-    if (!delimiter || !_isString(delimiter) || delimiter == "") {
-        throw Error("Incorrect delimiter passed to readDsv().");
-    }
-    const fileData = await readFile(filePath);
-    return new Promise((resolve, reject) => {
-        const rowArray = dsvFormat(delimiter).parse(fileData, autoType);
-        const columns = Array.from(rowArray.columns);
-        delete rowArray.columns;
-        resolve(new DataFrame(rowArray, columns));
-    });
-};
+  const format = delimiterFormat(delimiter);
+  return parseData(await readFile(filePath, 'utf8'), format.parse);
+}
 
 export async function writeCsv(df, filePath) {
-    await writeFile(filePath, csvFormat(df.rows));
-};
+  validateFrame(df);
+  await writeFile(filePath, csvFormat(df.rows, df.columns), 'utf8');
+}
 
 export async function writeTsv(df, filePath) {
-    await writeFile(filePath, tsvFormat(df.rows));
-};
+  validateFrame(df);
+  await writeFile(filePath, tsvFormat(df.rows, df.columns), 'utf8');
+}
 
 export async function writeDsv(df, filePath, delimiter) {
-    if (!delimiter || !_isString(delimiter) || delimiter == "") {
-        throw Error("Incorrect delimiter passed to writeDsv().");
-    }
-    await writeFile(filePath, dsvFormat(delimiter).format(df.rows));
-};
+  validateFrame(df);
+  await writeFile(
+    filePath,
+    delimiterFormat(delimiter).format(df.rows, df.columns),
+    'utf8',
+  );
+}
 
 export async function writeJson(df, filePath) {
-    await writeFile(filePath, JSON.stringify(df.rows));
-};
+  validateFrame(df);
+  await writeFile(filePath, JSON.stringify(df.rows), 'utf8');
+}

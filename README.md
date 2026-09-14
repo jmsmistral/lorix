@@ -1,8 +1,8 @@
 # Lorix
 
-[![Actions Status](https://github.com/jmsmistral/lorix/workflows/Lorix%20Publish%20Workflow/badge.svg)](https://github.com/jmsmistral/lorix/actions)
+[![CI](https://github.com/jmsmistral/lorix/actions/workflows/lorix-pr-test.yml/badge.svg?branch=master)](https://github.com/jmsmistral/lorix/actions/workflows/lorix-pr-test.yml)
 
-<img align="right" src=docs/images/lorix.png height="110px">
+<img align="right" src="docs/images/lorix.png" height="110" alt="Lorix logo">
 
 Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and transforming data.
 
@@ -16,20 +16,28 @@ Lorix is a _simple_, _user-friendly_ Javascript DataFrame API for loading and tr
 
 # Why Lorix?
 
-I want a _simple_ way to wrangle data with Javascript for my own projects, instead of having to resort to pandas on Python.
+I built this because I wanted a _simple_ way to wrangle data with Javascript for some web projects.
 Rather than building something low-level from scratch, optimizing for performance, I opted to design a DataFrame abstraction
-over existing libraries like _lodash_ and _d3_. The idea isn't for this to compete performance-wise with other libraries
+over existing libraries like _lodash_ and _d3_. The idea isn't for this to compare performance-wise with other libraries
 (far from it!), but to provide an _intuitive_ API for anyone to pick-up and transform small to medium-sized datasets directly
 in Javascript.
 
 # How to install
 
-_**Requires Node v15+**_
+Supported Node.js versions: `^22.13.0 || ^24.0.0`
+
+- 22.x starting at 22.13.0; and
+- 24.x starting at 24.0.0
+
+Lorix uses ES modules. Save examples as `.mjs` files or set `"type": "module"` in your application's `package.json`.
+
 ```
 npm install lorix
 ```
 
 # Get Started
+
+The examples below show individual operations. `df1` and `df2` represent DataFrames containing the columns used in each example; file-loading examples assume the named files exist.
 
 ### Create a DataFrame
 
@@ -45,7 +53,7 @@ let df3 = await lorix.readDsv("test.psv", "|"); // User-specified delimiter
 // to have the same properties.
 const dataArray = [
     {"colA": 1, "colB": 2},
-    {"colA": 2, "colB": 3}
+    {"colA": 2, "colB": 3},
     {"colA": 3, "colB": 4}
 ];
 let df4 = lorix.DataFrame.fromArray(dataArray);
@@ -107,8 +115,8 @@ let df = df1.withColumn("newCol", (row) => row["colA"] + row["colB"]);
 Passing the row argument is not necessary if the expression doesn't use column values.
 
 ```javascript
-let df = df1.withColumn("newCol", () => 1 + 2);
-let df = df1.withColumn("newCol", () => new Date());
+let constantDf = df1.withColumn("newCol", () => 1 + 2);
+let dateDf = df1.withColumn("newCol", () => new Date());
 ```
 
 Calls can be chained to define multiple columns in a single block.
@@ -138,9 +146,9 @@ String values can be replaced using one of the following DataFrame methods. Each
 - `regexReplace(cols, replaceRegex, newString)` - Returns a new DataFrame with regular expression `replaceRegex` replaced by `newString`.
 
 ```javascript
-let df = df1.replace(["colA", "colB"], "oldSubstring", "newSubstring");
-let df = df1.replaceAll(["colA"], "oldSubstring", "newSubstring");
-let df = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
+let replacedDf = df1.replace(["colA", "colB"], "oldSubstring", "newSubstring");
+let replacedAllDf = df1.replaceAll(["colA"], "oldSubstring", "newSubstring");
+let regexDf = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
 ```
 
 ### Drop duplicate rows
@@ -148,8 +156,8 @@ let df = df1.regexReplace(["colA", "colB"], /oldSubstring/ig, "newSubstring");
 `distinct([subset])` returns a new DataFrame with duplicate rows dropped according to the optional list of columns `subset`. If `subset` is not passed, then duplicates will be identified across all columns. Only the first row found is kept for duplicate instances.
 
 ```javascript
-let df = df1.distinct();
-let df = df1.distinct(["colA", "colB"]);
+let distinctDf = df1.distinct();
+let distinctSubsetDf = df1.distinct(["colA", "colB"]);
 ```
 
 ### Sorting
@@ -157,14 +165,15 @@ let df = df1.distinct(["colA", "colB"]);
 `orderBy(cols, [order])` returns a new DataFrame with rows sorted according to the array of columns specified (`cols`), and optionally an array (`order`) defining the order to sort these by. The order defaults to _ascending_ if not specified.
 
 ```javascript
-let df = df1.orderBy(["colA"]);
-let df = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
-let df = df1.orderBy("id"); // Error - requires an array of columns
+let sortedDf = df1.orderBy(["colA"]);
+let multiSortDf = df1.orderBy(["colA", "colB"], ["asc", "desc"]);
+// df1.orderBy("id"); // Error - requires an array of columns
 ```
 
 ### Joining DataFrames
 
 Two DataFrames can be joined in a number of ways. Lorix provides functions that mirror SQL join types, and adds other types that appear in Spark:
+
 - Cross Join
 - Inner Join
 - Left Join
@@ -179,27 +188,51 @@ The join condition can be defined in the following ways:
 2. two arrays of the same size, with position-based joining between them.
 3. function defining the exact join condition between the two DataFrames.
 
-When using a function, the parameters represent left and right DataFrames
-being joined. These are used to refer to the DataFrame columns.
+When using a function, its parameters represent a row from the left and right DataFrames. Use `&&` and `||` for logical conditions.
+
+Cross join:
 
 ```javascript
-let df = df1.crossJoin(df2)
-
-let df = df1.innerJoin(df2, ["colA", "colB"]);  // Columns must exist in both DataFrames
-let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);  // Equivalent to colA == colB and colC == colD
-let df = df1.innerJoin(df2, (l, r) => l.colA == r.colB);
-let df = df1.innerJoin(df2, (l, r) => (l.colA == r.colB) & (l.colC == r.colD));
-
-let df = df1.leftJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
-
-let df = df1.rightJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-
-let df = df1.leftAntiJoin(df2, (l, r) => (l.colA == r.colB) | (l.colC == r.colD));
-
-let df = df1.rightAntiJoin(df2, (l, r) => (l.colA > r.colB) & (l.colC < r.colD));
-
-let df = df1.fullOuterJoin(df2, ["colA", "colB"]);
+let df = df1.crossJoin(df2);
 ```
+
+Join on shared column names:
+
+```javascript
+let innerDf = df1.innerJoin(df2, ["colA", "colB"]);
+let outerDf = df1.fullOuterJoin(df2, ["colA", "colB"]);
+```
+
+Join on different column names (`df1` has `colA` and `colC`; `df2` has `colB` and `colD`):
+
+```javascript
+let df = df1.innerJoin(df2, ["colA", "colC"], ["colB", "colD"]);
+```
+
+Define the join condition with a function:
+
+```javascript
+let innerDf = df1.innerJoin(df2, (l, r) => l.colA === r.colB);
+let multiKeyDf = df1.innerJoin(
+    df2,
+    (l, r) => l.colA === r.colB && l.colC === r.colD,
+);
+let leftDf = df1.leftJoin(
+    df2,
+    (l, r) => l.colA === r.colB || l.colC === r.colD,
+);
+let rightDf = df1.rightJoin(df2, (l, r) => l.colA > r.colB && l.colC < r.colD);
+let leftAntiDf = df1.leftAntiJoin(
+    df2,
+    (l, r) => l.colA === r.colB || l.colC === r.colD,
+);
+let rightAntiDf = df1.rightAntiJoin(
+    df2,
+    (l, r) => l.colA > r.colB && l.colC < r.colD,
+);
+```
+
+Joins reject overlapping non-key columns to avoid overwriting data. Rename or drop those columns first. Cross joins suffix shared names with `_x` and `_y`. For compatibility, anti joins also include columns from the other frame, filled with `null`.
 
 ### Aggregating with groupBy
 
@@ -235,11 +268,13 @@ let df = df1.groupBy(
 
 - `partitionByCols` is an optional array of columns used to partition the DataFrame rows.
 - `orderByCols` is an optional array consisting of two sub-arrays - one defining the set of columns to sort, and another the sort order (see `.orderBy` for more details).
-- `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of proceding rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
-    - Positive integer representing the number of rows
+- `windowSize` is an optional array with two values defining the range of rows over which the window function is applied for each group. The first value defines the number of preceding rows to include in the window, and the second value being the number of following rows. If no `windowSize` parameter is passed, the entire set of rows is exposed to the window function for each group.
+    - Non-negative integer representing the number of rows
     - `unboundedPreceding` all previous rows, relative to the current row
     - `unboundedProceeding` all following rows, relative to the current row
     - `currentRow` represents the current row
+
+Bounds include the current row and stop at partition boundaries. Lag and lead return `null` when the exact offset row is absent. Unordered windows preserve input row order.
 
 Lorix currently exposes the following window functions:
 
@@ -250,7 +285,7 @@ Lorix currently exposes the following window functions:
 - `median(col)` - median value.
 - `quantile(col, p)` - returns the p-quantile, where p is a number in the range [0, 1].
 - `variance(col)` - returns an unbiased estimator of the population variance.
-- `stdev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
+- `stddev(col)` - returns the standard deviation, defined as the square root of the bias-corrected variance.
 - `lag(col, n)` - returns the value of the `n`-th row prior to the current row.
 - `lead(col, n)` - returns the value of the `n`-th row after the current row.
 - `rownumber()` - returns the sequential number of a row within the partition.
@@ -259,13 +294,15 @@ Lorix currently exposes the following window functions:
 let df = df1.withColumn(
     "colStddev",
     lorix.window(
-        lorix.stdev("colX"),   // window function (takes a column name, and any other required/option parameters)
+        lorix.stddev("colX"),   // window function (takes a column name, and any other required/option parameters)
         ["colA"],              // columns defining how rows are partitioned
         [["colB"], ["desc"]],  // optional - order columns
         [14, lorix.currentRow] // optional - window size definition (14 rows preceding to current row)
     )
 );
 ```
+
+`stdev` remains an alias for `stddev`, and the old `unboundedProceding` spelling remains supported.
 
 ### Union between DataFrames
 
@@ -274,6 +311,41 @@ let df = df1.withColumn(
 ```javascript
 let df = df1.unionByName(df2);
 ```
+
+### Pivot values into columns
+
+`pivot(groupColumns, pivotColumn, valueColumn, aggregation)` creates one column per pivot value. Output names use the value and aggregation, such as `red_sum`.
+
+```javascript
+let df = df1.pivot(["category"], "colour", "amount", "sum");
+```
+
+### Export to files
+
+Writers return promises and accept relative or absolute paths. Existing files are replaced; the parent directory must exist.
+
+```javascript
+await lorix.writeCsv(df1, "output.csv");
+await lorix.writeTsv(df1, "output.tsv");
+await lorix.writeDsv(df1, "output.psv", "|");
+await lorix.writeJson(df1, "output.json");
+```
+
+# Data behavior
+
+- Transformations return new DataFrames, but row ownership is shallow. `toArray()` exposes references; treat rows and callback inputs as read-only.
+- `distinct()` preserves value types and tuple boundaries. Objects, including Dates, compare by reference identity.
+- File readers infer numbers, booleans and dates; empty cells become `null`. Use `fromArray()` with explicitly typed values when inference is inappropriate.
+- `count` includes rows with null value cells. Pivot ignores null/undefined categories; missing categories produce zero for sum/count and null for other aggregates.
+- Create an empty frame with `new lorix.DataFrame([], ["colA", "colB"])`. Empty results retain their column schema.
+
+# Development
+
+Run `npm ci` followed by `npm run check`. Example fixtures and expected results live in the tests, keeping the README focused on usage. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+# Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and compatibility notes.
 
 # License
 

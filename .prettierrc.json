@@ -1,0 +1,15 @@
+{
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": "README.md",
+      "options": {
+        "tabWidth": 4,
+        "singleQuote": false,
+        "embeddedLanguageFormatting": "off"
+      }
+    }
+  ]
+}
